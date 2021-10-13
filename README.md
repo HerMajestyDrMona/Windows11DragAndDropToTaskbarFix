@@ -4,9 +4,7 @@ This program partially fixes the missing "Drag & Drop to the Taskbar" support in
 
 Windows11DragAndDropToTaskbarPartialFix works with the new Windows 11 taskbar and does not require nasty changes like `UndockingDisabled` or restoration of the classic taskbar.
 
-**Download**
-
-https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarPartialFix/releases/
+[Download Binary](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarPartialFix/releases/)
 
 **How Does It Work?**
 
