@@ -1,7 +1,7 @@
 # Change Log for Windows 11 Drag & Drop to the Taskbar (Partial Fix)
 Don't read if you're sensitive to misspellings and grammatical errors.
 
-## [[ver. 1.1.1.0](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarPartialFix/releases/tag/v1.1.1-release)]  - 2021-10-15, 05:50 CET
+## [[ver. 1.1.1.0](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarPartialFix/releases/tag/v1.1.1.0-release)]  - 2021-10-15, 05:50 CET
 - Fixed the high CPU usage problem when moving icons on the taskbar, after update 1.1. It was caused by the missing `Sleep()` before `continue`.
 
 ## [[ver. 1.1.0.0](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarPartialFix/releases/tag/v1.1-release)]  - 2021-10-15, 04:55 CET
