@@ -41,7 +41,7 @@ CheckIfPinnedAppsWindowsAreVisible=1
 //For how long (in milliseconds) should the left mouse button be clicked before the program starts checking if the mouse is hovering over the task bar.
 HowLongLeftMouseButtonPressedBeforeContinueMilliseconds=500
 //For how long (in milliseconds) should the mouse be hovered over the same icon on taskbar in order to restore its window.
-HowLongKeepMouseOverAppIconBeforeRestoringWindowMilliseconds=500
+HowLongKeepMouseOverAppIconBeforeRestoringWindowMilliseconds=750
 
 //You can skip options below. It's only to change main thread sleeping times or default icon sizes.
 DefaultSleepPeriodInTheLoopMilliseconds=100
