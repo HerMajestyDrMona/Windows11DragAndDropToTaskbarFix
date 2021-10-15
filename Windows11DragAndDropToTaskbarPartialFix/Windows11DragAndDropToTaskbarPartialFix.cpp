@@ -1406,7 +1406,7 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 							if (PrintDebugInfo) {
 								std::cout << "Left Mouse Click Started in the taskbar area: X: " << MouseClickStartPoint_Client.x << " Y: " << MouseClickStartPoint_Client.y << ", so skipping.\n";
 							}
-							//Damn, the sleep was missing there causing heavy CPU usage. Fixed in ver 1.1.1
+							//The sleep was missing there causing heavy CPU usage. Fixed in ver 1.1.1
 							Sleep(SleepPeriodNow);
 							continue;
 						}
