@@ -1,7 +1,7 @@
 # Change Log for Windows 11 Drag & Drop to the Taskbar (Partial Fix)
 Don't read if you're sensitive to misspellings and grammatical errors.
 
-## [[ver. 1.1.0.0](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarPartialFix/releases/tag/v1.1-release])]  - 2021-10-15, 03:15 CET
+## [[ver. 1.1.0.0](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarPartialFix/releases/tag/v1.1-release])]  - 2021-10-15, 04:55 CET
 - Fixed dropping files to the "Show desktop" button (bottom-right of the screen). Seems like it stopped working right before ver 1.0 release when I added an extra check that prevents the program from working when playing games or using full-screen apps.
 - Added support for the configuration file `Windows11DragAndDropToTaskbarPartialFixConfig.txt` with auto program restarts when changes are made to the configuration file. Please read [READ ME](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarPartialFix#readme) for details.
 - Added an option allowing to run `Windows11DragAndDropToTaskbarPartialFix.exe` on Windows startup (enabled by default).
