@@ -1223,7 +1223,7 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 	//Welcome!
 	bool HideConsoleWindowSoon = false;
 	std::chrono::milliseconds ProgrmStartTime = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
-	printf("Windows11DragAndDropToTaskbarPartialFix, ver. 1.1, created by Dr.MonaLisa.\n");
+	printf("Windows11DragAndDropToTaskbarPartialFix, ver. 1.1.1, created by Dr.MonaLisa.\n");
 	printf("https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarPartialFix\n\n");
 	printf("You can disable the console window. Please read the GitHub page to learn how to configure this program.\n");
 	if (!PrintDebugInfo) {
@@ -1406,6 +1406,8 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 							if (PrintDebugInfo) {
 								std::cout << "Left Mouse Click Started in the taskbar area: X: " << MouseClickStartPoint_Client.x << " Y: " << MouseClickStartPoint_Client.y << ", so skipping.\n";
 							}
+							//Damn, the sleep was missing there causing heavy CPU usage. Fixed in ver 1.1.1
+							Sleep(SleepPeriodNow);
 							continue;
 						}
 
