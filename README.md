@@ -32,15 +32,22 @@ Since version 1.1 it's possible to configure the program by creating a configura
 ```
 //Should the program run automatically on system startup? 1 = true, 0 = false.
 AutomaticallyRunThisProgramOnStartup=1
+
 //Should the program show the console window when it starts? 1 = true, 0 = false.
 ShowConsoleWindowOnStartup=1
+
 //Should the program print debug information? 1 = true, 0 = false.
 PrintDebugInfo=0
+
 //Unused for now, it's an option for the future
 CheckIfPinnedAppsWindowsAreVisible=1
-//For how long (in milliseconds) should the left mouse button be clicked before the program starts checking if the mouse is hovering over the task bar.
+
+//For how long (in milliseconds) should the left mouse button be clicked before
+//the program starts checking if the mouse is hovering over the task bar.
 HowLongLeftMouseButtonPressedBeforeContinueMilliseconds=500
-//For how long (in milliseconds) should the mouse be hovered over the same icon on taskbar in order to restore its window.
+
+//For how long (in milliseconds) should the mouse be hovered over the same icon
+//on taskbar in order to restore its window.
 HowLongKeepMouseOverAppIconBeforeRestoringWindowMilliseconds=750
 
 //You can skip options below. It's only to change main thread sleeping times or default icon sizes.
