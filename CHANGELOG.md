@@ -1,7 +1,7 @@
 # Change Log for Windows 11 Drag & Drop to the Taskbar (Partial Fix)
 Don't read if you're sensitive to misspellings and grammatical errors.
 
-## [[ver. 1.1.0.0](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarPartialFix/releases/tag/v1.1-release])]  - 2021-10-15, 04:55 CET
+## [[ver. 1.1.0.0](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarPartialFix/releases/tag/v1.1-release)]  - 2021-10-15, 04:55 CET
 - Fixed dropping files to the "Show desktop" button (bottom-right of the screen). Seems like it stopped working right before ver 1.0 release when I added an extra check that prevents the program from working when playing games or using full-screen apps.
 - Added support for the configuration file `Windows11DragAndDropToTaskbarPartialFixConfig.txt` with auto program restarts when changes are made to the configuration file. Please read [READ ME](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarPartialFix#readme) for details.
 - Added an option allowing to run `Windows11DragAndDropToTaskbarPartialFix.exe` on Windows startup (enabled by default).
@@ -15,7 +15,7 @@ Don't read if you're sensitive to misspellings and grammatical errors.
   - Unfortunately, for now that's all I could do. I need to understand the `HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Taskband\Favorites` registry key value to see if it stores the current icon position. Some help would be appreciated!
  - Please note that the source code will be cleaned when there are less serious things to focus on. 
 
-## [[ver. 1.0.0.0](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarPartialFix/releases/tag/v1.0-release])] - 2021-10-13, 10:20 CET
+## [[ver. 1.0.0.0](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarPartialFix/releases/tag/v1.0-release)] - 2021-10-13, 10:20 CET
 - Initial release
 - The program detects if you're currently pressing the left mouse button and determines which icon on the taskbar you hover the mouse pointer on. If the cursor stays in the same area for X milliseconds - it simulates the Win+Ctrl+Number hotkey (open the desktop and switch to the last active window of the app pinned to the taskbar in the position indicated by the number), in order to restore the intended window. It also supports dropping files to the "Show desktop" button (bottom-right of the screen).
 
