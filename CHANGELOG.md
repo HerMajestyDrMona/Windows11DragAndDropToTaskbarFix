@@ -3,7 +3,7 @@ Don't read if you're sensitive to misspellings and grammatical errors.
 
 ## [[ver. 1.1.2.0](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarPartialFix/releases/tag/v1.1.2.0-release)]  - 2021-10-16, 19:00 CET
 - Fixed issue [#2](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarPartialFix/issues/2), runtime error: "The procedure entry point __std_tzdb_delete_leap_seconds could not be located in the dynamic link library...":
-  - Compiled the program with multithread, static version of the run-time library (MT). It will make the executable size much greater, but I have got not much time to investigate this problem more. It's most likely caused by using the C++ 20 standard in function `ReturnConfigFileTime()`.
+  - Compiled the program with multithread, static version of the run-time library (MT). It will make the executable size much greater, but I have not much time to investigate this problem more. It's most likely caused by using the C++ 20 standard in function `ReturnConfigFileTime()`.
 
 ## [[ver. 1.1.1.0](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarPartialFix/releases/tag/v1.1.1.0-release)]  - 2021-10-15, 05:50 CET
 - Fixed the high CPU usage problem when moving icons on the taskbar, after update 1.1. It was caused by the missing `Sleep()` before `continue`.
