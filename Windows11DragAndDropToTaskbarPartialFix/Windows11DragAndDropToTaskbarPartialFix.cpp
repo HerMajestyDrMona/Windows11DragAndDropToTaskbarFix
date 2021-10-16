@@ -1175,10 +1175,95 @@ void NewFunctionToKill(bool ReLaunch = true) {
 	_wsystem(KillAndLaunch.c_str());
 }
 
+/*#include <tlhelp32.h>
+DWORD get_process_id_by_name(const wstring process_name)
+{
+	HANDLE snapshot_handle;
+	if ((snapshot_handle = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0)) == INVALID_HANDLE_VALUE)
+	{
+		//throw runtime_error("CreateToolhelp32Snapshot failed: " + to_string(GetLastError()));
+	}
+
+	DWORD pid = -1;
+	PROCESSENTRY32 pe;
+	ZeroMemory(&pe, sizeof(PROCESSENTRY32W));
+	pe.dwSize = sizeof(PROCESSENTRY32W);
+	if (Process32First(snapshot_handle, &pe))
+	{
+		while (Process32Next(snapshot_handle, &pe))
+		{
+			if (pe.szExeFile == process_name)
+			{
+				pid = pe.th32ProcessID;
+				break;
+			}
+		}
+	}
+	else
+	{
+		CloseHandle(snapshot_handle);
+		//throw runtime_error("Process32First failed: " + to_string(GetLastError()));
+	}
+
+	if (pid == -1)
+	{
+		CloseHandle(snapshot_handle);
+		//throw runtime_error("process not found");
+	}
+
+	CloseHandle(snapshot_handle);
+	return pid;
+}
+
+//Tests, ignore. I got no time to clean the code yet.
+
+void NewTests() {
+	AllocConsole();
+	FILE* fDummy;
+	freopen_s(&fDummy, "CONIN$", "r", stdin);
+	freopen_s(&fDummy, "CONOUT$", "w", stderr);
+	freopen_s(&fDummy, "CONOUT$", "w", stdout);
+
+
+	REBARBANDINFOW prbi;
+	memset(&prbi, 0, sizeof(REBARBANDINFOW));
+
+	prbi.cbSize = sizeof(REBARBANDINFOW);
+	prbi.fMask = 64;
+
+	HWND hWndTray = ::FindWindow(L"Shell_TrayWnd", 0);
+	if (hWndTray) {
+		std::wcout << "hWndTray Found" << endl;
+	}
+	HWND hRebar = ::FindWindowEx(hWndTray, NULL, L"ReBarWindow32", 0);
+	if (hRebar) {
+		std::wcout << "hRebar Found" << endl;
+	}
+	hWndMSTaskSwWClass = FindWindowEx(hRebar, 0, L"MSTaskSwWClass", nullptr);
+
+	DWORD Explorer = get_process_id_by_name(L"explorer.exe");
+	std::wcout << "Explorer PID: " << Explorer << endl;
+	HWND ExplorerWindow = find_main_window(Explorer);
+	std::wcout << "ExplorerWindow: " << ExplorerWindow << endl;
+
+	int i1 = ::SendMessage(hWndTray, WM_USER+88, (WPARAM)0x00080000, 0);
+
+
+	int i0 = ::SendMessage(hRebar, RB_GETBANDCOUNT, 0, 0);
+	int i = ::SendMessage(hWndMSTaskSwWClass, RB_GETBANDINFOW, 0, (LPARAM)(LPREBARBANDINFOW)&prbi);
+	std::wcout << "Band Info Count: " << i0 << endl;
+	std::wcout << "Band Info: " << i << " Ehhh: " << prbi.hwndChild << endl;
+}*/
+
+
 int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nShowCmd)
 {
 	//Important to make reading .lnk possible:s
 	HRESULT hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
+
+	//NewTests();
+	//system("pause");
+	//exit(0);
 
 	wchar_t result[MAX_PATH];
 	CurrentExeWorks = std::wstring(result, GetModuleFileNameW(NULL, result, MAX_PATH));
@@ -1223,7 +1308,7 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 	//Welcome!
 	bool HideConsoleWindowSoon = false;
 	std::chrono::milliseconds ProgrmStartTime = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
-	printf("Windows11DragAndDropToTaskbarPartialFix, ver. 1.1.1, created by Dr.MonaLisa.\n");
+	printf("Windows11DragAndDropToTaskbarPartialFix, ver. 1.1.2, created by Dr.MonaLisa.\n");
 	printf("https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarPartialFix\n\n");
 	printf("You can disable the console window. Please read the GitHub page to learn how to configure this program.\n");
 	if (!PrintDebugInfo) {
