@@ -16,9 +16,7 @@ The program detects if you're currently pressing the left mouse button and deter
 
 ### **Limitations**
 
-* Unfortunately, Windows only supports 10 hotkeys of this type: `Win+Ctrl+1` to `Win+Ctrl+0`. It means that the fix will only work for the first 10 apps on the taskbar. I know it's a very low limit, but might be useful if you keep the Internet Browser / Messengers in the first position on the taskbar.
-* If the pinned app icon currently has no visible window, the fix will start it. It's a different behaviour than the one we remember, but I personally found it useful, for example because it's restoring the Skype window when it's active in the System Tray only.
-* It doesn't support multiple windows of the same process :(
+I'm not aware of any limitations in the current version. Please check [#issues](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues)
 
 ### **How to Start or Quit the Program?**
 
@@ -39,16 +37,22 @@ ShowConsoleWindowOnStartup=1
 //Should the program print debug information? 1 = true, 0 = false.
 PrintDebugInfo=0
 
-//Unused for now, it's an option for the future
-CheckIfPinnedAppsWindowsAreVisible=1
+//Should the program use ver. 1.2.0 improvements that remove all previous limitations? 1 = true, 0 = false.
+UseTheNewBestMethodEver=1
+
+//Sleep time (in milliseconds) between simulating different keys in the new "BestMethodEver"
+HowLongSleepBetweenDifferentKeysPressMilliseconds=10
+
+//Sleep time (in milliseconds) between simulating the same keys in the new "BestMethodEver" 
+HowLongSleepBetweenTheSameKeysPressMilliseconds=0
 
 //For how long (in milliseconds) should the left mouse button be clicked before
 //the program starts checking if the mouse is hovering over the task bar.
-HowLongLeftMouseButtonPressedBeforeContinueMilliseconds=500
+HowLongLeftMouseButtonPressedBeforeContinueMilliseconds=750
 
 //For how long (in milliseconds) should the mouse be hovered over the same icon
 //on taskbar in order to restore its window.
-HowLongKeepMouseOverAppIconBeforeRestoringWindowMilliseconds=750
+HowLongKeepMouseOverAppIconBeforeRestoringWindowMilliseconds=200
 
 //You can skip options below. It's only to change main thread sleeping times or default icon sizes.
 DefaultSleepPeriodInTheLoopMilliseconds=100
