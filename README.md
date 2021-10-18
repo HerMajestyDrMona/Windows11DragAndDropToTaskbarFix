@@ -1,14 +1,14 @@
-# Windows 11 Drag & Drop to the Taskbar (Partial Fix)
+# Windows 11 Drag & Drop to the Taskbar (Fix)
 
-This program partially fixes the missing "Drag & Drop to the Taskbar" support in Windows 11. In the best case, such a simple and basic functionality will return to Windows 11 in October 2022 (or never). For now, we have to use workarounds in the OS that was supposed to "empower our productivity".
+This program fixes the missing "Drag & Drop to the Taskbar" support in Windows 11. In the best case, such a simple and basic functionality will return to Windows 11 in October 2022 (or never). For now, we have to use workarounds in the OS that was supposed to "empower our productivity".
 
-Windows11DragAndDropToTaskbarPartialFix works with the new Windows 11 taskbar and does not require nasty changes like `UndockingDisabled` or restoration of the `classic taskbar`.
+Windows11DragAndDropToTaskbarFix works with the new Windows 11 taskbar and does not require nasty changes like `UndockingDisabled` or restoration of the `classic taskbar`.
 
-[Download Binary (Windows11DragAndDropToTaskbarPartialFix.exe)](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarPartialFix/releases/)
+[Download Binary (Windows11DragAndDropToTaskbarFix.exe)](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases/)
 
-[Read the Changelog](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarPartialFix/blob/main/CHANGELOG.md)
+[Read the Changelog](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/blob/main/CHANGELOG.md)
 
-[View the source code (Windows11DragAndDropToTaskbarPartialFix.cpp)](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarPartialFix/blob/main/Windows11DragAndDropToTaskbarPartialFix/Windows11DragAndDropToTaskbarPartialFix.cpp)
+[View the source code (Windows11DragAndDropToTaskbarFix.cpp)](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/blob/main/Windows11DragAndDropToTaskbarFix/Windows11DragAndDropToTaskbarFix.cpp)
 
 ### **How Does It Work?**
 
@@ -24,10 +24,10 @@ The program detects if you're currently pressing the left mouse button and deter
 
 To use the fix, please simply download the binary file above (or compile it yourself) and **start it as any other program**. It works as an independent C++ process. It does not change any registry keys (with the exception of the autostart key for itself) and does not inject any DLLs to other processes.
 
-To quit this program, please **simply kill** `Windows11DragAndDropToTaskbarPartialFix.exe` or `Windows 11 Drag & Drop to the Taskbar (Partial Fix)` **by the Task Manager**.
+To quit this program, please **simply kill** `Windows11DragAndDropToTaskbarFix.exe` or `Windows 11 Drag & Drop to the Taskbar (Fix)` **by the Task Manager**.
 
 ### **Configuration**
-Since version 1.1 it's possible to configure the program by creating a configuration file at the same location as `Windows11DragAndDropToTaskbarPartialFix.exe`. The configuration file should be named: `Windows11DragAndDropToTaskbarPartialFixConfig.txt` and may contain the following variables:
+Since version 1.1 it's possible to configure the program by creating a configuration file at the same location as `Windows11DragAndDropToTaskbarFix.exe`. The configuration file should be named: `Windows11DragAndDropToTaskbarFixConfig.txt` and may contain the following variables:
 
 ```
 //Should the program run automatically on system startup? 1 = true, 0 = false.
@@ -59,7 +59,7 @@ DefaultTaskbarIconHeight=48
 DefaultShowDesktopButtonWidth=20
 ```
 
-When you modify the `Windows11DragAndDropToTaskbarPartialFixConfig.txt`, the program will ask you to automatically restart itself. So you don't need to go to the Task Manager each time you want to test something.
+When you modify the `Windows11DragAndDropToTaskbarFixConfig.txt`, the program will ask you to automatically restart itself. So you don't need to go to the Task Manager each time you want to test something.
 
 ### **New Ideas Are Welcome**
 
