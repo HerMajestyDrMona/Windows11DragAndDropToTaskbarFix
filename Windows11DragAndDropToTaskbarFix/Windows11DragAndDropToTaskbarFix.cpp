@@ -1848,6 +1848,10 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 	// Unused in ver 1.1. Still working on it :(
 	//Check_Pinned_Apps();
 	//system("pause");
+
+	//Load configuration:
+	Mona_Load_Configuration();
+
 	if (!ShowConsoleWindowOnStartup) {
 		//ShowWindow(GetConsoleWindow(), SW_HIDE);
 		if (PrintDebugInfo) {
@@ -1874,13 +1878,10 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 		return 1;
 	}
 
-	//Load configuration:
-	Mona_Load_Configuration();
-
 	//Welcome!
 	bool HideConsoleWindowSoon = false;
 	std::chrono::milliseconds ProgrmStartTime = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
-	printf("Windows11DragAndDropToTaskbarFix, ver. 1.2.0, created by Dr.MonaLisa.\n");
+	printf("Windows11DragAndDropToTaskbarFix, ver. 1.2.1, created by Dr.MonaLisa.\n");
 	printf("https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix\n\n");
 	printf("You can disable the console window. Please read the GitHub page to learn how to configure this program.\n");
 	if (!PrintDebugInfo) {
