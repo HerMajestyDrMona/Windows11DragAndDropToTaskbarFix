@@ -1,5 +1,15 @@
-# Change Log for Windows 11 Drag & Drop to the Taskbar (Partial Fix)
+# Change Log for Windows 11 Drag & Drop to the Taskbar (Fix)
 Don't read if you're sensitive to misspellings and grammatical errors.
+
+## [[ver. 1.2.0.0](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases/tag/v1.2.0.0-release)]  - 2021-10-18, 13:25 CET
+- Renamed the project from `Windows11DragAndDropToTaskbarPartialFix` to `Windows11DragAndDropToTaskbarFix`. For a good reason!
+- Changed the hotkeys working method from `Win+Number` to the advanced `Win+T` method.
+- Basically fixed all limitations. I'm not saying it's bug-free, but in my tests everything worked correctly:
+  - Multiple windows under the icon are now supported.
+  - Pinned apps with no active window will no longer start.
+  - And of course: support for all taskbar icons, not limited to 10.
+- Traditionally, the code contains a lot of new, unused functions from my tests. Before I found the `Win+T` method, I created some complicated stuff to simulate mouse cursor clicks and switching between windows. It can be vieved under function `Experimental_Workaround_for_buttons_Eleven_Plus()`.
+- And probably some other changes that I don't remember now.
 
 ## [[ver. 1.1.2.0](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarPartialFix/releases/tag/v1.1.2.0-release)]  - 2021-10-16, 19:00 CET
 - Fixed issue [#2](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarPartialFix/issues/2), runtime error: "The procedure entry point __std_tzdb_delete_leap_seconds could not be located in the dynamic link library...":
