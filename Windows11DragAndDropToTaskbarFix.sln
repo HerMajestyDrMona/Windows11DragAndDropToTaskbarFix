@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31727.386
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Windows11DragAndDropToTaskbarPartialFix", "Windows11DragAndDropToTaskbarPartialFix\Windows11DragAndDropToTaskbarPartialFix.vcxproj", "{CD9E41E3-70DF-40B1-AF3D-C5F47ABC98E5}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Windows11DragAndDropToTaskbarFix", "Windows11DragAndDropToTaskbarFix\Windows11DragAndDropToTaskbarFix.vcxproj", "{CD9E41E3-70DF-40B1-AF3D-C5F47ABC98E5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
