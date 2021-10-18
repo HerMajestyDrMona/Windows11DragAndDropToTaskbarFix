@@ -12,7 +12,7 @@ Windows11DragAndDropToTaskbarFix works with the new Windows 11 taskbar and does 
 
 ### **How Does It Work?**
 
-The program detects if you're currently pressing the left mouse button and determines which icon on the taskbar you hover the mouse pointer on. If the cursor stays in the same area for X milliseconds - it simulates the `Win+Ctrl+Number` hotkey (open the desktop and switch to the last active window of the app pinned to the taskbar in the position indicated by the number), in order to restore the intended window. It also supports dropping files to the "Show desktop" button (bottom-right of the screen). The program supports auto startup and has many configuration options (please read below).
+The program detects if you're currently pressing the left mouse button and determines which icon on the taskbar you hover the mouse pointer on. If the cursor stays in the same area for definied number of milliseconds - it simulates the `Win+T` hotkey and arrow keys in order to restore the intended window, using a quite complicated method. It also supports dropping files to the "Show desktop" button (bottom-right of the screen). The program supports auto startup and has many configuration options (please read below).
 
 ### **Limitations**
 
