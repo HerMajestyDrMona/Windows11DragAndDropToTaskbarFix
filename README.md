@@ -72,3 +72,7 @@ If you have any idea how to improve this program, or if you found a different me
 ### **Code Quality**
 
 It's not beautiful, but it works. I also believe that the optimization is good by the dynamic thread sleep times. Please feel free to issue pull requests to improve it. The software will for sure be updated by me, I just wanted to share it with people as soon as possible. Microsoft seems to do the same thing with their Operating System :)
+
+### **Donation?**
+
+If you love this software so much that you would like to buy me a cola, pizza, or anything else - you can make a donation using the button available on my other project's website: [Click here](https://ee2.eu/overview/#donate). Please don't forget to mention in the donation message that it's for this fix :)
