@@ -56,7 +56,7 @@ HowLongSleepAfterAutoOpenFirstWindowMilliseconds=100
 
 //Timeout (in milliseconds) after which the program interrupts the loop where it's detecting for the preview
 //window changes. It's to avoid opening pinned apps with no active window. It can be a greater value, because
-//it's a non-blocking loop which usually breaks much quicker.
+//it's a non-blocking loop which usually breaks much quicker. Only used in the new "BestMethodEver"
 PreviewWindowChangeDetectionMaxMilliseconds=1000
 
 //For how long (in milliseconds) should the left mouse button be clicked before
@@ -77,6 +77,8 @@ DefaultShowDesktopButtonWidth=20
 ```
 
 When you modify the `Windows11DragAndDropToTaskbarFixConfig.txt`, the program will ask you to automatically restart itself. So you don't need to go to the Task Manager each time you want to test something.
+
+Please note that I'll update the configuration details when I have more time for minor tweaks like this.
 
 ### **New Ideas Are Welcome**
 
