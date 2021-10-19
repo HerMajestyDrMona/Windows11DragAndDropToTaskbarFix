@@ -1202,6 +1202,7 @@ static LRESULT CALLBACK LowLevelMousePressProc(int nCode, WPARAM wParam, LPARAM 
 		else if (wParam == WM_LBUTTONUP)
 		{
 			LeftButtonPressedATM = false;
+			//std::wcout << L"WM_LBUTTONUP was called" << endl;
 		}
 	}
 	return CallNextHookEx(HandleLowLevelMousePressProc, nCode, wParam, lParam);
@@ -1708,7 +1709,7 @@ void Finally_The_Best_Method_Ever(int ButtonID, int AllButtonsNumber) {
 	}
 
 	if (PrintDebugInfo) {
-		std::wcout << L"SameUniqueDragSession: " << SameUniqueDragSession << L" Window:" << CurrentForegroundWindow << endl;
+		std::wcout << L"SameUniqueDragSession True/False: " << SameUniqueDragSession << L" Window:" << CurrentForegroundWindow << endl;
 	}
 
 	Previous_UniqueID_of_the_click_Best_Method_Ever = Current_UniqueID_of_the_click;
@@ -1758,6 +1759,11 @@ void Finally_The_Best_Method_Ever(int ButtonID, int AllButtonsNumber) {
 	if (ArrowsMethod) {
 		//We need to use arrows instead
 		if (RealNumberToClick > 0) {
+
+			//Hotfix ver. 1.3.1, set focus to hWndTray to fix Task Manager causing hotkey not activating issues.
+			SetForegroundWindow(hWndTray);
+			SetActiveWindow(hWndTray);
+			SetFocus(hWndTray);
 
 			//Unfortunately, WM_HOTKEY is not so perfect. Buggy when switching to window and back to taskbar without dropping.
 			/*LRESULT SendMessageReturn;
@@ -2151,7 +2157,7 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 	//Welcome!
 	bool HideConsoleWindowSoon = false;
 	std::chrono::milliseconds ProgrmStartTime = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
-	printf("Windows11DragAndDropToTaskbarFix, ver. 1.3.0, created by Dr.MonaLisa.\n");
+	printf("Windows11DragAndDropToTaskbarFix, ver. 1.3.1, created by Dr.MonaLisa.\n");
 	printf("https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix\n\n");
 	printf("You can disable the console window. Please read the GitHub page to learn how to configure this program.\n");
 	if (!PrintDebugInfo) {
@@ -2230,7 +2236,7 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 		}
 		else {
 			if (PrintDebugInfo) {
-				std::cout << "Left Mouse Button is pressed. Detecting for how long...\n";
+				std::cout << "Left Mouse Button is pressed (SessionID: " << Current_UniqueID_of_the_click << "). Detecting for how long...\n";
 			}
 			if (!CurrentlyLeftMouseButtonIsPressed) {
 				//FirstTimeClickedLeftMouseButton = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
