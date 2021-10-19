@@ -54,9 +54,9 @@ HowLongSleepBetweenTheSameKeysPressMilliseconds=0
 //Sleep time (in milliseconds) after opening the first window under the icon in the new "BestMethodEver"
 HowLongSleepAfterAutoOpenFirstWindowMilliseconds=100
 
-//Timeout (in milliseconds) after which the program interrupts the loop where it's detecting for the preview
-//window changes. It's to avoid opening pinned apps with no active window. It can be a greater value, because
-//it's a non-blocking loop which usually breaks much quicker. Only used in the new "BestMethodEver"
+//Timeout (in milliseconds) after which the program interrupts the loop where it's detecting for the
+//preview window changes. It's to avoid opening pinned apps with no active window. It can be a greater
+//value, becauseit's a non-blocking loop which usually breaks much quicker. Only for "BestMethodEver".
 PreviewWindowChangeDetectionMaxMilliseconds=1000
 
 //For how long (in milliseconds) should the left mouse button be clicked before
