@@ -1,6 +1,14 @@
 ## **Custom Configuration**
 
-Since version 1.1 it's possible to configure the program by creating a configuration file at the same location as `Windows11DragAndDropToTaskbarFix.exe`. The configuration file should be named: `Windows11DragAndDropToTaskbarFixConfig.txt` and may contain the following variables:
+Since version 1.1 it's possible to configure the program by creating a configuration file at the same location as `Windows11DragAndDropToTaskbarFix.exe`. The configuration file should be named: `Windows11DragAndDropToTaskbarFixConfig.txt`.
+
+When you modify `Windows11DragAndDropToTaskbarFixConfig.txt`, the program will ask you to automatically restart itself. So you don't need to go to the Task Manager each time you want to test something.
+
+Please remember to restore the default configuration (by deleting your modifications) after you update the program. 
+
+I'll update the configuration details when I have more time to focus on minor tweaks like this.
+
+You can include the following variables to your `Windows11DragAndDropToTaskbarFixConfig.txt` file:
 
 ```
 //Should the program run automatically on system startup? 1 = true, 0 = false.
@@ -50,6 +58,4 @@ DefaultTaskbarIconHeight=48
 DefaultShowDesktopButtonWidth=20
 ```
 
-When you modify the `Windows11DragAndDropToTaskbarFixConfig.txt`, the program will ask you to automatically restart itself. So you don't need to go to the Task Manager each time you want to test something.
 
-Please note that I'll update the configuration details when I have more time for minor tweaks like this.
