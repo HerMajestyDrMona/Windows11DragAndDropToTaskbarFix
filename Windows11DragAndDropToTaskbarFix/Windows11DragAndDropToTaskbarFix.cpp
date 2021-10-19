@@ -14,6 +14,7 @@
 #include <shlwapi.h>
 #include <regex>
 #include <thread>
+#include <ole2.h>
 
 #pragma comment(lib, "Shlwapi.lib")
 #pragma comment( linker, "/subsystem:windows" )
@@ -21,13 +22,19 @@ using namespace std;
 using namespace std::chrono;
 namespace fs = std::filesystem;
 
+#define DONT_INCLUDE_UNUSED_FUNCTIONS_TO_PREVENT_PSEUDO_ANTIVIRUSES_FROM_THROWING_FALSE_POSITIVES 1
+
 //Basic configuration:
 bool AutomaticallyRunThisProgramOnStartup = true;
 bool ShowConsoleWindowOnStartup = true;
 bool PrintDebugInfo = false;
 bool UseTheNewBestMethodEver = true;
+bool AutoOpenFirstWindowInBestMethodEver = true;
 int HowLongSleepBetweenDifferentKeysPressMilliseconds = 10;
 int HowLongSleepBetweenTheSameKeysPressMilliseconds = 0;
+int HowLongSleepAfterAutoOpenFirstWindowMilliseconds = 100;
+int PreviewWindowChangeDetectionMaxMilliseconds = 1000;//Keep it higher. It's non-blocking time.
+
 int HowLongLeftMouseButtonPressedBeforeContinueMilliseconds = 750;
 int HowLongKeepMouseOverAppIconBeforeRestoringWindowMilliseconds = 200;//750 before.
 int DefaultSleepPeriodInTheLoopMilliseconds = 100;
@@ -37,10 +44,11 @@ int DefaultTaskbarIconWidth = 44;
 int DefaultTaskbarIconHeight = 48;
 int DefaultShowDesktopButtonWidth = 20;
 
-//Unused (or actually can be used), but not important
+//Unused (or actually can be used), but not important. Warning, some functions are not longer included in the release
 bool UseTheNewWMHOTKEYMethod = true;//Not that reliable method as I thought
 bool UseTheNewWorkaroundForButtonsElevenPlus = false;//Not needed. Wasted time on it :(
 bool CheckIfPinnedAppsWindowsAreVisible = false;//Not needed. Wasted time on it :(
+bool DetectIfFileIsCurrentlyDraggedUsingClipboard = true;//Not working for now
 int CheckForNewActiveWindowForButtonsElevenPlusMilliseconds = 2500;//Unused by default
 int SleepTimeButtonsElevenPlusMilliseconds = 5;//Unused by default
 int AnimationLagButtonsElevenPlusMilliseconds = 100;//Unused by default
@@ -464,6 +472,22 @@ void Mona_Load_Configuration() {
 					}
 				}
 
+				TmpValueFromNewConfigGetIntFunction = NewConfigGetIntValueAfter(line, "HowLongSleepAfterAutoOpenFirstWindowMilliseconds");
+				if (TmpValueFromNewConfigGetIntFunction != -696969) {
+					if (TmpValueFromNewConfigGetIntFunction > -1) {//For performance purposes disallow 0s for now.
+						HowLongSleepAfterAutoOpenFirstWindowMilliseconds = static_cast<int>(TmpValueFromNewConfigGetIntFunction);
+						continue;
+					}
+				}
+
+				TmpValueFromNewConfigGetIntFunction = NewConfigGetIntValueAfter(line, "PreviewWindowChangeDetectionMaxMilliseconds");
+				if (TmpValueFromNewConfigGetIntFunction != -696969) {
+					if (TmpValueFromNewConfigGetIntFunction > 0) {//For performance purposes disallow 0s for now.
+						PreviewWindowChangeDetectionMaxMilliseconds = static_cast<int>(TmpValueFromNewConfigGetIntFunction);
+						continue;
+					}
+				}
+
 				TmpValueFromNewConfigGetIntFunction = NewConfigGetIntValueAfter(line, "HowLongSleepBetweenDifferentKeysPressMilliseconds");
 				if (TmpValueFromNewConfigGetIntFunction != -696969) {
 					if (TmpValueFromNewConfigGetIntFunction > -1) {//For performance purposes disallow 0s for now.
@@ -519,6 +543,7 @@ std::time_t ReturnConfigFileTime() {
 	return 0;
 }
 
+#ifndef DONT_INCLUDE_UNUSED_FUNCTIONS_TO_PREVENT_PSEUDO_ANTIVIRUSES_FROM_THROWING_FALSE_POSITIVES
 
 // https://docs.microsoft.com/en-us/windows/win32/shell/links?redirectedfrom=MSDN
 
@@ -829,6 +854,8 @@ void Check_if_any_window_from_these_PIDs_is_open() {
 	}
 }
 
+#endif
+
 bool RegistryGetStringValue(std::wstring &valueBuf, HKEY MainKey, const std::wstring& regSubKey, const std::wstring& regValue)
 {
 	size_t bufferSize = 0xFFF; // If too small, will be resized down below.
@@ -994,6 +1021,7 @@ void Check_And_Set_Auto_Program_Startup() {
 }
 
 
+#ifndef DONT_INCLUDE_UNUSED_FUNCTIONS_TO_PREVENT_PSEUDO_ANTIVIRUSES_FROM_THROWING_FALSE_POSITIVES
 size_t LastBufferSize = 0;
 
 std::wstring GetBinaryValueFromHKCU(const std::wstring& regSubKey, const std::wstring& regValue)
@@ -1144,6 +1172,8 @@ void Check_Pinned_Apps() {
 	}
 }
 
+#endif
+
 HHOOK HandleLowLevelMousePressProc;
 bool LeftButtonPressedATM = false;
 std::chrono::milliseconds LastTimeClickedLeftMouseButton = std::chrono::milliseconds(0);
@@ -1214,6 +1244,7 @@ HWND hWndTrayNotify = 0;
 HWND hWndRebar = 0;
 HWND hWndMSTaskSwWClass = 0;
 HWND hWndWindowForShowDesktopArea = 0;
+HWND TaskListThumbnailWnd = 0;
 RECT desktop;
 HWND hDesktop = 0;
 int ShowDesktopStartPosition = 0;
@@ -1236,7 +1267,14 @@ long long Previous_UniqueID_of_the_click_Best_Method_Ever = -1;
 int Previous_Button_Number = -1;
 HWND PreviousForegroundWindow;
 
+int JustClickedEnterForBestMethodEver = 0;
+RECT rectPreviousTaskListThumbnailWnd;
+bool PreviousTaskListThumbnailWndVisible = false;
+
+//Hmm, we might need to optimize it in the future. Quite pointless to reset it every time left mouse button is unclicked.
 void ResetTmpVariables() {
+	JustClickedEnterForBestMethodEver = 0;
+	PreviousTaskListThumbnailWndVisible = false;
 	Previous_UniqueID_of_the_click_Best_Method_Ever = -1;
 	Previous_Button_Number = -1;
 	PreviousHoveredMouseAppID = -1;
@@ -1303,6 +1341,8 @@ void Simulate_ALT_Plus_TAB_Hotkey(int SleepFor = 50) {
 	keybd_event(VK_TAB, MapVirtualKey(VK_TAB, 0), KEYEVENTF_KEYUP, 0); //Release TAB
 	keybd_event(VK_MENU, MapVirtualKey(VK_MENU, 0), KEYEVENTF_KEYUP, 0); //Release ALT
 }
+
+#ifndef DONT_INCLUDE_UNUSED_FUNCTIONS_TO_PREVENT_PSEUDO_ANTIVIRUSES_FROM_THROWING_FALSE_POSITIVES
 
 HWND Wait_For_The_New_Active_Window(HWND &ActiveWindowBeforeClickingOnAppIcon, wstring DebugStep) {
 
@@ -1610,6 +1650,9 @@ void Experimental_Workaround_for_buttons_Eleven_Plus() {
 	LLMP_Temporarily_Dont_Update_UniqueID = false;
 }
 
+#endif
+
+
 void Finally_The_Best_Method_Ever(int ButtonID, int AllButtonsNumber) {
 	HWND CurrentForegroundWindow = GetForegroundWindow();
 
@@ -1618,6 +1661,20 @@ void Finally_The_Best_Method_Ever(int ButtonID, int AllButtonsNumber) {
 		if (CurrentForegroundWindow == PreviousForegroundWindow) {
 			SameUniqueDragSession = true;
 		}
+		else if (AutoOpenFirstWindowInBestMethodEver) {
+			if (JustClickedEnterForBestMethodEver > 0) {
+				JustClickedEnterForBestMethodEver++;
+			}
+			if (JustClickedEnterForBestMethodEver > 1) {
+				//No
+			}
+		}
+		else {
+			JustClickedEnterForBestMethodEver = 0;
+		}
+	}
+	else {
+		JustClickedEnterForBestMethodEver = 0;
 	}
 
 	//Hotfix to not spam the same hotkeys on selected icon
@@ -1625,6 +1682,21 @@ void Finally_The_Best_Method_Ever(int ButtonID, int AllButtonsNumber) {
 		if (PreviousForegroundWindow == hWndTray && CurrentForegroundWindow == hWndTray) {
 			//std::wcout << "Returning to prevent hotkeys spam..." << endl;
 			return;
+		}
+		else if (AutoOpenFirstWindowInBestMethodEver) {
+			if (JustClickedEnterForBestMethodEver > 2) {
+				//std::wcout << "Returning to prevent hotkeys spam after ENTER was clicked..." << endl;
+				return;
+			}
+			else if (JustClickedEnterForBestMethodEver > 0) {
+				//Sleep after the previous call, because it just pressed enter, and we didn't want to block that function cus buttons could change.
+				//Also IsWindowVisible check would return incorrect value because animation had no time to disappear.
+
+				//EDIT. It can't be in the new call, unfortunately. When button changes and mouse quickly moved to an inactive app icon, it would open it:
+				/*if (HowLongSleepAfterAutoOpenFirstWindowMilliseconds > 0) {
+					Sleep(HowLongSleepAfterAutoOpenFirstWindowMilliseconds);
+				}*/
+			}
 		}
 	}
 
@@ -1658,7 +1730,6 @@ void Finally_The_Best_Method_Ever(int ButtonID, int AllButtonsNumber) {
 			//Hotfix, it needs + 1;
 			RealNumberToClick = RealNumberToClick + 1;
 		}
-		Previous_Button_Number = ButtonID;
 	}
 	else {
 		RealNumberToClick = abs(Previous_Button_Number - ButtonID);
@@ -1673,7 +1744,6 @@ void Finally_The_Best_Method_Ever(int ButtonID, int AllButtonsNumber) {
 		else if (ButtonID < Previous_Button_Number) {
 			WithShift = true;
 		}
-		Previous_Button_Number = ButtonID;
 	}
 
 	PreviousForegroundWindow = CurrentForegroundWindow;
@@ -1768,6 +1838,117 @@ void Finally_The_Best_Method_Ever(int ButtonID, int AllButtonsNumber) {
 					Sleep(HowLongSleepBetweenTheSameKeysPressMilliseconds);
 				}
 			}
+
+			//ver 1.3.0
+
+			if (AutoOpenFirstWindowInBestMethodEver) {
+				//This way we still get the preview window of active apps
+				if (Previous_Button_Number != ButtonID) {
+						//Sleep to make sure arrow arrive at the location.
+						if (HowLongSleepBetweenDifferentKeysPressMilliseconds > 0) {
+							Sleep(HowLongSleepBetweenDifferentKeysPressMilliseconds);
+						}
+
+						keybd_event(VK_UP, MapVirtualKey(VK_UP, 0), 0, 0);
+						if (HowLongSleepBetweenTheSameKeysPressMilliseconds) {
+							Sleep(HowLongSleepBetweenTheSameKeysPressMilliseconds);
+						}
+						keybd_event(VK_UP, MapVirtualKey(VK_UP, 0), KEYEVENTF_KEYUP, 0);
+						if (HowLongSleepBetweenTheSameKeysPressMilliseconds) {
+							Sleep(HowLongSleepBetweenTheSameKeysPressMilliseconds);
+						}
+
+						//Press UP second time (just in case):
+						keybd_event(VK_UP, MapVirtualKey(VK_UP, 0), 0, 0);
+						if (HowLongSleepBetweenTheSameKeysPressMilliseconds) {
+							Sleep(HowLongSleepBetweenTheSameKeysPressMilliseconds);
+						}
+						keybd_event(VK_UP, MapVirtualKey(VK_UP, 0), KEYEVENTF_KEYUP, 0);
+
+						//Sleep to make sure arrow arrives at the location. should be before IsWindowVisible!
+						if (HowLongSleepBetweenDifferentKeysPressMilliseconds > 0) {
+							Sleep(HowLongSleepBetweenDifferentKeysPressMilliseconds);
+						}
+						
+						RECT rectAtTheMoment;
+
+						//Loop to make sure rect change:
+						//std::chrono::milliseconds SleepFor(SleepTimeButtonsElevenPlusMilliseconds);
+						std::chrono::milliseconds SleepFor(5);
+						std::chrono::milliseconds StartedTheLoopAt = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
+						long long int StartedTheLoopAtCountPlus = StartedTheLoopAt.count() + PreviewWindowChangeDetectionMaxMilliseconds;
+
+						//Yeah, get it in case loop is skipped
+						GetWindowRect(TaskListThumbnailWnd, &rectAtTheMoment);
+
+						if (PreviousTaskListThumbnailWndVisible) {
+							while (IsWindowVisible(TaskListThumbnailWnd)) {
+								std::chrono::milliseconds TimeAtTheLoopNow = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
+								GetWindowRect(TaskListThumbnailWnd, &rectAtTheMoment);
+								if (rectAtTheMoment.left != rectPreviousTaskListThumbnailWnd.left) {
+									if (PrintDebugInfo) {
+										std::wcout << L"Detected TaskListThumbnailWnd rect change. Interrupting the loop. Before: " << rectPreviousTaskListThumbnailWnd.left << ". After: " << rectAtTheMoment.left << endl;
+									}
+									break;
+								}
+								if (TimeAtTheLoopNow.count() >= StartedTheLoopAtCountPlus) {
+									if (PrintDebugInfo) {
+										long long int Difference = TimeAtTheLoopNow.count() - StartedTheLoopAt.count();
+										std::wcout << L"The IsWindowVisible() loop timeouted after: " << Difference << L" ms." << endl;
+									}
+									break;
+								}
+								std::this_thread::sleep_for(SleepFor);
+							}
+						}
+
+						rectPreviousTaskListThumbnailWnd = rectAtTheMoment;
+						PreviousTaskListThumbnailWndVisible = IsWindowVisible(TaskListThumbnailWnd);
+						if (PrintDebugInfo) {
+							std::cout << "TaskListThumbnailWnd Rect: " << rectAtTheMoment.left << ":" << rectAtTheMoment.right << ":" << rectAtTheMoment.bottom << ":" << rectAtTheMoment.top << ". Window visible bool: " << PreviousTaskListThumbnailWndVisible << "\n";
+						}
+
+						if (IsWindowVisible(TaskListThumbnailWnd)) {
+
+						//Longer sleep
+						if (HowLongSleepBetweenDifferentKeysPressMilliseconds > 0) {
+							Sleep(HowLongSleepBetweenDifferentKeysPressMilliseconds);
+						}
+
+						//Hotfix to prevent hotkeys spam
+						JustClickedEnterForBestMethodEver = 1;
+
+						if (PrintDebugInfo) {
+							std::wcout << L"TaskListThumbnailWnd is visible. Simulating ENTER key..." << endl;
+						}
+
+						//Simulate the Space key. It then only opens the active window, not starting apps!!!
+						keybd_event(VK_RETURN, MapVirtualKey(VK_RETURN, 0), 0, 0);
+						if (HowLongSleepBetweenTheSameKeysPressMilliseconds) {
+							Sleep(HowLongSleepBetweenTheSameKeysPressMilliseconds);
+						}
+						keybd_event(VK_RETURN, MapVirtualKey(VK_RETURN, 0), KEYEVENTF_KEYUP, 0);
+						
+
+						//We still need some sleep here, but different than window rect change detection look:
+						if (HowLongSleepAfterAutoOpenFirstWindowMilliseconds > 0) {
+							Sleep(HowLongSleepAfterAutoOpenFirstWindowMilliseconds);
+						}
+					}
+
+					else {
+						if (PrintDebugInfo) {
+							std::wcout << L"TaskListThumbnailWnd is INVISIBLE. Skipping..." << endl;
+						}
+					}
+
+					//Longer sleep again to prevent new keys simulation when window is getting restored
+					//No, we must move it to above call
+				}
+				else {
+					std::wcout << L"Button is the same so skipping ENTER." << endl;
+				}
+			}
 		}
 
 		/*for (int iii = 0; iii < RealNumberToClick; iii++) {
@@ -1821,12 +2002,101 @@ void Finally_The_Best_Method_Ever(int ButtonID, int AllButtonsNumber) {
 		Sleep(1);
 		keybd_event(VK_UP, MapVirtualKey(VK_UP, 0), KEYEVENTF_KEYUP, 0); //Release Up*/
 	}
+	Previous_Button_Number = ButtonID;
 }
+
+#ifndef DONT_INCLUDE_UNUSED_FUNCTIONS_TO_PREVENT_PSEUDO_ANTIVIRUSES_FROM_THROWING_FALSE_POSITIVES
+long long int Unique_ID_of_Click_with_File_Dragged = -1;
+long long int Unique_ID_of_Click_with_File_NOT_Dragged = -1;
+
+bool Detect_if_Clipboard_Has_Dragged_File_Data() {
+	WORD m_cfHIDA = (CLIPFORMAT)RegisterClipboardFormat(CFSTR_SHELLIDLIST);
+	std::wcout << L"Drag format should be: " << m_cfHIDA << endl;
+
+	LPDATAOBJECT lpDataObject;
+
+	HRESULT OleClipboard = OleGetClipboard(&lpDataObject);
+	if (OleClipboard == S_OK) {
+		LPENUMFORMATETC lpEnumFORMATETC;
+
+		if (lpDataObject->EnumFormatEtc(DATADIR_GET, &lpEnumFORMATETC) != S_OK) {
+			std::wcout << L"Failed to EnumFormatEtc" << endl;
+			Unique_ID_of_Click_with_File_NOT_Dragged = Current_UniqueID_of_the_click;
+			return false;
+		}
+		if (lpEnumFORMATETC == NULL) {
+			std::wcout << L"Error. lpEnumFORMATETC is NULL" << endl;
+			Unique_ID_of_Click_with_File_NOT_Dragged = Current_UniqueID_of_the_click;
+			return false;
+		}
+
+		FORMATETC formatEtc;
+
+		while (lpEnumFORMATETC->Next(1, &formatEtc, NULL) == S_OK)
+		{
+			//formatEtc
+			std::wcout << L"Format: " << formatEtc.cfFormat << endl;
+			//if (formatEtc.cfFormat == CFSTR_SHELLIDLIST) {
+
+			//}
+
+			STGMEDIUM stgMedium;
+			if (lpDataObject->GetData(&formatEtc, &stgMedium) != S_OK)
+			{
+				// data is not available
+				CoTaskMemFree(formatEtc.ptd);
+			}
+			else if (stgMedium.pUnkForRelease != NULL)
+			{
+				// don't cache data with pUnkForRelease != NULL
+				::ReleaseStgMedium(&stgMedium);
+				CoTaskMemFree(formatEtc.ptd);
+			}
+			else
+			{
+				//std::wcout << L"Filename: " << stgMedium.hGlobal << endl;
+
+				// cache the data (now we own the stgMedium)
+				//pDataSource->CacheData(0, &stgMedium, &formatEtc);
+			}
+		}
+
+		std::wcout << L"Done" << endl;
+
+		// cleanup
+		lpEnumFORMATETC->Release();
+
+	}
+	else {
+		//No need.
+	}
+
+	return false;
+}
+
+void TestCall() {
+	AllocConsole();
+	FILE* fDummy;
+	freopen_s(&fDummy, "CONIN$", "r", stdin);
+	freopen_s(&fDummy, "CONOUT$", "w", stderr);
+	freopen_s(&fDummy, "CONOUT$", "w", stdout);
+
+	while (true) {
+		Detect_if_Clipboard_Has_Dragged_File_Data();
+		Sleep(3000);
+	}
+}
+
+#endif
 
 int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nShowCmd)
 {
 	//Important to make reading .lnk possible:s
 	HRESULT hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
+
+	//TestCall();
+	//system("pause");
+	//exit(0);
 
 	//NewTests();
 	//system("pause");
@@ -1881,7 +2151,7 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 	//Welcome!
 	bool HideConsoleWindowSoon = false;
 	std::chrono::milliseconds ProgrmStartTime = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
-	printf("Windows11DragAndDropToTaskbarFix, ver. 1.2.1, created by Dr.MonaLisa.\n");
+	printf("Windows11DragAndDropToTaskbarFix, ver. 1.3.0, created by Dr.MonaLisa.\n");
 	printf("https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix\n\n");
 	printf("You can disable the console window. Please read the GitHub page to learn how to configure this program.\n");
 	if (!PrintDebugInfo) {
@@ -2012,6 +2282,9 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 						hWndMSTaskSwWClass = 0;
 					}
 
+					//Find a window that should be invisible when app has no active window!
+					TaskListThumbnailWnd = FindWindowEx(NULL, 0, L"TaskListThumbnailWnd", nullptr);
+
 					//1.1 fix, actually not needed, it uses hWndTrayNotify HWND.
 					/*if (hWndTrayNotify) {
 						hWndWindowForShowDesktopArea = FindWindowEx(hWndTrayNotify, 0, L"Windows.UI.Composition.DesktopWindowContentBridge", nullptr);
@@ -2074,6 +2347,15 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 							continue;
 						}
 
+						/*if (DetectIfFileIsCurrentlyDraggedUsingClipboard && !Detect_if_Clipboard_Has_Dragged_File_Data()) {
+							//Check if currently file is being dragged using clipboard
+							if (PrintDebugInfo) {
+								std::cout << "No dragged file data type in the clipboard, so skipping.\n";
+							}
+							Sleep(SleepPeriodNow);
+							continue;
+						}*/
+
 						if (PrintDebugInfo) {
 							std::cout << "Client Mouse position. X:" << P_Client.x << " Y: " << P_Client.y << "\n";
 						}
@@ -2101,6 +2383,7 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 								FirstTimeHoveredOverThisAppIcon = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
 							}
 
+							//No need for long long it here I guess :D
 							int HowLongOverThisIconCount = TimeNow.count() - FirstTimeHoveredOverThisAppIcon.count();
 
 							if (PrintDebugInfo) {
@@ -2175,11 +2458,14 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 											std::cout << "Simulating Logo Win + " << CurrentAppIconPlusOne << " key\n";
 										}
 									}
+
+									#ifndef DONT_INCLUDE_UNUSED_FUNCTIONS_TO_PREVENT_PSEUDO_ANTIVIRUSES_FROM_THROWING_FALSE_POSITIVES
 									else if (CurrentAppIcon > 9) {
 										if (UseTheNewWorkaroundForButtonsElevenPlus) {
 											Experimental_Workaround_for_buttons_Eleven_Plus();
 										}
 									}
+									#endif
 									else {
 										if (PrintDebugInfo) {
 											std::cout << "Unfortunately, can't restore the window because App icon ID is greater than 10 :(\n";
