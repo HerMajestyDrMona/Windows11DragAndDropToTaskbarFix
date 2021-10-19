@@ -10,25 +10,25 @@ Windows11DragAndDropToTaskbarFix works with the new Windows 11 taskbar and does 
 
 [View the source code (Windows11DragAndDropToTaskbarFix.cpp)](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/blob/main/Windows11DragAndDropToTaskbarFix/Windows11DragAndDropToTaskbarFix.cpp)
 
-### **How Does It Work?**
+## **How Does It Work?**
 
 The program detects if you're currently pressing the left mouse button and determines which icon on the taskbar you hover the mouse pointer on. If the cursor stays in the same area for definied number of milliseconds - it simulates the `Win+T` hotkey and arrow keys in order to restore the intended window, using a quite complicated method. It also supports dropping files to the "Show desktop" button (bottom-right of the screen). The program supports auto startup and has many configuration options (please read below).
 
-### **Limitations**
+## **Limitations**
 - The program does not support pinning apps to the taskbar using the drag and drop gesture, and this feature is currently not planned. However, you still can pin apps to the taskbar by clicking on their icons with the right mouse button, and then "Pin to taskbar" from the list.
 
 - I'm not aware of any serious limitations in the current version. Please check [#issues](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues)
 
-### **Antiviruses and False Positives**
+## **Antiviruses and False Positives**
 It was reported that some antivirus programs are flagging Windows11DragAndDropToTaskbarFix as malicious. This is most likely caused by [version 1.1.2.0](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/blob/main/CHANGELOG.md#ver-1120----2021-10-16-1900-cet) change. The program was compiled as the static version of the run-time library (MT) in order to prevent runtime errors caused by C++ 20 standard. Possibly part of the static runtime code (which is now included in the executable) has some similar signature to the other detected threats. Besides that, the program is an advanced workaround which simulates user input (hotkeys simulation), switches windows, etc. All these things are not something commonly used by other programs, right? It's an open-source project, so you can verify the code and then compile yourself.
 
-### **How to Start or Quit the Program?**
+## **How to Start or Quit the Program?**
 
 To use the fix, please simply download the binary file above (or compile it yourself) and **start it as any other program**. It works as an independent C++ process. It does not change any registry keys (with the exception of the autostart key for itself) and does not inject any DLLs to other processes.
 
 To quit this program, please **simply kill** `Windows11DragAndDropToTaskbarFix.exe` or `Windows 11 Drag & Drop to the Taskbar (Fix)` **by the Task Manager**.
 
-### **Custom Configuration (Optional)**
+## **Custom Configuration (Optional)**
 Since version 1.1 it's possible to configure the program by creating a configuration file at the same location as `Windows11DragAndDropToTaskbarFix.exe`. The configuration file should be named: `Windows11DragAndDropToTaskbarFixConfig.txt`.
 
 Please read a separate article: [CONFIGURATION](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/blob/main/CONFIGURATION.md) for details.
