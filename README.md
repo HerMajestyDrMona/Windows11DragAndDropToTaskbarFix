@@ -25,7 +25,7 @@ To use the fix, please simply download the binary file above (or compile it your
 
 To quit this program, please **simply kill** `Windows11DragAndDropToTaskbarFix.exe` or `Windows 11 Drag & Drop to the Taskbar (Fix)` **by the Task Manager**.
 
-### **Configuration**
+### **Custom Configuration (Optional)**
 Since version 1.1 it's possible to configure the program by creating a configuration file at the same location as `Windows11DragAndDropToTaskbarFix.exe`. The configuration file should be named: `Windows11DragAndDropToTaskbarFixConfig.txt` and may contain the following variables:
 
 ```
