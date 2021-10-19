@@ -41,11 +41,23 @@ PrintDebugInfo=0
 //Should the program use ver. 1.2.0 improvements that remove all previous limitations? 1 = true, 0 = false.
 UseTheNewBestMethodEver=1
 
+//Available since ver. 1.3. Should the program automatically open the first active window under the cursor,
+//except pinned apps with no active window? 1 = true, 0 = false.
+AutoOpenFirstWindowInBestMethodEver=1
+
 //Sleep time (in milliseconds) between simulating different keys in the new "BestMethodEver"
 HowLongSleepBetweenDifferentKeysPressMilliseconds=10
 
 //Sleep time (in milliseconds) between simulating the same keys in the new "BestMethodEver" 
 HowLongSleepBetweenTheSameKeysPressMilliseconds=0
+
+//Sleep time (in milliseconds) after opening the first window under the icon in the new "BestMethodEver"
+HowLongSleepAfterAutoOpenFirstWindowMilliseconds=100
+
+//Timeout (in milliseconds) after which the program interrupts the loop where it's detecting for the preview
+//window changes. It's to avoid opening pinned apps with no active window. It can be a greater value, because
+//it's a non-blocking loop which usually breaks much quicker.
+PreviewWindowChangeDetectionMaxMilliseconds=1000
 
 //For how long (in milliseconds) should the left mouse button be clicked before
 //the program starts checking if the mouse is hovering over the task bar.
