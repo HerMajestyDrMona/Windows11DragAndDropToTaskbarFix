@@ -1,6 +1,9 @@
 # Change Log for Windows 11 Drag & Drop to the Taskbar (Fix)
 Don't read if you're sensitive to misspellings and grammatical errors.
 
+## [[ver. 1.3.0.0](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases/tag/v1.3.1.0-release)]  - 2021-10-19, 13:00 CET
+- Fixed an issue where in certain circumstances hotkeys stopped working after restoring the first preview window. For example, the Task Manager window was causing this problem. The fix sets the `Shell_TrayWnd` window as foreground, so hotkeys are activated correctly. It possibly fixes the different reported issues about incorrect position detection.
+
 ## [[ver. 1.3.0.0](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases/tag/v1.3.0.0-release)]  - 2021-10-19, 08:30 CET
 - Added a new option (enabled by default) `AutoOpenFirstWindowInBestMethodEver=1`:
   - It restores the first window under the hovered app icon, then shows the list of windows again. Works for all icons on the taskbar (not limited to 10).
