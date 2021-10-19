@@ -1,8 +1,17 @@
 # Change Log for Windows 11 Drag & Drop to the Taskbar (Fix)
 Don't read if you're sensitive to misspellings and grammatical errors.
 
+## [[ver. 1.3.0.0](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases/tag/v1.3.0.0-release)]  - 2021-10-19, 08:30 CET
+- Added a new option (enabled by default) `AutoOpenFirstWindowInBestMethodEver=1`:
+  - It restores the first window under the hovered app icon, then shows the list of windows again. Works for all icons on the taskbar (not limited to 10).
+  - It uses the `ArrowUp` and `Enter` keys simulation to work.
+  - It correctly detects if the program under the icon has no window (pinned apps), using another "complicated" method.
+- Compiled without unused functions in the code, using `#define DONT_INCLUDE_UNUSED_FUNCTIONS_TO_PREVENT_PSEUDO_ANTIVIRUSES_FROM_THROWING_FALSE_POSITIVES`:
+  - Hopefully pseudo-Antiviruses like Kaspersky won't longer trigger false positives. Issue [#5](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/5).
+- If you use the configuration file, please remember to restore variables to default, before you test this version. Then tweak it again as you like.
+
 ## [[ver. 1.2.1.0](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases/tag/v1.2.1.0-release)]  - 2021-10-18, 15:00 CET
-- Fixed `ShowConsoleWindowOnStartup` configuration line not working. Issue [#4](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/4)
+- Fixed `ShowConsoleWindowOnStartup` configuration line not working. Issue [#4](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/4).
 
 ## [[ver. 1.2.0.0](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases/tag/v1.2.0.0-release)]  - 2021-10-18, 13:25 CET
 - Renamed the project from `Windows11DragAndDropToTaskbarPartialFix` to `Windows11DragAndDropToTaskbarFix`. For a good reason!
