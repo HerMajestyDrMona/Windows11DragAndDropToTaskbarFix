@@ -12,7 +12,7 @@ You can include the following variables to your `Windows11DragAndDropToTaskbarFi
 
 ```
 //Should the program run automatically on system startup? 1 = true, 0 = false.
-AutomaticallyRunThisProgramOnStartup=1
+AutomaticallyRunThisProgramOnStartup=0
 
 //Should the program show the console window when it starts? 1 = true, 0 = false.
 ShowConsoleWindowOnStartup=1
@@ -36,6 +36,9 @@ HowLongSleepBetweenTheSameKeysPressMilliseconds=0
 //Sleep time (in milliseconds) after opening the first window under the icon in the new "BestMethodEver"
 HowLongSleepAfterAutoOpenFirstWindowMilliseconds=100
 
+//Delay (in milliseconds) before opening the first window under the icon in the new "BestMethodEver"
+HowLongKeepMouseOverAppIconBeforeAutoOpeningMilliseconds=550
+
 //Timeout (in milliseconds) after which the program interrupts the loop where it's detecting for the
 //preview window changes. It's to avoid opening pinned apps with no active window. It can be a greater
 //value, becauseit's a non-blocking loop which usually breaks much quicker. Only for "BestMethodEver".
@@ -56,6 +59,7 @@ SleepPeriodWhenMouseIsOnAppIconInTheLoopMilliseconds=10
 DefaultTaskbarIconWidth=44
 DefaultTaskbarIconHeight=48
 DefaultShowDesktopButtonWidth=20
+ConfigFileChangeTimeMonitorAllowed=1
 ```
 
 
