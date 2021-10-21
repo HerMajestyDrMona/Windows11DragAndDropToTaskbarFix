@@ -1,6 +1,16 @@
 # Change Log for Windows 11 Drag & Drop to the Taskbar (Fix)
 Don't read if you're sensitive to misspellings and grammatical errors.
 
+## [[ver. 1.4.0.0](x)]  - 2021-10-21, 13:00 CET
+- Disabled `AutomaticallyRunThisProgramOnStartup` by default. Users can enable it manually, by following the: [CONFIGURATION](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/blob/main/CONFIGURATION.md).
+  - It seem to be the main reason of false-positives, according to [Virustotal](https://www.virustotal.com/gui/file/74952aae4d95b7a4ff8a295df61dd1a0591746df2bcf57eab04fe168b3845f54).
+- Added a new option: `HowLongKeepMouseOverAppIconBeforeAutoOpeningMilliseconds`. Thanks to this, when `AutoOpenFirstWindowInBestMethodEver` is enabled (default), the program will wait before auto opening the first window. It prevents accidental opening of all windows when just moving the cursor with dragged file to the next icon on the taskbar.
+- Configuration file: fixed an issue where variables containing a number of milliseconds were not loaded by the program. It's because the function `is_number()` was called with a string containing new line characters, therefore always returning false.
+- Compiled the program with Multi-threaded DLL Runtime Library (MD).
+  - It reverts the change made in version 1.1.2.0, so executables should have smaller size again.
+  - The runtime error: "The procedure entry point __std_tzdb_delete_leap_seconds could not be located in the dynamic link library..." has been fixed by replacing the code which used C++20 standard.
+- Added some minor optimizations, but the full optimization will be done in the future.
+
 ## [[ver. 1.3.1.0](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases/tag/v1.3.1.0-release)]  - 2021-10-19, 13:00 CET
 - Fixed an issue where in certain circumstances hotkeys stopped working after restoring the first preview window. For example, the Task Manager window was causing this problem. The fix sets the `Shell_TrayWnd` window as foreground, so hotkeys are activated correctly. It possibly fixes the different reported issues about incorrect position detection.
 
