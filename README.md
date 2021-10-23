@@ -4,11 +4,11 @@ This program fixes the missing "Drag & Drop to the Taskbar" support in Windows 1
 
 Windows11DragAndDropToTaskbarFix works with the new Windows 11 taskbar and does not require nasty changes like `UndockingDisabled` or restoration of the `classic taskbar`. It doesn't change any system registry keys (except autostart for itself when manually configured) and does not inject any DLLs to other processes, so it's a very portable solution.
 
-[Download Binary (Windows11DragAndDropToTaskbarFix.exe)](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases/)
+## [Download Binary (Windows11DragAndDropToTaskbarFix.exe)](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases/)
 
-[Read the Changelog](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/blob/main/CHANGELOG.md)
+## [Read the Changelog](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/blob/main/CHANGELOG.md)
 
-[View the source code (Windows11DragAndDropToTaskbarFix.cpp)](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/blob/main/Windows11DragAndDropToTaskbarFix/Windows11DragAndDropToTaskbarFix.cpp)
+## [View the source code (Windows11DragAndDropToTaskbarFix.cpp)](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/blob/main/Windows11DragAndDropToTaskbarFix/Windows11DragAndDropToTaskbarFix.cpp)
 
 ## **How Does It Work?**
 
@@ -18,9 +18,6 @@ The program detects if you're currently pressing the left mouse button and deter
 - The program does not support pinning apps to the taskbar using the drag and drop gesture, and this feature is currently not planned. However, you still can pin apps to the taskbar by clicking on their icons with the right mouse button, and then "Pin to taskbar" from the list.
 
 - I'm not aware of any serious limitations in the current version. Please check [#issues](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues)
-
-## **Antiviruses and False Positives**
-It was reported that some antivirus programs are flagging Windows11DragAndDropToTaskbarFix as malicious. This is most likely caused by [version 1.1.2.0](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/blob/main/CHANGELOG.md#ver-1120----2021-10-16-1900-cet) change. The program was compiled as the static version of the run-time library (MT) in order to prevent runtime errors caused by C++ 20 standard. Possibly part of the static runtime code (which is now included in the executable) has some similar signature to the other detected threats. Besides that, the program is an advanced workaround which simulates user input (hotkeys simulation), switches windows, etc. All these things are not something commonly used by other programs, right? It's an open-source project, so you can verify the code and then compile yourself.
 
 ## **How to Start or Quit the Program?**
 
