@@ -3,7 +3,7 @@ Don't read if you're sensitive to misspellings and grammatical errors.
 
 ## [[ver. 1.4.0.0](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases/tag/v.1.4.0.0-release)]  - 2021-10-21, 13:00 CET
 - Disabled `AutomaticallyRunThisProgramOnStartup` by default. Users can enable it manually, by following the: [CONFIGURATION](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/blob/main/CONFIGURATION.md).
-  - It seem to be the main reason of false-positives, according to [Virustotal](https://www.virustotal.com/gui/file/74952aae4d95b7a4ff8a295df61dd1a0591746df2bcf57eab04fe168b3845f54).
+  - It seem to be the main reason of false-positives, according to Virustotal.com.
 - Added a new option: `HowLongKeepMouseOverAppIconBeforeAutoOpeningMilliseconds`. Thanks to this, when `AutoOpenFirstWindowInBestMethodEver` is enabled (default), the program will wait before auto opening the first window. It prevents accidental opening of all windows when just moving the cursor with dragged file to the next icon on the taskbar.
 - Configuration file: fixed an issue where variables containing a number of milliseconds were not loaded by the program. It's because the function `is_number()` was called with a string containing new line characters, therefore always returning false.
 - Compiled the program with Multi-threaded DLL Runtime Library (MD).
