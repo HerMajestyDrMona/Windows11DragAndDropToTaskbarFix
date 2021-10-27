@@ -1,6 +1,10 @@
 # Change Log for Windows 11 Drag & Drop to the Taskbar (Fix)
 Don't read if you're sensitive to misspellings and grammatical errors.
 
+## [[ver. 1.5.0.0](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases/tag/v.1.5.0.0-release)]  - 2021-10-27, 15:00 CET
+- Added support for multiple screens, Issue [#9](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/9).
+- Minor optimizations & bug fixes. 
+
 ## [[ver. 1.4.0.0](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases/tag/v.1.4.0.0-release)]  - 2021-10-21, 13:00 CET
 - Disabled `AutomaticallyRunThisProgramOnStartup` by default. Users can enable it manually, by following the: [CONFIGURATION](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/blob/main/CONFIGURATION.md).
   - It seem to be the main reason of false-positives, according to Virustotal.com.
