@@ -20,6 +20,10 @@ ShowConsoleWindowOnStartup=1
 //Should the program print debug information? 1 = true, 0 = false.
 PrintDebugInfo=0
 
+//Should the program use a fix after detecting a wake up from the Sleep Mode? It fixes issues where the
+//program did not work correctly before ver. 1.5.1. 1 = true, 0 = false.
+UseFixForBugAfterSleepMode=1
+
 //Should the program use ver. 1.2.0 improvements that remove all previous limitations? 1 = true, 0 = false.
 UseTheNewBestMethodEver=1
 
