@@ -1051,7 +1051,9 @@ void Check_And_Set_Auto_Program_Startup() {
 				}
 			}
 			else {
-				std::wcout << L"The existing Auto Startup registry key value: " << InAutostart << L" Length: " << InAutostart.length() << L" does not match the current process: " << CurrentExeWorksForRegistry << L" Length: " << CurrentExeWorksForRegistry.length() << std::endl;
+				if (PrintDebugInfo) {
+					std::wcout << L"The existing Auto Startup registry key value: " << InAutostart << L" Length: " << InAutostart.length() << L" does not match the current process: " << CurrentExeWorksForRegistry << L" Length: " << CurrentExeWorksForRegistry.length() << std::endl;
+				}
 			}
 		}
 	}
@@ -1334,6 +1336,7 @@ int SleepPeriodNow = DefaultSleepPeriodInTheLoopMilliseconds;
 
 long long Previous_UniqueID_of_the_click_Best_Method_Ever = -1;
 int Previous_Button_Number = -1;
+int Previous_WindowsScreenSet = -1;
 HWND PreviousForegroundWindow;
 
 int JustClickedEnterForBestMethodEver = 0;
@@ -1365,10 +1368,10 @@ void ResetTmpVariablesFull() {
 void ResetTmpVariables() {
 	SleepPeriodNow = DefaultSleepPeriodInTheLoopMilliseconds;
 	FirstTimeClickedLeftMouseButton = std::chrono::milliseconds(0);
-
 	if (Last_Step_Reached >= 2) {
 		ResetTmpVariablesFull();
 	}
+	Last_Step_Reached = 0;
 }
 
 
@@ -1781,22 +1784,22 @@ void Check_And_Issue_Auto_Enter_Best_Method_Ever(int ButtonID) {
 			}
 
 			RECT rectAtTheMoment;
-
-			//Loop to make sure rect change:
-			//std::chrono::milliseconds SleepFor(SleepTimeButtonsElevenPlusMilliseconds);
-			std::chrono::milliseconds SleepFor(5);
-			std::chrono::milliseconds StartedTheLoopAt = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
-			long long int StartedTheLoopAtCountPlus = StartedTheLoopAt.count() + PreviewWindowChangeDetectionMaxMilliseconds;
-
 			//Yeah, get it in case loop is skipped
 			GetWindowRect(TaskListThumbnailWnd, &rectAtTheMoment);
 
 			if (PreviousTaskListThumbnailWndVisible) {
+				//Loop to make sure rect change:
+				//std::chrono::milliseconds SleepFor(SleepTimeButtonsElevenPlusMilliseconds);
+				std::chrono::milliseconds SleepFor(5);
+				std::chrono::milliseconds StartedTheLoopAt = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
+				long long int StartedTheLoopAtCountPlus = StartedTheLoopAt.count() + PreviewWindowChangeDetectionMaxMilliseconds;
+
 				if (PrintDebugInfo) {
 					std::wcout << L"PreviousTaskListThumbnailWndVisible is true. Starting the loop to detect for changes..." << rectPreviousTaskListThumbnailWnd.left << ". After: " << rectAtTheMoment.left << endl;
 				}
+				std::chrono::milliseconds TimeAtTheLoopNow = std::chrono::milliseconds(0);
 				while (IsWindowVisible(TaskListThumbnailWnd)) {
-					std::chrono::milliseconds TimeAtTheLoopNow = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
+					TimeAtTheLoopNow = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
 					GetWindowRect(TaskListThumbnailWnd, &rectAtTheMoment);
 					if (rectAtTheMoment.left != rectPreviousTaskListThumbnailWnd.left) {
 						if (PrintDebugInfo) {
@@ -1821,7 +1824,8 @@ void Check_And_Issue_Auto_Enter_Best_Method_Ever(int ButtonID) {
 				std::cout << "TaskListThumbnailWnd Rect: " << rectAtTheMoment.left << ":" << rectAtTheMoment.right << ":" << rectAtTheMoment.bottom << ":" << rectAtTheMoment.top << ". Window visible bool: " << PreviousTaskListThumbnailWndVisible << "\n";
 			}
 
-			if (IsWindowVisible(TaskListThumbnailWnd)) {
+			//if (IsWindowVisible(TaskListThumbnailWnd)) {
+			if (PreviousTaskListThumbnailWndVisible) { //Optimization, not to call IsWindowVisible twice.
 
 				//Longer sleep
 				if (HowLongSleepBetweenDifferentKeysPressMilliseconds > 0) {
@@ -1871,13 +1875,15 @@ void Check_And_Issue_Auto_Enter_Best_Method_Ever(int ButtonID) {
 	}
 }
 
-void Finally_The_Best_Method_Ever(int ButtonID, int AllButtonsNumber) {
+void Finally_The_Best_Method_Ever(int ButtonID, int AllButtonsNumber, int WindowsScreenSet) {
 	HWND CurrentForegroundWindow = GetForegroundWindow();
 
 	bool SameUniqueDragSession = false;
 	if (Current_UniqueID_of_the_click == Previous_UniqueID_of_the_click_Best_Method_Ever) {
 		if (CurrentForegroundWindow == PreviousForegroundWindow) {
-			SameUniqueDragSession = true;
+			if (WindowsScreenSet == Previous_WindowsScreenSet) {
+				SameUniqueDragSession = true;
+			}
 		}
 		else if (AutoOpenFirstWindowInBestMethodEver) {
 			if (JustClickedEnterForBestMethodEver > 0) {
@@ -1896,7 +1902,7 @@ void Finally_The_Best_Method_Ever(int ButtonID, int AllButtonsNumber) {
 	}
 
 	//Reset
-	if (Previous_Button_Number != ButtonID) {
+	if (Previous_Button_Number != ButtonID || WindowsScreenSet != Previous_WindowsScreenSet) {
 		if (HowLongKeepMouseOverAppIconBeforeAutoOpeningMilliseconds > 0) {
 			CurrentlyAwaitingForEnterClick = false;
 			AwaitingForEnterClickSince = std::chrono::milliseconds(0);
@@ -2151,6 +2157,7 @@ void Finally_The_Best_Method_Ever(int ButtonID, int AllButtonsNumber) {
 		keybd_event(VK_UP, MapVirtualKey(VK_UP, 0), KEYEVENTF_KEYUP, 0); //Release Up*/
 	}
 	Previous_Button_Number = ButtonID;
+	Previous_WindowsScreenSet = WindowsScreenSet;
 }
 
 #ifndef DONT_INCLUDE_UNUSED_FUNCTIONS_TO_PREVENT_PSEUDO_ANTIVIRUSES_FROM_THROWING_FALSE_POSITIVES
@@ -2345,6 +2352,65 @@ void TestErrorIconDetection() {
 	}
 }*/
 
+wchar_t WindowClassName[MAX_PATH];
+
+class windowsHWNDs {
+public:
+	HWND hWndTray = 0;
+	HWND hWndTrayNotify = 0;
+	HWND hWndRebar = 0;
+	HWND hWndMSTaskSwWClass = 0;
+	HWND TaskListThumbnailWnd = 0;
+
+};
+windowsHWNDs PrimaryScreen;
+windowsHWNDs CurrentSecondaryScreen;
+std::vector<windowsHWNDs> Array_Windows_by_Screen;
+
+HWND TmpWorkerW = 0;
+HWND TmpTaskList = 0;
+
+static BOOL CALLBACK enumChildWindowCallback_SecondaryTrayWnd(HWND hWnd, LPARAM lparam) {
+	wchar_t Buffor[MAX_PATH];
+	GetClassNameW(hWnd, Buffor, MAX_PATH);
+	wstring ClassName = L"UNKNOWN";
+	if (wcslen(Buffor) > 1) {
+		ClassName = Buffor;
+	}
+	wstring ClassNameLower = Mona_toLowerWs(ClassName);
+	if (ClassNameLower == L"workerw") {
+		TmpWorkerW = hWnd;
+		EnumChildWindows(hWnd, enumChildWindowCallback_SecondaryTrayWnd, NULL);
+	}
+	else if (ClassNameLower == L"mstasklistwclass") {
+		TmpTaskList = hWnd;
+		//EnumChildWindows(hWnd, enumChildWindowCallback_SecondaryTrayWnd, NULL);
+	}
+
+	return TRUE;
+}
+
+static BOOL CALLBACK enumWindowCallback_SecondaryTrayWnd(HWND hWnd, LPARAM lparam) {
+	wchar_t Buffor[MAX_PATH];
+	GetClassNameW(hWnd, Buffor, MAX_PATH);
+
+	wstring ClassName = L"UNKNOWN";
+	if (wcslen(Buffor) > 1) {
+		ClassName = Buffor;
+	}
+	wstring ClassNameLower = Mona_toLowerWs(ClassName);
+	if (ClassNameLower == L"shell_secondarytraywnd") {
+		CurrentSecondaryScreen = windowsHWNDs();
+		TmpWorkerW = 0;
+		TmpTaskList = 0;
+		CurrentSecondaryScreen.hWndTray = hWnd;
+		EnumChildWindows(hWnd, enumChildWindowCallback_SecondaryTrayWnd, NULL);
+		CurrentSecondaryScreen.hWndMSTaskSwWClass = TmpTaskList;
+		Array_Windows_by_Screen.push_back(CurrentSecondaryScreen);
+	}
+	return TRUE;
+}
+
 int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nShowCmd)
 {
 	//Important to make reading .lnk possible:
@@ -2386,6 +2452,15 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 		if (!PrintDebugInfo) {
 			HMENU hmenu = GetSystemMenu(GetConsoleWindow(), FALSE);
 			EnableMenuItem(hmenu, SC_CLOSE, MF_GRAYED);
+
+			HANDLE hInput = GetStdHandle(STD_INPUT_HANDLE);
+			if (!hInput) {
+				hInput = GetConsoleWindow();
+			}
+			DWORD prev_mode;
+			GetConsoleMode(hInput, &prev_mode);
+			SetConsoleMode(hInput, ENABLE_EXTENDED_FLAGS |
+				(prev_mode & ~ENABLE_QUICK_EDIT_MODE));
 		}
 	}
 
@@ -2399,7 +2474,7 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 	//Welcome!
 	bool HideConsoleWindowSoon = false;
 	std::chrono::milliseconds ProgrmStartTime = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
-	printf("Windows11DragAndDropToTaskbarFix, ver. 1.4.0, created by Dr.MonaLisa.\n");
+	printf("Windows11DragAndDropToTaskbarFix, ver. 1.5.0, created by Dr.MonaLisa.\n");
 	printf("https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix\n\n");
 	printf("You can disable the console window. Please read the GitHub page to learn how to configure this program.\n");
 	if (!PrintDebugInfo) {
@@ -2508,8 +2583,35 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 					std::cout << "Left Mouse Button was pressed for > " << HowLongLeftMouseButtonPressedBeforeContinueMilliseconds << " milliseconds...\n";
 				}
 
+
 				if (!DetectedHWNDsForThisMouseClick) {
 					DetectedHWNDsForThisMouseClick = true;
+
+					Array_Windows_by_Screen.clear();
+					//Primary screen variables:
+					PrimaryScreen = windowsHWNDs();
+					PrimaryScreen.hWndTray = FindWindow(L"Shell_TrayWnd", nullptr);
+					if (PrimaryScreen.hWndTray) {
+						PrimaryScreen.hWndTrayNotify = FindWindowEx(PrimaryScreen.hWndTray, 0, L"TrayNotifyWnd", nullptr);
+						//std::cout << "PrimaryScreen.hWndTrayNotify: " << PrimaryScreen.hWndTrayNotify << "\n";
+						PrimaryScreen.hWndRebar = FindWindowEx(PrimaryScreen.hWndTray, 0, L"ReBarWindow32", nullptr);
+					}
+					if (PrimaryScreen.hWndRebar) {
+						PrimaryScreen.hWndMSTaskSwWClass = FindWindowEx(PrimaryScreen.hWndRebar, 0, L"MSTaskSwWClass", nullptr);
+						PrimaryScreen.TaskListThumbnailWnd = FindWindowEx(NULL, 0, L"TaskListThumbnailWnd", nullptr);
+					}
+
+					Array_Windows_by_Screen.push_back(PrimaryScreen);
+					//Shell_SecondaryTrayWnd:
+					EnumWindows(enumWindowCallback_SecondaryTrayWnd, NULL);
+
+					hDesktop = GetDesktopWindow();
+					GetWindowRect(hDesktop, &desktop);
+					ShowDesktopStartPosition = desktop.right - DefaultShowDesktopButtonWidth;
+
+					//Before ver 1.5:
+
+					/*DetectedHWNDsForThisMouseClick = true;
 					hWndTray = FindWindow(L"Shell_TrayWnd", nullptr);
 					if (hWndTray) {
 						hWndTrayNotify = FindWindowEx(hWndTray, 0, L"TrayNotifyWnd", nullptr);
@@ -2535,13 +2637,6 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 					//Find a window that should be invisible when app has no active window!
 					TaskListThumbnailWnd = FindWindowEx(NULL, 0, L"TaskListThumbnailWnd", nullptr);
 
-					//1.1 fix, actually not needed, it uses hWndTrayNotify HWND.
-					/*if (hWndTrayNotify) {
-						hWndWindowForShowDesktopArea = FindWindowEx(hWndTrayNotify, 0, L"Windows.UI.Composition.DesktopWindowContentBridge", nullptr);
-					}
-					else {
-						hWndWindowForShowDesktopArea = 0;
-					}*/
 
 					std::cout << "Found hWndWindowForShowDesktopArea Window: " << hWndWindowForShowDesktopArea << "\n";
 
@@ -2563,19 +2658,95 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 					}
 					hDesktop = GetDesktopWindow();
 					GetWindowRect(hDesktop, &desktop);
-					ShowDesktopStartPosition = desktop.right - DefaultShowDesktopButtonWidth;
+					ShowDesktopStartPosition = desktop.right - DefaultShowDesktopButtonWidth;*/
+				}
+
+				//Unfortunately we can't optimize it at the moment since cursor might move with dragged file from screen-to-screen.
+
+				GetCursorPos(&P);
+				HWND WindowUnderMouse = WindowFromPoint(P);
+				int WindowsScreenSet = 0;//Primary
+				//Secondary Screen Fix ver 1.5:
+				GetClassNameW(WindowUnderMouse, WindowClassName, MAX_PATH);
+				//std::wcout << L"Class Name Under Mouse: " << WindowClassName << L"\n";
+				if (_wcsicmp(WindowClassName, L"MSTaskListWClass") == 0) {
+					if (WindowUnderMouse != hWndMSTaskSwWClass) {
+						if (PrintDebugInfo) {
+							std::cout << "Found Taskbar Window on Secondary Screen. Switching HWNDs to the other monitor mode. " << WindowUnderMouse << "\n";
+						}
+
+						if (Array_Windows_by_Screen.size() > 0) {
+							for (size_t iha = 0; iha < Array_Windows_by_Screen.size(); iha++) {
+								if (Array_Windows_by_Screen[iha].hWndMSTaskSwWClass == WindowUnderMouse) {
+									WindowsScreenSet = iha;
+									if (PrintDebugInfo) {
+										std::cout << "Found matching window in Array_Windows_by_Screen. " << WindowUnderMouse << "\n";
+									}
+									break;
+								}
+							}
+						}
+					}
+				}
+
+				//ver 1.5 continued:
+				hWndTray = Array_Windows_by_Screen[WindowsScreenSet].hWndTray;
+				if (hWndTray) {
+					hWndTrayNotify = Array_Windows_by_Screen[0].hWndTrayNotify;
+				}
+				else {
+					hWndTrayNotify = 0;
+				}
+
+				if (hWndTray) {
+					hWndRebar = Array_Windows_by_Screen[0].hWndRebar;
+				}
+				else {
+					hWndRebar = 0;
+				}
+
+				if (hWndRebar) {
+					hWndMSTaskSwWClass = Array_Windows_by_Screen[WindowsScreenSet].hWndMSTaskSwWClass;
+					//hWndMSTaskSwWClass = FindWindowEx(hWndRebar, 0, L"MSTaskSwWClass", nullptr);
+				}
+				else {
+					hWndMSTaskSwWClass = 0;
+				}
+
+				//Find a window that should be invisible when app has no active window!
+				TaskListThumbnailWnd = Array_Windows_by_Screen[0].TaskListThumbnailWnd;
+
+				if (PrintDebugInfo) {
+					std::cout << "Found Taskbar Window: " << hWndMSTaskSwWClass << "\n";
+				}
+				RECT rect;
+				if (hWndMSTaskSwWClass) {
+					GetWindowRect(hWndMSTaskSwWClass, &rect);
+				}
+				else {
+					rect.left = 0;
+					rect.right = 0;
+					rect.bottom = 0;
+					rect.top = 0;
+				}
+
+				//std::cout << "Taskbar Window Rect: " << rect.left << ":" << rect.right << ":" << rect.bottom << ":" << rect.top << "\n";
+				TaskbarWindowWidth = rect.right - rect.left;
+				if (PrintDebugInfo) {
+					std::cout << "Taskbar Window Width: " << TaskbarWindowWidth << "\n";
+				}
+
+				NumberOfItemsOnTaskbar = TaskbarWindowWidth / DefaultTaskbarIconWidth;
+				if (PrintDebugInfo) {
+					std::cout << "Number of icons on taskbar: " << NumberOfItemsOnTaskbar << "\n";
 				}
 				
+				//if (hWndMSTaskSwWClass) {
 				if (hWndMSTaskSwWClass) {
-
 					//Check if taskbar area is visible, not to continue when playing games, etc.
 					//if (IsWindowVisible(hWndMSTaskSwWClass)) {
 					//if (IsWindowVisible(hWndTray)) {
-
 					//For some reasons IsWindowVisible doesn't work as intended, so let's workaround it:
-
-					GetCursorPos(&P);
-					HWND WindowUnderMouse = WindowFromPoint(P);
 
 					if(WindowUnderMouse == hWndMSTaskSwWClass || WindowUnderMouse == hWndTrayNotify){
 						if (Last_Step_Reached < 3) {
@@ -2616,7 +2787,9 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 						//Check if maybe in the "show desktop" area:
 						bool ShowDesktopPositionNow = false;
 						if (P_Client.y >= 0 && P.x >= ShowDesktopStartPosition) {
-							ShowDesktopPositionNow = true;
+							if (WindowsScreenSet == 0) { //To make sure its not secondary screen
+								ShowDesktopPositionNow = true;
+							}
 						}
 
 						if ((P_Client.x >= 0 && P_Client.y >= 0 && P_Client.x <= TaskbarWindowWidth) || ShowDesktopPositionNow) {
@@ -2639,7 +2812,7 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 								FirstTimeHoveredOverThisAppIcon = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
 							}
 
-							//No need for long long it here I guess :D
+							//No need for long long int here I guess :D
 							int HowLongOverThisIconCount = TimeNow.count() - FirstTimeHoveredOverThisAppIcon.count();
 
 							if (PrintDebugInfo) {
@@ -2680,7 +2853,7 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 											}
 										}
 										else {
-											Finally_The_Best_Method_Ever(CurrentAppIcon, NumberOfItemsOnTaskbar);
+											Finally_The_Best_Method_Ever(CurrentAppIcon, NumberOfItemsOnTaskbar, WindowsScreenSet);
 										}
 									}
 									else if (CurrentAppIcon <= 9) {
