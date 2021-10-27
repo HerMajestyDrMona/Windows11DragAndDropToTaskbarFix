@@ -1,6 +1,12 @@
 # Change Log for Windows 11 Drag & Drop to the Taskbar (Fix)
 Don't read if you're sensitive to misspellings and grammatical errors.
 
+## [[ver. 1.5.1.0](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases/tag/v.1.5.1.0-release)]  - 2021-10-27, 20:20 CET
+- Fixed an [issue](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/10#issuecomment-953005633) where the program did not work correctly after wake up from the Sleep Mode.
+  - The problem was caused by another Windows 11 bug, where often window `MSTaskSwWClass` has incorrect `RECT` after the Sleep Mode.
+  - After detecting the bug, the fix starts an empty `CMD.exe` window that auto-disappears, in order to force the taskbar window update. After that `MSTaskSwWClass` returns correct `RECT` again, and `Windows11DragAndDropToTaskbarFix` is able to continue working correctly.
+  - The new fix can be disabled by the configuration line: `UseFixForBugAfterSleepMode=0` (but why?).
+
 ## [[ver. 1.5.0.0](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases/tag/v.1.5.0.0-release)]  - 2021-10-27, 15:00 CET
 - Added support for multiple screens, Issue [#9](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/9).
 - Minor optimizations & bug fixes. 
