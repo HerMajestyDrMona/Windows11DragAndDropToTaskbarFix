@@ -28,6 +28,7 @@ namespace fs = std::filesystem;
 bool AutomaticallyRunThisProgramOnStartup = false;
 bool ShowConsoleWindowOnStartup = true;
 bool PrintDebugInfo = false;
+bool UseFixForBugAfterSleepMode = true;
 bool UseTheNewBestMethodEver = true;
 bool AutoOpenFirstWindowInBestMethodEver = true;
 int HowLongSleepBetweenDifferentKeysPressMilliseconds = 20;
@@ -370,6 +371,15 @@ void Mona_Load_Configuration() {
 				}
 				else if (NewIsConfigLineEqualTo(line, "PrintDebugInfo", "0") || NewIsConfigLineEqualTo(line, "PrintDebugInfo", "false")) {
 					PrintDebugInfo = false;
+					continue;
+				}
+
+				if (NewIsConfigLineEqualTo(line, "UseFixForBugAfterSleepMode", "1") || NewIsConfigLineEqualTo(line, "UseFixForBugAfterSleepMode", "true")) {
+					UseFixForBugAfterSleepMode = true;
+					continue;
+				}
+				else if (NewIsConfigLineEqualTo(line, "UseFixForBugAfterSleepMode", "0") || NewIsConfigLineEqualTo(line, "UseFixForBugAfterSleepMode", "false")) {
+					UseFixForBugAfterSleepMode = false;
 					continue;
 				}
 
@@ -1326,6 +1336,7 @@ int PreviousHoveredMouseAppID = -1;
 std::chrono::milliseconds FirstTimeClickedLeftMouseButton = std::chrono::milliseconds(0);
 std::chrono::milliseconds FirstTimeHoveredOverThisAppIcon = std::chrono::milliseconds(0);
 std::chrono::milliseconds TimeNow = std::chrono::milliseconds(0);
+std::chrono::milliseconds SleepModeFix_Previous_TimeNow = std::chrono::milliseconds(0);
 std::chrono::milliseconds LastTimeCheckedForConfigUpdate = std::chrono::milliseconds(0);
 time_t LastSettingsChangeTime = 0;
 bool CheckedConfigTimeAtLeastOneTime = false;
@@ -2474,7 +2485,7 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 	//Welcome!
 	bool HideConsoleWindowSoon = false;
 	std::chrono::milliseconds ProgrmStartTime = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
-	printf("Windows11DragAndDropToTaskbarFix, ver. 1.5.0, created by Dr.MonaLisa.\n");
+	printf("Windows11DragAndDropToTaskbarFix, ver. 1.5.1, created by Dr.MonaLisa.\n");
 	printf("https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix\n\n");
 	printf("You can disable the console window. Please read the GitHub page to learn how to configure this program.\n");
 	if (!PrintDebugInfo) {
@@ -2504,6 +2515,48 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 				ShowWindow(GetConsoleWindow(), SW_HIDE);
 			}
 		}
+		//Ver 1.5.1:
+
+		if (UseFixForBugAfterSleepMode) {
+			if (SleepModeFix_Previous_TimeNow.count() != 0) {
+				long long int TimeToCheck = (DefaultSleepPeriodInTheLoopMilliseconds * 10) + SleepModeFix_Previous_TimeNow.count();
+				//std::wcout << L"BUG CHECK. TimeToChecl: " << TimeToCheck << L". TimeNow:" << TimeNow.count() << L"\n";
+				if (TimeNow.count() > TimeToCheck) {
+					if (PrintDebugInfo) {
+						std::wcout << L"Possible wakeup after the Sleep Mode. Checking if the taskbar bug occurred...\n";
+					}
+					//Possible sleep mode:
+					//Copy-paste code because I'm too lazy.
+					PrimaryScreen = windowsHWNDs();
+					PrimaryScreen.hWndTray = FindWindow(L"Shell_TrayWnd", nullptr);
+					if (PrimaryScreen.hWndTray) {
+						PrimaryScreen.hWndTrayNotify = FindWindowEx(PrimaryScreen.hWndTray, 0, L"TrayNotifyWnd", nullptr);
+						//std::cout << "PrimaryScreen.hWndTrayNotify: " << PrimaryScreen.hWndTrayNotify << "\n";
+						PrimaryScreen.hWndRebar = FindWindowEx(PrimaryScreen.hWndTray, 0, L"ReBarWindow32", nullptr);
+					}
+					if (PrimaryScreen.hWndRebar) {
+						PrimaryScreen.hWndMSTaskSwWClass = FindWindowEx(PrimaryScreen.hWndRebar, 0, L"MSTaskSwWClass", nullptr);
+						PrimaryScreen.TaskListThumbnailWnd = FindWindowEx(NULL, 0, L"TaskListThumbnailWnd", nullptr);
+					}
+					//Task view rect:
+					if (PrimaryScreen.hWndMSTaskSwWClass) {
+						RECT SleepModeFix_rect;
+						GetWindowRect(PrimaryScreen.hWndMSTaskSwWClass, &SleepModeFix_rect);
+						int SleepModeFixTaskbarHeight = SleepModeFix_rect.bottom - SleepModeFix_rect.top;
+
+						if (SleepModeFixTaskbarHeight < 44) { //48 is normal height, 40 when bug occurs, so lets make it 44.
+							//Bug occurred
+							if (PrintDebugInfo) {
+								std::wcout << L"MSTaskSwWClass size bug detected after Sleep Mode. The current height is: " << SleepModeFixTaskbarHeight << L" (and should be 48). Starting a new CMD window to fix it...\n";
+							}
+							wstring EmptyWindowCommand = L"start cmd.exe /C \"echo Windows11DragAndDropToTaskbarFix.exe & echo https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix & echo A bug after the Sleep Mode has been detected. The MSTaskSwWClass window size returns incorrect RECT, therefore a new CMD window was open in order to force the taskbar window update. & echo Please read the GitHub page for more details. & timeout 1 & exit\"";
+							_wsystem(EmptyWindowCommand.c_str());
+						}
+					}
+				}
+			}
+		}
+
 		//Check for config file update:
 		if (ConfigFileChangeTimeMonitorAllowed && (TimeNow.count() > LastTimeCheckedForConfigUpdate.count() + 5000)) {
 			LastTimeCheckedForConfigUpdate = TimeNow;
@@ -2733,7 +2786,7 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 				//std::cout << "Taskbar Window Rect: " << rect.left << ":" << rect.right << ":" << rect.bottom << ":" << rect.top << "\n";
 				TaskbarWindowWidth = rect.right - rect.left;
 				if (PrintDebugInfo) {
-					std::cout << "Taskbar Window Width: " << TaskbarWindowWidth << "\n";
+					std::cout << "Taskbar Window Width: " << TaskbarWindowWidth << ". Taskbar Window Rect: " << rect.left << ":" << rect.right << ":" << rect.bottom << ":" << rect.top << "\n";
 				}
 
 				NumberOfItemsOnTaskbar = TaskbarWindowWidth / DefaultTaskbarIconWidth;
@@ -2767,6 +2820,9 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 								std::cout << "Left Mouse Click Started in the taskbar area: X: " << MouseClickStartPoint_Client.x << " Y: " << MouseClickStartPoint_Client.y << ", so skipping.\n";
 							}
 							//The sleep was missing there causing heavy CPU usage. Fixed in ver 1.1.1
+							if (UseFixForBugAfterSleepMode) {
+								SleepModeFix_Previous_TimeNow = TimeNow;
+							}
 							Sleep(SleepPeriodNow);
 							continue;
 						}
@@ -2924,6 +2980,9 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 					}
 				}
 			}
+		}
+		if (UseFixForBugAfterSleepMode) {
+			SleepModeFix_Previous_TimeNow = TimeNow;
 		}
 		Sleep(SleepPeriodNow);
 	}

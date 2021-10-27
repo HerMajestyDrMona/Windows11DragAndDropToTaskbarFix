@@ -25,8 +25,8 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,5,0,0
- PRODUCTVERSION 1,5,0,0
+ FILEVERSION 1,5,1,0
+ PRODUCTVERSION 1,5,1,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -43,12 +43,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Dr Mona Lisa"
             VALUE "FileDescription", "Windows 11 Drag & Drop to the Taskbar (Fix)"
-            VALUE "FileVersion", "1.5.0.0"
+            VALUE "FileVersion", "1.5.1.0"
             VALUE "InternalName", "Windows11DragAndDropToTaskbarFix.exe"
             VALUE "LegalCopyright", "(C) 2021 Copyright by Dr.MonaLisa. All Rights Reserved."
             VALUE "OriginalFilename", "Windows11DragAndDropToTaskbarFix.exe"
             VALUE "ProductName", "Windows 11 Drag & Drop to the Taskbar (Fix)"
-            VALUE "ProductVersion", "1.5.0.0"
+            VALUE "ProductVersion", "1.5.1.0"
         END
     END
     BLOCK "VarFileInfo"
