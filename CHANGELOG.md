@@ -1,6 +1,10 @@
 # Change Log for Windows 11 Drag & Drop to the Taskbar (Fix)
 Don't read if you're sensitive to misspellings and grammatical errors.
 
+## [[ver. 1.6.0.0](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases/tag/v.1.6.0.0-release)]  - 2021-10-28, 08:40 CET
+- Added support for the right mouse button drag and drop, issue [#14](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/14).
+  - *Right-button drag-n-drop is usable when dragging a file and you don't want the default action on drop. E.g. you want to select "Move" from the context menu on mouse button release instead of default "Copy" when dropping file on a folder on the same drive*.
+
 ## [[ver. 1.5.1.0](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases/tag/v.1.5.1.0-release)]  - 2021-10-27, 20:20 CET
 - Fixed an [issue](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/10#issuecomment-953005633) where the program did not work correctly after wake up from the Sleep Mode.
   - The problem was caused by another Windows 11 bug, where often window `MSTaskSwWClass` has incorrect `RECT` after the Sleep Mode.
