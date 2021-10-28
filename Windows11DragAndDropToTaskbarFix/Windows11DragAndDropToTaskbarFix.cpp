@@ -1256,8 +1256,12 @@ void Check_Pinned_Apps() {
 
 HHOOK HandleLowLevelMousePressProc;
 bool LeftButtonPressedATM = false;
+bool LeftButtonPressedATM_Real = false;
+bool RightButtonPressedATM_Real = false;
 short Last_Step_Reached = 0;
 std::chrono::milliseconds LastTimeClickedLeftMouseButton = std::chrono::milliseconds(0);
+std::chrono::milliseconds LastTimeClickedLeftMouseButton_Real = std::chrono::milliseconds(0);
+std::chrono::milliseconds LastTimeClickedRightMouseButton_Real = std::chrono::milliseconds(0);
 POINT MouseClickStartPoint;
 POINT MouseClickStartPoint_Client;
 long long int Current_UniqueID_of_the_click = 0;
@@ -1271,19 +1275,33 @@ static LRESULT CALLBACK LowLevelMousePressProc(int nCode, WPARAM wParam, LPARAM 
 
 		if (wParam == WM_LBUTTONDOWN)
 		{
-			LeftButtonPressedATM = true;
-			LastTimeClickedLeftMouseButton = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
+			LeftButtonPressedATM_Real = true;
+			LastTimeClickedLeftMouseButton_Real = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
 			GetCursorPos(&MouseClickStartPoint);
 			if (!LLMP_Temporarily_Dont_Update_UniqueID) {
 			Current_UniqueID_of_the_click++;
 			}
 		}
-
 		else if (wParam == WM_LBUTTONUP)
 		{
-			LeftButtonPressedATM = false;
+			LeftButtonPressedATM_Real = false;
 			//std::wcout << L"WM_LBUTTONUP was called" << endl;
 		}
+		if (wParam == WM_RBUTTONDOWN)
+		{
+			RightButtonPressedATM_Real = true;
+			LastTimeClickedRightMouseButton_Real = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
+			GetCursorPos(&MouseClickStartPoint);
+			if (!LLMP_Temporarily_Dont_Update_UniqueID) {
+				Current_UniqueID_of_the_click++;
+			}
+		}
+		else if (wParam == WM_RBUTTONUP)
+		{
+			RightButtonPressedATM_Real = false;
+			//std::wcout << L"WM_LBUTTONUP was called" << endl;
+		}
+
 	}
 	return CallNextHookEx(HandleLowLevelMousePressProc, nCode, wParam, lParam);
 }
@@ -2422,6 +2440,12 @@ static BOOL CALLBACK enumWindowCallback_SecondaryTrayWnd(HWND hWnd, LPARAM lpara
 	return TRUE;
 }
 
+int Current_Mouse_Button_Zero_Left_One_Right = -1;
+int Previous_Mouse_Button_Zero_Left_One_Right = -1;
+std::wstring Current_Button_Name = L"Unknown";
+std::wstring Button_Name_Left = L"Left";
+std::wstring Button_Name_Right = L"Right";
+
 int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nShowCmd)
 {
 	//Important to make reading .lnk possible:
@@ -2485,7 +2509,7 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 	//Welcome!
 	bool HideConsoleWindowSoon = false;
 	std::chrono::milliseconds ProgrmStartTime = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
-	printf("Windows11DragAndDropToTaskbarFix, ver. 1.5.1, created by Dr.MonaLisa.\n");
+	printf("Windows11DragAndDropToTaskbarFix, ver. 1.6.0, created by Dr.MonaLisa.\n");
 	printf("https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix\n\n");
 	printf("You can disable the console window. Please read the GitHub page to learn how to configure this program.\n");
 	if (!PrintDebugInfo) {
@@ -2589,7 +2613,36 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 			CheckedConfigTimeAtLeastOneTime = true;
 		}
 
-
+		//ver 1.6, right mouse button support:
+		LeftButtonPressedATM = false;//Default
+		//We actually don't need to worry too much as tmp variables will be automatically reset below if click UniqueID missmatches.
+		Current_Mouse_Button_Zero_Left_One_Right = -1;
+		if (RightButtonPressedATM_Real) {
+			if (!LeftButtonPressedATM_Real) {
+				Current_Mouse_Button_Zero_Left_One_Right = 1;
+				LastTimeClickedLeftMouseButton = LastTimeClickedRightMouseButton_Real;
+				if (PrintDebugInfo) {
+					Current_Button_Name = Button_Name_Right;
+				}
+			}
+			else {
+				Current_Mouse_Button_Zero_Left_One_Right = 0;
+				LastTimeClickedLeftMouseButton = LastTimeClickedLeftMouseButton_Real;
+				if (PrintDebugInfo) {
+					Current_Button_Name = Button_Name_Left;
+				}
+			}
+			LeftButtonPressedATM = true;
+		}
+		else if (LeftButtonPressedATM_Real) {
+			Current_Mouse_Button_Zero_Left_One_Right = 0;
+			LastTimeClickedLeftMouseButton = LastTimeClickedLeftMouseButton_Real;
+			LeftButtonPressedATM = true;
+			if (PrintDebugInfo) {
+				Current_Button_Name = Button_Name_Left;
+			}
+		}
+		
 		//Check if left mouse button is pressed:
 		//if (!GetAsyncKeyState(VK_LBUTTON)) {
 		//In ver 1.1 we use a new thread
@@ -2605,7 +2658,7 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 			}
 
 			if (PrintDebugInfo) {
-				std::cout << "Left Mouse Button is pressed (SessionID: " << Current_UniqueID_of_the_click << "). Detecting for how long...\n";
+				std::wcout << Current_Button_Name << L" Mouse Button is pressed (SessionID: " << Current_UniqueID_of_the_click << "). Detecting for how long...\n";
 			}
 			if (!CurrentlyLeftMouseButtonIsPressed) {
 				//FirstTimeClickedLeftMouseButton = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
@@ -2633,7 +2686,7 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 
 				//Continue:
 				if (PrintDebugInfo) {
-					std::cout << "Left Mouse Button was pressed for > " << HowLongLeftMouseButtonPressedBeforeContinueMilliseconds << " milliseconds...\n";
+					std::wcout << Current_Button_Name << L" Mouse Button was pressed for > " << HowLongLeftMouseButtonPressedBeforeContinueMilliseconds << L" milliseconds...\n";
 				}
 
 
@@ -2817,7 +2870,7 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 
 						if (MouseClickStartPoint_Client.x >= 0 && MouseClickStartPoint_Client.y >= 0) {
 							if (PrintDebugInfo) {
-								std::cout << "Left Mouse Click Started in the taskbar area: X: " << MouseClickStartPoint_Client.x << " Y: " << MouseClickStartPoint_Client.y << ", so skipping.\n";
+								std::wcout << Current_Button_Name << L" Mouse Click Started in the taskbar area: X: " << MouseClickStartPoint_Client.x << " Y: " << MouseClickStartPoint_Client.y << ", so skipping.\n";
 							}
 							//The sleep was missing there causing heavy CPU usage. Fixed in ver 1.1.1
 							if (UseFixForBugAfterSleepMode) {
