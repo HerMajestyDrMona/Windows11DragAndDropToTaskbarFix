@@ -35,7 +35,7 @@ To quit this program, please **simply kill** `Windows11DragAndDropToTaskbarFix.e
 
 
 ## "VCRUNTIME140_1.dll" was not found error
-If you get an error saying that "VCRUNTIME140_1.dll" is missing, please install [Microsoft Visual C++ 2015 - 2019 Redistributable x64](https://aka.ms/vs/16/release/vc_redist.x64.exe). Normally, these runtime libraries are installed by default on Windows 11. If you get this error then you most likely manually removed them before using "Add or remove programs".
+If you get an error saying that "VCRUNTIME140_1.dll" is missing, please install [Microsoft Visual C++ 2015 - 2019 Redistributable x64](https://aka.ms/vs/16/release/vc_redist.x64.exe). Normally, these runtime libraries are installed by default on Windows 11. If you get this error then you most likely manually removed them before, using "Add or remove programs".
 
 
 ### **New Ideas Are Welcome**
