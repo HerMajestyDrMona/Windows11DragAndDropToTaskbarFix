@@ -15,7 +15,7 @@ You can include the following variables to your `Windows11DragAndDropToTaskbarFi
 AutomaticallyRunThisProgramOnStartup=0
 
 //Should the program show the console window when it starts? 1 = true, 0 = false.
-ShowConsoleWindowOnStartup=1
+ShowConsoleWindowOnStartup=0
 
 //Should the program print debug information? 1 = true, 0 = false.
 PrintDebugInfo=0
@@ -28,8 +28,8 @@ UseFixForBugAfterSleepMode=1
 UseTheNewBestMethodEver=1
 
 //Available since ver. 1.3. Should the program automatically open the first active window under the cursor,
-//except pinned apps with no active window? 1 = true, 0 = false.
-AutoOpenFirstWindowInBestMethodEver=1
+//except pinned apps with no active window? 1 = true, 0 = false, 2 = only if no more than 1 window under the icon.
+AutoOpenFirstWindowInBestMethodEver=2
 
 //Sleep time (in milliseconds) between simulating different keys in the new "BestMethodEver"
 HowLongSleepBetweenDifferentKeysPressMilliseconds=10
