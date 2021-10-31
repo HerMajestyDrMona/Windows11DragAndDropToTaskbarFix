@@ -15,6 +15,7 @@
 #include <regex>
 #include <thread>
 #include <ole2.h>
+#include "resource.h"
 
 #pragma comment(lib, "Shlwapi.lib")
 #pragma comment( linker, "/subsystem:windows" )
@@ -26,11 +27,12 @@ namespace fs = std::filesystem;
 
 //Basic configuration:
 bool AutomaticallyRunThisProgramOnStartup = false;
-bool ShowConsoleWindowOnStartup = true;
+bool ShowConsoleWindowOnStartup = false;
 bool PrintDebugInfo = false;
 bool UseFixForBugAfterSleepMode = true;
 bool UseTheNewBestMethodEver = true;
 bool AutoOpenFirstWindowInBestMethodEver = true;
+bool AutoOpenFirstWindowInBestMethodEverLimited = true;
 int HowLongSleepBetweenDifferentKeysPressMilliseconds = 20;
 int HowLongSleepBetweenTheSameKeysPressMilliseconds = 0;
 int HowLongSleepAfterAutoOpenFirstWindowMilliseconds = 100;
@@ -45,6 +47,8 @@ int SleepPeriodWhenMouseIsOnAppIconInTheLoopMilliseconds = 10;
 int DefaultTaskbarIconWidth = 44;
 int DefaultTaskbarIconHeight = 48;
 int DefaultShowDesktopButtonWidth = 20;
+int DefaultSingleWindowPreviewThumbnailWidth = 250;
+int DefaultSingleWindowPreviewThumbnailHeight = 250;
 //bool KeepConsoleWindowVisibleEvenWhenDebugInfoIsDisabled = false;
 
 bool ConfigFileChangeTimeMonitorAllowed = true;
@@ -60,10 +64,40 @@ int AnimationLagButtonsElevenPlusMilliseconds = 100;//Unused by default
 
 
 //Dynamic variables:
-
+wstring ProgramVersion = L"1.7.0.0";
+wstring GitHubConfiguration = L"https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/blob/main/CONFIGURATION.md";
+wstring GitHubReleases = L"https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases";
+wstring GitHubAbout = L"https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix";
+wstring GitHubChangeLog = L"https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/blob/main/CHANGELOG.md";
 wstring CurrentExeWorks = L"";
 wstring CurrentExeWorksFilenameOnly = L"";
 wstring CurrentExeWorksPath = L"";
+
+std::time_t NowSettingsChangeTime;
+DWORD CurrentProcessID = 0;
+bool InterruptMainThread = false;
+bool InterruptMouseWatchdogThread = false;
+bool InterruptRestartProgram = false;
+bool InterruptRestartProgramRunAs = false;
+
+//Tray icon Stuff
+UINT WM_TASKBAR = 0;
+HWND Hwnd;
+HMENU Hmenu;
+NOTIFYICONDATA notifyIconData;
+wchar_t szTIP[64] = L"Windows 11 Drag & Drop to the Taskbar (Fix)";
+wchar_t szClassName[] = L"Windows11DragAndDropToTaskbarFix";
+wchar_t szTitleName[] = L"Windows 11 Drag & Drop to the Taskbar (Fix)";
+
+/*procedures  */
+LRESULT CALLBACK WindowProcedure(HWND, UINT, WPARAM, LPARAM);
+void minimize();
+void restore();
+void InitNotifyIconData();
+
+HINSTANCE hPrevWindow;
+HINSTANCE hInstWindow;
+int nShowCmdWindow;
 
 bool dirExists(const std::wstring& dirName_in)
 {
@@ -325,6 +359,9 @@ double NewConfigGetDoubleValueAfter(string ConfigLine, string SearchFor) {
 //I know people reading the code below will be facepalming, but I don't care. I use the functions which I created when I was 14.
 
 wstring ConfigFile = L"Windows11DragAndDropToTaskbarFixConfig.txt";
+wstring ConfigFileBase = L"Windows11DragAndDropToTaskbarFixConfig.txt";
+wstring ConfigFileAlternative = L"Windows11DragAndDropToTaskbarFixConfig.txt.txt";
+wstring ConfigFileAlternative2 = L"Windows11DragAndDropToTaskbarFix.txt";
 
 void Mona_Load_Configuration() {
 	string line = "";
@@ -394,10 +431,17 @@ void Mona_Load_Configuration() {
 
 				if (NewIsConfigLineEqualTo(line, "AutoOpenFirstWindowInBestMethodEver", "1") || NewIsConfigLineEqualTo(line, "AutoOpenFirstWindowInBestMethodEver", "true")) {
 					AutoOpenFirstWindowInBestMethodEver = true;
+					AutoOpenFirstWindowInBestMethodEverLimited = false;
+					continue;
+				}
+				else if (NewIsConfigLineEqualTo(line, "AutoOpenFirstWindowInBestMethodEver", "2") || NewIsConfigLineEqualTo(line, "AutoOpenFirstWindowInBestMethodEver", "limited")) {
+					AutoOpenFirstWindowInBestMethodEver = true;
+					AutoOpenFirstWindowInBestMethodEverLimited = true;
 					continue;
 				}
 				else if (NewIsConfigLineEqualTo(line, "AutoOpenFirstWindowInBestMethodEver", "0") || NewIsConfigLineEqualTo(line, "AutoOpenFirstWindowInBestMethodEver", "false")) {
 					AutoOpenFirstWindowInBestMethodEver = false;
+					AutoOpenFirstWindowInBestMethodEverLimited = false;
 					continue;
 				}
 
@@ -582,6 +626,22 @@ void Mona_Load_Configuration() {
 						continue;
 					}
 				}
+
+				TmpValueFromNewConfigGetIntFunction = NewConfigGetIntValueAfter(line, "DefaultSingleWindowPreviewThumbnailWidth");
+				if (TmpValueFromNewConfigGetIntFunction != -696969) {
+					if (TmpValueFromNewConfigGetIntFunction > 0) {//For performance purposes disallow 0s for now.
+						DefaultSingleWindowPreviewThumbnailWidth = static_cast<int>(TmpValueFromNewConfigGetIntFunction);
+						continue;
+					}
+				}
+
+				TmpValueFromNewConfigGetIntFunction = NewConfigGetIntValueAfter(line, "DefaultSingleWindowPreviewThumbnailHeight");
+				if (TmpValueFromNewConfigGetIntFunction != -696969) {
+					if (TmpValueFromNewConfigGetIntFunction > 0) {//For performance purposes disallow 0s for now.
+						DefaultSingleWindowPreviewThumbnailHeight = static_cast<int>(TmpValueFromNewConfigGetIntFunction);
+						continue;
+					}
+				}
 			}
 		}
 	}
@@ -600,7 +660,7 @@ std::time_t to_time_t(TP tp)
 }
 
 
-std::time_t ReturnConfigFileTime() {
+std::time_t ReturnConfigFileTime(bool OnlyFirstIf = false) {
 	if (FileExists(ConfigFile.c_str())) {
 		std::filesystem::path FileWithPath(ConfigFile);
 		std::filesystem::path full_p = absolute(FileWithPath);
@@ -617,6 +677,19 @@ std::time_t ReturnConfigFileTime() {
 		return toreturn;
 
 	}
+	//To make it easier for people who had hidden file extension while creating a new .txt file...
+	/*else if (!OnlyFirstIf && FileExists(ConfigFileAlternative.c_str())) {
+		ConfigFile = ConfigFileAlternative;
+		return ReturnConfigFileTime(true);
+	}
+	else if (!OnlyFirstIf && FileExists(ConfigFileAlternative2.c_str())) {
+		ConfigFile = ConfigFileAlternative2;
+		return ReturnConfigFileTime(true);
+	}
+	else if (!OnlyFirstIf && FileExists(ConfigFileBase.c_str())) {
+		ConfigFile = ConfigFileBase;
+		return ReturnConfigFileTime(true);
+	}*/
 	//MessageBox(Message2, "watchdogs return", _T("0"), MB_YESNO | MB_ICONQUESTION);
 	return 0;
 }
@@ -1314,6 +1387,11 @@ DWORD WINAPI MouseClickWatchdogThread(void* data) {
 	while (GetMessage(&msgMouseClickWatchdog, 0, 0, 0))
 	{
 		PeekMessage(&msgMouseClickWatchdog, 0, 0, 0, 0x0001);
+
+		//Maybe no need to check it with every mouse action... It will unhook itself on program exit anyway. 
+		/*if (InterruptMouseWatchdogThread) {
+			break;
+		}*/
 	}
 	UnhookWindowsHookEx(HandleLowLevelMousePressProc);
 	return 0;
@@ -1791,27 +1869,6 @@ void Check_And_Issue_Auto_Enter_Best_Method_Ever(int ButtonID) {
 				Sleep(HowLongSleepBetweenDifferentKeysPressMilliseconds);
 			}
 
-			keybd_event(VK_UP, MapVirtualKey(VK_UP, 0), 0, 0);
-			if (HowLongSleepBetweenTheSameKeysPressMilliseconds) {
-				Sleep(HowLongSleepBetweenTheSameKeysPressMilliseconds);
-			}
-			keybd_event(VK_UP, MapVirtualKey(VK_UP, 0), KEYEVENTF_KEYUP, 0);
-			if (HowLongSleepBetweenTheSameKeysPressMilliseconds) {
-				Sleep(HowLongSleepBetweenTheSameKeysPressMilliseconds);
-			}
-
-			//Press UP second time (just in case):
-			keybd_event(VK_UP, MapVirtualKey(VK_UP, 0), 0, 0);
-			if (HowLongSleepBetweenTheSameKeysPressMilliseconds) {
-				Sleep(HowLongSleepBetweenTheSameKeysPressMilliseconds);
-			}
-			keybd_event(VK_UP, MapVirtualKey(VK_UP, 0), KEYEVENTF_KEYUP, 0);
-
-			//Sleep to make sure arrow arrives at the location. should be before IsWindowVisible!
-			if (HowLongSleepBetweenDifferentKeysPressMilliseconds > 0) {
-				Sleep(HowLongSleepBetweenDifferentKeysPressMilliseconds);
-			}
-
 			RECT rectAtTheMoment;
 			//Yeah, get it in case loop is skipped
 			GetWindowRect(TaskListThumbnailWnd, &rectAtTheMoment);
@@ -1855,6 +1912,57 @@ void Check_And_Issue_Auto_Enter_Best_Method_Ever(int ButtonID) {
 
 			//if (IsWindowVisible(TaskListThumbnailWnd)) {
 			if (PreviousTaskListThumbnailWndVisible) { //Optimization, not to call IsWindowVisible twice.
+
+				//Count preview window size:
+				//1 = 216 175% = 172.
+				//2 = 424 150% DPI = 415. 175% = 410.
+				//4 = 850
+				//5 = 1063.
+				//So let's make it... Hmm... < 250.
+
+				int ThumbnailWindowSize = rectAtTheMoment.right - rectAtTheMoment.left;
+				int ThumbnailWindowSizeHeight = rectAtTheMoment.bottom - rectAtTheMoment.top;
+				if (AutoOpenFirstWindowInBestMethodEverLimited) {
+					if (ThumbnailWindowSize > DefaultSingleWindowPreviewThumbnailWidth) {
+						if (PrintDebugInfo) {
+							std::cout << "More than 1 windows detected in the Preview Window of Thumbnail. Width: " << ThumbnailWindowSize << ". The ENTER key won't be simulated.\n";
+						}
+						//Hotfix to prevent hotkeys spam
+						JustClickedEnterForBestMethodEver = 2;
+						return;
+					}
+					else if (ThumbnailWindowSizeHeight > DefaultSingleWindowPreviewThumbnailHeight) {
+						if (PrintDebugInfo) {
+							std::cout << "List of windows detected on the Preview Window of Thumbnail. Height: " << ThumbnailWindowSizeHeight << ". The ENTER key won't be simulated.\n";
+						}
+						//Hotfix to prevent hotkeys spam
+						JustClickedEnterForBestMethodEver = 2;
+						return;
+					}
+				}
+
+				//Moved it down in ver. 1.7
+
+				keybd_event(VK_UP, MapVirtualKey(VK_UP, 0), 0, 0);
+				if (HowLongSleepBetweenTheSameKeysPressMilliseconds) {
+					Sleep(HowLongSleepBetweenTheSameKeysPressMilliseconds);
+				}
+				keybd_event(VK_UP, MapVirtualKey(VK_UP, 0), KEYEVENTF_KEYUP, 0);
+				if (HowLongSleepBetweenTheSameKeysPressMilliseconds) {
+					Sleep(HowLongSleepBetweenTheSameKeysPressMilliseconds);
+				}
+
+				//Press UP second time (just in case):
+				keybd_event(VK_UP, MapVirtualKey(VK_UP, 0), 0, 0);
+				if (HowLongSleepBetweenTheSameKeysPressMilliseconds) {
+					Sleep(HowLongSleepBetweenTheSameKeysPressMilliseconds);
+				}
+				keybd_event(VK_UP, MapVirtualKey(VK_UP, 0), KEYEVENTF_KEYUP, 0);
+
+				//Sleep to make sure arrow arrives at the location. should be before IsWindowVisible!
+				if (HowLongSleepBetweenDifferentKeysPressMilliseconds > 0) {
+					Sleep(HowLongSleepBetweenDifferentKeysPressMilliseconds);
+				}
 
 				//Longer sleep
 				if (HowLongSleepBetweenDifferentKeysPressMilliseconds > 0) {
@@ -2446,8 +2554,121 @@ std::wstring Current_Button_Name = L"Unknown";
 std::wstring Button_Name_Left = L"Left";
 std::wstring Button_Name_Right = L"Right";
 
+std::chrono::milliseconds LastTimeFixedTaskbarSizeBug = std::chrono::milliseconds(0);
+long long int TaskbarSizeBugDetectedTimes = 0;
+
+bool Fix_Taskbar_Size_Bug(HWND Moomintrollen) {
+	RECT SleepModeFix_rect;
+	GetWindowRect(Moomintrollen, &SleepModeFix_rect);
+	int SleepModeFixTaskbarHeight = SleepModeFix_rect.bottom - SleepModeFix_rect.top;
+
+	if (SleepModeFixTaskbarHeight < 44) { //48 is normal height, 40 when bug occurs, so lets make it 44.
+		//Bug occurred
+		TaskbarSizeBugDetectedTimes++;
+		if (TimeNow.count() > LastTimeFixedTaskbarSizeBug.count() + 10000) {//We can have 10 secs here because it counts real time, not GetTickCount() which would not differ much after the sleep mode.
+			
+			if (Hwnd) {
+				if (PrintDebugInfo) {
+					std::wcout << L"MSTaskSwWClass size bug detected. The current height is: " << SleepModeFixTaskbarHeight << L" (and should be 48). Opening an empty Windows11DragAndDropToTaskbarFix window to fix it...\n";
+				}
+				ShowWindow(Hwnd, SW_HIDE);
+				Sleep(5);
+				ShowWindow(Hwnd, SW_SHOW);
+				Sleep(100);
+				ShowWindow(Hwnd, SW_HIDE);
+			}
+			else {
+				if (PrintDebugInfo) {
+					std::wcout << L"MSTaskSwWClass size bug detected. The current height is: " << SleepModeFixTaskbarHeight << L" (and should be 48). Starting a new CMD window to fix it...\n";
+				}
+				wstring EmptyWindowCommand = L"start cmd.exe /C \"echo Windows11DragAndDropToTaskbarFix.exe & echo https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix & echo A bug after the Sleep Mode has been detected. The MSTaskSwWClass window size returns incorrect RECT, therefore a new CMD window was open in order to force the taskbar window update. & echo Please read the GitHub page for more details. & timeout 1 & exit\"";
+				_wsystem(EmptyWindowCommand.c_str());
+				LastTimeFixedTaskbarSizeBug = TimeNow;
+			}
+			return true;
+		}
+	}
+	return false;
+}
+
+void Update_Primary_Screen_Windows_HWNDSs() {
+	PrimaryScreen = windowsHWNDs();
+	PrimaryScreen.hWndTray = FindWindow(L"Shell_TrayWnd", nullptr);
+	if (PrimaryScreen.hWndTray) {
+		PrimaryScreen.hWndTrayNotify = FindWindowEx(PrimaryScreen.hWndTray, 0, L"TrayNotifyWnd", nullptr);
+		//std::cout << "PrimaryScreen.hWndTrayNotify: " << PrimaryScreen.hWndTrayNotify << "\n";
+		PrimaryScreen.hWndRebar = FindWindowEx(PrimaryScreen.hWndTray, 0, L"ReBarWindow32", nullptr);
+	}
+	if (PrimaryScreen.hWndRebar) {
+		PrimaryScreen.hWndMSTaskSwWClass = FindWindowEx(PrimaryScreen.hWndRebar, 0, L"MSTaskSwWClass", nullptr);
+		PrimaryScreen.TaskListThumbnailWnd = FindWindowEx(NULL, 0, L"TaskListThumbnailWnd", nullptr);
+	}
+}
+
+DWORD WINAPI ProgramWindowThread(void* data) {
+	MSG messages;
+	WNDCLASSEXW wincl;
+	WM_TASKBAR = RegisterWindowMessageW(L"Windows11DragAndDropToTaskbarFixTaskbarCreated");
+
+	wincl.hInstance = hInstWindow;
+	wincl.lpszClassName = szClassName;
+	wincl.lpfnWndProc = WindowProcedure;
+	wincl.style = CS_DBLCLKS;
+	wincl.cbSize = sizeof(WNDCLASSEX);
+
+	wincl.hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_ICON1));
+	wincl.hIconSm = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_ICON1));
+	wincl.hCursor = LoadCursor(NULL, IDC_ARROW);
+	wincl.lpszMenuName = NULL;                 /* No menu */
+	wincl.cbClsExtra = 0;                      /* No extra bytes after the window class */
+	wincl.cbWndExtra = 0;                      /* structure or the window instance */
+	wincl.hbrBackground = (HBRUSH)(CreateSolidBrush(RGB(255, 255, 255)));
+	/* Register the window class, and if it fails quit the thread */
+	if (!RegisterClassEx(&wincl))
+		return 0;
+
+	/* The class is registered, let's create the program*/
+	Hwnd = CreateWindowEx(
+		0,                   /* Extended possibilites for variation */
+		szClassName,         /* Classname */
+		szTitleName,       /* Title Text */
+		//WS_OVERLAPPEDWINDOW, /* default window */
+		WS_OVERLAPPED | WS_SYSMENU, /* default window */
+		CW_USEDEFAULT,       /* Windows decides the position */
+		CW_USEDEFAULT,       /* where the window ends up on the screen */
+		//544,                 /* The programs width */
+		10,                 /* The programs width */
+		//375,                 /* and height in pixels */
+		10,                 /* and height in pixels */
+		HWND_DESKTOP,        /* The window is a child-window to desktop */
+		NULL,                /* No menu */
+		hInstWindow,       /* Program Instance handler */
+		NULL                 /* No Window Creation data */
+	);
+	/*Initialize the NOTIFYICONDATA structure only once*/
+	InitNotifyIconData();
+
+	//ShowWindow(Hwnd, nShowCmdWindow);
+
+	//Hide window on program startup.
+	ShowWindow(Hwnd, SW_HIDE);
+	Shell_NotifyIcon(NIM_ADD, &notifyIconData);
+
+	while (GetMessage(&messages, NULL, 0, 0))
+	{
+		TranslateMessage(&messages);
+		DispatchMessage(&messages);
+	}
+
+	return messages.wParam;
+}
+
 int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nShowCmd)
-{
+{ 
+	hPrevWindow = hPrev;
+	hInstWindow = hInst;
+	nShowCmdWindow = nShowCmd;
+	CurrentProcessID = GetCurrentProcessId();
 	//Important to make reading .lnk possible:
 	HRESULT hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
 
@@ -2463,12 +2684,20 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 	SetCurrentDirectoryW(CurrentWorkingDirectoryWhereExeIs);
 	CurrentExeWorksPath = CurrentWorkingDirectoryWhereExeIs;
 
+	bool IgnoreMutex = false;
+	wstring Commandline = lpCmdLine;
+	if (Commandline.find(L"restart-ignore-mutex") != std::wstring::npos) {
+		IgnoreMutex = true;
+	}
+
 	//Test:
 	// Unused in ver 1.1. Still working on it :(
 	//Check_Pinned_Apps();
 	//system("pause");
 
 	//Load configuration:
+	NowSettingsChangeTime = ReturnConfigFileTime();
+	LastSettingsChangeTime = NowSettingsChangeTime;
 	Mona_Load_Configuration();
 
 	if (!ShowConsoleWindowOnStartup) {
@@ -2499,17 +2728,20 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 		}
 	}
 
-	HANDLE handleMutex = CreateMutex(NULL, TRUE, L"MonaWindows11DragToTaskbar-AlreadyRunning");
-	if (GetLastError() == ERROR_ALREADY_EXISTS)
-	{
-		printf("Windows11DragAndDropToTaskbarFix is already running. Exiting this instance...\n");
-		return 1;
+	HANDLE handleMutex;
+	if (!IgnoreMutex) {
+		handleMutex = CreateMutex(NULL, TRUE, L"MonaWindows11DragToTaskbar-AlreadyRunning");
+		if (GetLastError() == ERROR_ALREADY_EXISTS)
+		{
+			printf("Windows11DragAndDropToTaskbarFix is already running. Exiting this instance...\n");
+			return 1;
+		}
 	}
 
 	//Welcome!
 	bool HideConsoleWindowSoon = false;
 	std::chrono::milliseconds ProgrmStartTime = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
-	printf("Windows11DragAndDropToTaskbarFix, ver. 1.6.0, created by Dr.MonaLisa.\n");
+	wcout << "Windows11DragAndDropToTaskbarFix, ver. " << ProgramVersion << L", created by Dr.MonaLisa." << endl;
 	printf("https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix\n\n");
 	printf("You can disable the console window. Please read the GitHub page to learn how to configure this program.\n");
 	if (!PrintDebugInfo) {
@@ -2522,6 +2754,9 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 	//Check auto start:
 	Check_And_Set_Auto_Program_Startup();
 
+	//Start program window thread:
+	HANDLE ThreadProgramWindowThread = CreateThread(NULL, 0, ProgramWindowThread, NULL, 0, NULL);
+
 	//Start Mouse Click Watchdog Thread 
 	HANDLE ThreadHandleMouseClickWatchdogThread = CreateThread(NULL, 0, MouseClickWatchdogThread, NULL, 0, NULL);
 
@@ -2530,7 +2765,25 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 	//system("pause");
 	//exit(0);
 
-	while (true) {
+	//Get primary Taskbar Height in order to disable UseFixForBugAfterSleepMode if UndockingDisabled:
+	if (UseFixForBugAfterSleepMode) {
+		Update_Primary_Screen_Windows_HWNDSs();
+		if (PrimaryScreen.hWndMSTaskSwWClass) {
+			RECT XSleepModeFix_rect;
+			GetWindowRect(PrimaryScreen.hWndMSTaskSwWClass, &XSleepModeFix_rect);
+			int XSleepModeFixTaskbarHeight = XSleepModeFix_rect.bottom - XSleepModeFix_rect.top;
+			if (XSleepModeFixTaskbarHeight < 44) {
+				UseFixForBugAfterSleepMode = false;
+				//UndockingDisabled
+				if (PrintDebugInfo) {
+					std::wcout << L"Incorrect taskbar height on program start detected: " << XSleepModeFixTaskbarHeight << L". Possibly `UndockingDisabled` is configured in registry. Setting UseFixForBugAfterSleepMode to FALSE in order to prevent the continuous fix execution." << endl;
+				}
+			}
+		}
+	}
+
+
+	while (!InterruptMainThread) {
 		TimeNow = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
 
 		if (HideConsoleWindowSoon) {
@@ -2551,31 +2804,11 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 					}
 					//Possible sleep mode:
 					//Copy-paste code because I'm too lazy.
-					PrimaryScreen = windowsHWNDs();
-					PrimaryScreen.hWndTray = FindWindow(L"Shell_TrayWnd", nullptr);
-					if (PrimaryScreen.hWndTray) {
-						PrimaryScreen.hWndTrayNotify = FindWindowEx(PrimaryScreen.hWndTray, 0, L"TrayNotifyWnd", nullptr);
-						//std::cout << "PrimaryScreen.hWndTrayNotify: " << PrimaryScreen.hWndTrayNotify << "\n";
-						PrimaryScreen.hWndRebar = FindWindowEx(PrimaryScreen.hWndTray, 0, L"ReBarWindow32", nullptr);
-					}
-					if (PrimaryScreen.hWndRebar) {
-						PrimaryScreen.hWndMSTaskSwWClass = FindWindowEx(PrimaryScreen.hWndRebar, 0, L"MSTaskSwWClass", nullptr);
-						PrimaryScreen.TaskListThumbnailWnd = FindWindowEx(NULL, 0, L"TaskListThumbnailWnd", nullptr);
-					}
+					Update_Primary_Screen_Windows_HWNDSs();
+
 					//Task view rect:
 					if (PrimaryScreen.hWndMSTaskSwWClass) {
-						RECT SleepModeFix_rect;
-						GetWindowRect(PrimaryScreen.hWndMSTaskSwWClass, &SleepModeFix_rect);
-						int SleepModeFixTaskbarHeight = SleepModeFix_rect.bottom - SleepModeFix_rect.top;
-
-						if (SleepModeFixTaskbarHeight < 44) { //48 is normal height, 40 when bug occurs, so lets make it 44.
-							//Bug occurred
-							if (PrintDebugInfo) {
-								std::wcout << L"MSTaskSwWClass size bug detected after Sleep Mode. The current height is: " << SleepModeFixTaskbarHeight << L" (and should be 48). Starting a new CMD window to fix it...\n";
-							}
-							wstring EmptyWindowCommand = L"start cmd.exe /C \"echo Windows11DragAndDropToTaskbarFix.exe & echo https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix & echo A bug after the Sleep Mode has been detected. The MSTaskSwWClass window size returns incorrect RECT, therefore a new CMD window was open in order to force the taskbar window update. & echo Please read the GitHub page for more details. & timeout 1 & exit\"";
-							_wsystem(EmptyWindowCommand.c_str());
-						}
+						Fix_Taskbar_Size_Bug(PrimaryScreen.hWndMSTaskSwWClass);
 					}
 				}
 			}
@@ -2585,7 +2818,7 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 		if (ConfigFileChangeTimeMonitorAllowed && (TimeNow.count() > LastTimeCheckedForConfigUpdate.count() + 5000)) {
 			LastTimeCheckedForConfigUpdate = TimeNow;
 			//We don't need to check if file exists here, as it's done in the function below anyway.
-			std::time_t NowSettingsChangeTime = ReturnConfigFileTime();
+			NowSettingsChangeTime = ReturnConfigFileTime();
 			if (NowSettingsChangeTime != 0) {
 				if (NowSettingsChangeTime > LastSettingsChangeTime) {
 					if (CheckedConfigTimeAtLeastOneTime) {
@@ -2595,7 +2828,18 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 
 						int ReloadChangesConfUtx = MessageBoxW(NULL, ReloadChangesQuestion.c_str(), ReloadChangesTitie.c_str(), MB_YESNOCANCEL | MB_ICONEXCLAMATION | MB_TOPMOST | MB_SETFOREGROUND | MB_DEFBUTTON1);
 						if (ReloadChangesConfUtx == IDYES) {
-							NewFunctionToKill(true);
+							//NewFunctionToKill(true);
+							if (Hwnd) {
+								Shell_NotifyIcon(NIM_DELETE, &notifyIconData);
+								SendMessage(Hwnd, WM_NULL, 0, 0);
+								SendMessage(Hwnd, WM_DESTROY, 0, 0);
+							}
+							InterruptMouseWatchdogThread = true;
+							//NewFunctionToKill(true);
+							InterruptRestartProgram = true;
+							InterruptMainThread = true;
+							
+							break;
 
 						}
 						else if (ReloadChangesConfUtx == IDNO) {
@@ -2695,16 +2939,20 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 
 					Array_Windows_by_Screen.clear();
 					//Primary screen variables:
-					PrimaryScreen = windowsHWNDs();
-					PrimaryScreen.hWndTray = FindWindow(L"Shell_TrayWnd", nullptr);
-					if (PrimaryScreen.hWndTray) {
-						PrimaryScreen.hWndTrayNotify = FindWindowEx(PrimaryScreen.hWndTray, 0, L"TrayNotifyWnd", nullptr);
-						//std::cout << "PrimaryScreen.hWndTrayNotify: " << PrimaryScreen.hWndTrayNotify << "\n";
-						PrimaryScreen.hWndRebar = FindWindowEx(PrimaryScreen.hWndTray, 0, L"ReBarWindow32", nullptr);
-					}
-					if (PrimaryScreen.hWndRebar) {
-						PrimaryScreen.hWndMSTaskSwWClass = FindWindowEx(PrimaryScreen.hWndRebar, 0, L"MSTaskSwWClass", nullptr);
-						PrimaryScreen.TaskListThumbnailWnd = FindWindowEx(NULL, 0, L"TaskListThumbnailWnd", nullptr);
+					Update_Primary_Screen_Windows_HWNDSs();
+
+					//ver 1.6.1:
+					if (UseFixForBugAfterSleepMode) {
+						if (PrimaryScreen.hWndMSTaskSwWClass) {
+							if (Fix_Taskbar_Size_Bug(PrimaryScreen.hWndMSTaskSwWClass)) {
+								//Fixed. Ignore this loop to get potentially new HWND and RECTs.
+								if (UseFixForBugAfterSleepMode) {
+									SleepModeFix_Previous_TimeNow = TimeNow;
+								}
+								Sleep(SleepPeriodNow);
+								continue;
+							}
+						}
 					}
 
 					Array_Windows_by_Screen.push_back(PrimaryScreen);
@@ -3039,4 +3287,296 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 		}
 		Sleep(SleepPeriodNow);
 	}
+
+	if (InterruptRestartProgram) {
+		if (!InterruptRestartProgramRunAs) {
+			ShellExecuteW(NULL, L"open", CurrentExeWorks.c_str(), L"restart-ignore-mutex", NULL, SW_SHOW);
+		}
+		else {
+			ShellExecuteW(NULL, L"runas", CurrentExeWorks.c_str(), L"restart-ignore-mutex", NULL, SW_SHOW);
+		}
+	}
+}
+
+void ClickedChangelogFromTray() {
+	ShellExecuteW(NULL, L"open", GitHubChangeLog.c_str(), NULL, NULL, SW_SHOWNORMAL);
+}
+
+void ClickedAboutFromTray() {
+	ShellExecuteW(NULL, L"open", GitHubAbout.c_str(), NULL, NULL, SW_SHOWNORMAL);
+}
+
+void ClickedCheckForUpdatesFromTray() {
+	ShellExecuteW(NULL, L"open", GitHubReleases.c_str(), NULL, NULL, SW_SHOWNORMAL);
+}
+
+SHELLEXECUTEINFO ShExecInfo = { 0 };
+bool ConfigMenuDisabled = false;
+int ConfigButtonID = 6;
+
+void ClickedConfigureFromTray() {
+	if (!FileExistsW(ConfigFileBase.c_str())) {
+		std::ofstream ofs(ConfigFileBase.c_str(), std::ofstream::out);
+		ofs << "//Should the program run automatically on system startup? 1 = true, 0 = false." << endl
+			<< "AutomaticallyRunThisProgramOnStartup=1"<< endl << endl << "//For more configuration options, please visit: https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/blob/main/CONFIGURATION.md" << endl;
+		ofs.close();
+		if (FileExistsW(ConfigFileBase.c_str())) {
+			LastSettingsChangeTime = ReturnConfigFileTime();
+		}
+	}
+	if (FileExistsW(ConfigFileBase.c_str())) {
+		if (ShExecInfo.hProcess != 0) {
+			if (WaitForSingleObject(ShExecInfo.hProcess, 1) == WAIT_TIMEOUT) {
+				return;
+			}
+			else {
+				CloseHandle(ShExecInfo.hProcess);
+			}
+		}
+
+		ShellExecuteW(NULL, L"open", GitHubConfiguration.c_str(), NULL, NULL, SW_SHOWNORMAL);
+
+		ShExecInfo.cbSize = sizeof(SHELLEXECUTEINFO);
+		ShExecInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
+		ShExecInfo.hwnd = NULL;
+		ShExecInfo.lpVerb = L"edit";
+		ShExecInfo.lpFile = ConfigFileBase.c_str();
+		ShExecInfo.lpParameters = L"";
+		ShExecInfo.lpDirectory = NULL;
+		ShExecInfo.nShow = SW_SHOWNORMAL;
+		ShExecInfo.hInstApp = NULL;
+		ShellExecuteEx(&ShExecInfo);
+		if (ShExecInfo.hProcess != 0) {
+			EnableMenuItem(Hmenu, ConfigButtonID, MF_DISABLED | MF_GRAYED | MF_BYPOSITION);
+			SendMessage(Hwnd, WM_NULL, 0, 0);
+			ConfigMenuDisabled = true;
+			//WaitForSingleObject(ShExecInfo.hProcess, INFINITE);
+			if (WaitForSingleObject(ShExecInfo.hProcess, 1) == WAIT_TIMEOUT) {
+
+			}
+			//CloseHandle(ShExecInfo.hProcess);
+		}
+	}
+	else {
+		//Error pls run as admin
+		wstring RunasTitie = L"Windows11DragAndDropToTaskbarFix.exe by Dr.MonaLisa:";
+		wstring RunasQuestion = L"Failed to create the configuration file: \"" + ConfigFileBase + L"\".\n\nWould you like to re-launch Windows11DragAndDropToTaskbarFix as administrator in order to grant the write permissions?\n\n- Click \"YES\" to restart the program as administrator.\n\n- Click \"NO\" to ignore and continue without changing the configuration.";
+		int RunAsQuestionint = MessageBoxW(NULL, RunasQuestion.c_str(), RunasTitie.c_str(), MB_YESNO | MB_ICONEXCLAMATION | MB_TOPMOST | MB_SETFOREGROUND | MB_DEFBUTTON1);
+		if (RunAsQuestionint == IDYES) {
+			if (Hwnd) {
+				Shell_NotifyIcon(NIM_DELETE, &notifyIconData);
+				SendMessage(Hwnd, WM_NULL, 0, 0);
+				SendMessage(Hwnd, WM_DESTROY, 0, 0);
+			}
+			InterruptMouseWatchdogThread = true;
+			InterruptRestartProgram = true;
+			InterruptRestartProgramRunAs = true;
+			InterruptMainThread = true;
+		}
+		else {
+			ShellExecuteW(NULL, L"open", GitHubConfiguration.c_str(), NULL, NULL, SW_SHOWNORMAL);
+		}
+	}
+}
+
+
+wstring NameAndVer = L"";
+wstring NameAndVer2 = L"";
+wstring NameRestart = L"";
+MENUITEMINFO	ItemInfo;
+
+LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	if (message == WM_TASKBAR && !IsWindowVisible(Hwnd))
+	{
+		minimize();
+		return 0;
+	}
+
+	switch (message)
+	{
+	case WM_ACTIVATE:
+		//Shell_NotifyIcon(NIM_ADD, &notifyIconData);
+		break;
+	case WM_CREATE:
+		ShowWindow(Hwnd, SW_HIDE);
+		Hmenu = CreatePopupMenu();
+
+		NameAndVer = L"Windows 11 Drag && Drop to the Taskbar (Fix)";
+		NameAndVer2 = L"ver. " + ProgramVersion + L". Created by Dr. Mona Lisa.";
+		NameRestart = L"Restart (PID: " + to_wstring(CurrentProcessID) + L")...";
+		AppendMenuW(Hmenu, MF_MENUBREAK, 0, NULL);
+		//AppendMenu(Hmenu, MF_BITMAP, 2, (LPCTSTR)hbitmap);
+		AppendMenuW(Hmenu, MF_STRING, ID_TRAY_ABOUT, NameAndVer.c_str());
+		AppendMenuW(Hmenu, MF_STRING, ID_TRAY_ABOUT, NameAndVer2.c_str());
+		AppendMenuW(Hmenu, MF_SEPARATOR, 0, NULL);
+		//AppendMenuW(Hmenu, MF_STRING, ID_TRAY_ABOUT, L"About...");
+		AppendMenuW(Hmenu, MF_STRING, ID_TRAY_CHECKUPDATES, L"Check for updates...");
+		AppendMenuW(Hmenu, MF_STRING, ID_TRAY_CHANGELOG, L"Read the changelog...");
+		AppendMenuW(Hmenu, MF_STRING, ID_TRAY_CONFIGURE, L"Configure...");
+		AppendMenuW(Hmenu, MF_SEPARATOR, 0, NULL);
+		AppendMenuW(Hmenu, MF_STRING, ID_TRAY_RESTART, NameRestart.c_str());
+		AppendMenuW(Hmenu, MF_STRING, ID_TRAY_EXIT, L"Quit...");
+		AppendMenuW(Hmenu, MF_MENUBREAK, 0, NULL);
+
+		//Make some texts bold:
+		ZeroMemory(&ItemInfo, sizeof(ItemInfo));
+		ItemInfo.cbSize = sizeof(ItemInfo);
+		GetMenuItemInfo(Hmenu, 1, TRUE, &ItemInfo);
+		ItemInfo.fMask = MIIM_STATE;
+		ItemInfo.fState = MFS_ENABLED | MFS_DEFAULT;
+		SetMenuItemInfo(Hmenu, 1, TRUE, &ItemInfo);
+		GetMenuItemInfo(Hmenu, 2, TRUE, &ItemInfo);
+		ItemInfo.fMask = MIIM_STATE;
+		ItemInfo.fState = MFS_ENABLED | MFS_DEFAULT;
+		SetMenuItemInfo(Hmenu, 2, TRUE, &ItemInfo);
+
+		break;
+
+	case WM_SYSCOMMAND:
+		switch (wParam & 0xFFF0)
+		{
+		case SC_MINIMIZE:
+		case SC_CLOSE:
+			minimize();
+			return 0;
+			break;
+		}
+		break;
+
+	case WM_SYSICON:
+	{
+		switch (wParam)
+		{
+		case ID_TRAY_APP_ICON:
+			SetForegroundWindow(Hwnd);
+
+			break;
+		}
+
+
+		/*if (lParam == WM_LBUTTONUP)
+		{
+
+			restore();
+		}
+		else*/ 
+		if (lParam == WM_LBUTTONUP || lParam == WM_RBUTTONDOWN)
+		{
+			if (ConfigMenuDisabled) {
+				if (ShExecInfo.hProcess != 0) {
+					if (WaitForSingleObject(ShExecInfo.hProcess, 1) == WAIT_TIMEOUT) {
+
+					}
+					else {
+						EnableMenuItem(Hmenu, ConfigButtonID, MF_ENABLED | MF_BYPOSITION);
+						SendMessage(Hwnd, WM_NULL, 0, 0);
+						ConfigMenuDisabled = false;
+
+						CloseHandle(ShExecInfo.hProcess);
+						ShExecInfo.hProcess = 0;
+					}
+				}
+			}
+
+			// Get current mouse position.
+			POINT curPoint;
+			GetCursorPos(&curPoint);
+			SetForegroundWindow(Hwnd);
+
+			// TrackPopupMenu blocks the app until TrackPopupMenu returns
+
+			UINT clicked = TrackPopupMenu(Hmenu, TPM_RETURNCMD | TPM_NONOTIFY, curPoint.x, curPoint.y, 0, hwnd, NULL);
+
+			SendMessage(hwnd, WM_NULL, 0, 0); // send benign message to window to make sure the menu goes away.
+			if (clicked == ID_TRAY_EXIT)
+			{
+				// quit the application.
+				Shell_NotifyIcon(NIM_DELETE, &notifyIconData);
+
+				//Terminate other threads.
+				InterruptMouseWatchdogThread = true;
+				InterruptMainThread = true;
+				PostQuitMessage(0);
+			}
+			else if (clicked == ID_TRAY_SHOW)
+			{
+				restore();
+			}
+			else if (clicked == ID_TRAY_RESTART)
+			{
+				Shell_NotifyIcon(NIM_DELETE, &notifyIconData);
+
+				InterruptMouseWatchdogThread = true;
+				//NewFunctionToKill(true);
+				InterruptRestartProgram = true;
+				InterruptMainThread = true;
+				PostQuitMessage(0);
+			}
+			else if (clicked == ID_TRAY_CONFIGURE) {
+				ClickedConfigureFromTray();
+			}
+			else if (clicked == ID_TRAY_CHECKUPDATES) {
+				ClickedCheckForUpdatesFromTray();
+			}
+			else if (clicked == ID_TRAY_ABOUT) {
+				ClickedAboutFromTray();
+			}
+			else if (clicked == ID_TRAY_CHANGELOG) {
+				ClickedChangelogFromTray();
+			}
+		}
+	}
+	break;
+
+	case WM_NCHITTEST:
+	{
+		UINT uHitTest = DefWindowProc(hwnd, WM_NCHITTEST, wParam, lParam);
+		if (uHitTest == HTCLIENT)
+			return HTCAPTION;
+		else
+			return uHitTest;
+	}
+
+	case WM_CLOSE:
+
+		minimize();
+		return 0;
+		break;
+
+	case WM_DESTROY:
+		InterruptMouseWatchdogThread = true;
+		InterruptMainThread = true;
+		PostQuitMessage(0);
+		break;
+	}
+
+	return DefWindowProc(hwnd, message, wParam, lParam);
+}
+
+
+void minimize()
+{
+	ShowWindow(Hwnd, SW_HIDE);
+}
+
+
+void restore()
+{
+	ShowWindow(Hwnd, SW_SHOW);
+}
+
+void InitNotifyIconData()
+{
+	memset(&notifyIconData, 0, sizeof(NOTIFYICONDATA));
+	notifyIconData.cbSize = sizeof(NOTIFYICONDATA);
+	notifyIconData.hWnd = Hwnd;
+	notifyIconData.uID = ID_TRAY_APP_ICON;
+	notifyIconData.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
+	notifyIconData.uCallbackMessage = WM_SYSICON; //Set up our invented Windows Message
+	notifyIconData.hIcon = (HICON)LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_ICON1));
+	//strncpy(notifyIconData.szTip, szTIP, sizeof(szTIP));
+	//wcsncpy(notifyIconData.szTip, szTIP, sizeof(szTIP));
+	//size_t actualLength = wcslen(szTIP);
+	wcsncpy_s(notifyIconData.szTip, szTIP, sizeof(szTIP));
 }

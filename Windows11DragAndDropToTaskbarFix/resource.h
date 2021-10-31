@@ -12,3 +12,16 @@
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
+
+//Icons / Try Icons:
+#define IDI_ICON1 101
+#define ID_TRAY_APP_ICON    1001
+#define ID_TRAY_EXIT        1002
+#define ID_TRAY_SHOW        1003
+#define ID_TRAY_RESTART        1004
+#define ID_TRAY_CONFIGURE        1005
+#define ID_TRAY_CHECKUPDATES        1006
+#define ID_TRAY_ABOUT        1007
+#define ID_TRAY_CHANGELOG        1008
+#define WM_SYSICON          (WM_USER + 1)
+
