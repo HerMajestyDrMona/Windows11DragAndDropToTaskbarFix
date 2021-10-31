@@ -9,9 +9,7 @@ Don't read if you're sensitive to misspellings and grammatical errors.
 - Added additional checks if the Windows 11 taskbar bug occurred, as discussed in issue [#10](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/10#issuecomment-953005633). The bug causes window `MSTaskSwWClass` to return an incorrect `RECT`. Windows11DragAndDropToTaskbarFix now opens a small self-created window, for ~100 milliseconds in order to force the taskbar update. Please note that this is a Windows 11 bug, not caused by this program.
 - Added a new option (enabled by default): `AutoOpenFirstWindowInBestMethodEver=2`. When it's set to 2, the program will not auto-open the first window, if there are 2 or more windows under the same icon. This generally restores exactly the same drag-and-drop behaviour as in previous versions of Windows.
 - Probably some other minor improvements.
-
-- Added support for the right mouse button drag and drop, issue [#14](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/14).
-  - *Right-button drag-n-drop is usable when dragging a file and you don't want the default action on drop. E.g. you want to select "Move" from the context menu on mouse button release instead of default "Copy" when dropping file on a folder on the same drive*.
+- The source code still looks awful, sometimes the configuration variable names still make no sense. All this might be improved in the future, but I prefer to focus on important things, especially when we won't use this fix after a year (Windows 11 22H2 rele
 
 ## [[ver. 1.6.0.0](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases/tag/v.1.6.0.0-release)]  - 2021-10-28, 08:40 CET
 - Added support for the right mouse button drag and drop, issue [#14](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/14).
