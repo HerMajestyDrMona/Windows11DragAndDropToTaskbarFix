@@ -2,7 +2,7 @@
 
 Since version 1.1 it's possible to configure the program by creating a configuration file at the same location as `Windows11DragAndDropToTaskbarFix.exe`. The configuration file should be named: `Windows11DragAndDropToTaskbarFixConfig.txt`. You can automate this process by clicking on the Mona Lisa Megan Fox `Tray icon` and then `Configure...` from the menu. It will create the correct file and open this GitHub page for reference.
 
-When you modify `Windows11DragAndDropToTaskbarFixConfig.txt`, the program will ask you to automatically restart itself. So you don't need to go to the Task Manager each time you want to test something.
+When you modify `Windows11DragAndDropToTaskbarFixConfig.txt`, the program will ask you to automatically restart itself. So you don't need to restart it each time you want to test something.
 
 You can include the following variables to your `Windows11DragAndDropToTaskbarFixConfig.txt` file:
 
