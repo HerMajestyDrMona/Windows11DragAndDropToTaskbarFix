@@ -31,10 +31,14 @@ Please read a separate article: [CONFIGURATION](https://github.com/HerMajestyDrM
 
 To use the fix, please simply download the binary file above (or compile it yourself) and **start it as any other program**. It works as an independent C++ process.
 
-To quit this program, please **simply kill** `Windows11DragAndDropToTaskbarFix.exe` or `Windows 11 Drag & Drop to the Taskbar (Fix)` **by the Task Manager**.
+To quit this program, please click on the Mona Lisa Megan Fox Tray icon, and select "Quit..." from the menu. You can also **kill** `Windows11DragAndDropToTaskbarFix.exe` or `Windows 11 Drag & Drop to the Taskbar (Fix)` **by the Task Manager**.
 
 
-## "VCRUNTIME140_1.dll" was not found error
+## Special Thanks To:
+- **Martin Morano** for giving permissions to use his awesome "Mona Lisa Megan Fox" artwork (used as the program icon).
+
+
+### "VCRUNTIME140_1.dll" was not found error
 If you get an error saying that "VCRUNTIME140_1.dll" is missing, please install [Microsoft Visual C++ 2015 - 2019 Redistributable x64](https://aka.ms/vs/16/release/vc_redist.x64.exe). Normally, these runtime libraries are installed by default on Windows 11. If you get this error then you most likely manually removed them before, using "Add or remove programs".
 
 
