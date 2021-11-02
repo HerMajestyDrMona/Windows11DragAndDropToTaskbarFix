@@ -118,6 +118,7 @@ REMAP_VK_T=0x54
 
 ### Less important options
 - You can skip the options below. They're only used to change the main thread sleeping times or default icon sizes.
+```
 DefaultSleepPeriodInTheLoopMilliseconds=100
 SleepPeriodWhenLeftMouseButtonIsPressedInTheLoopMilliseconds=25
 SleepPeriodWhenMouseIsOnAppIconInTheLoopMilliseconds=10
