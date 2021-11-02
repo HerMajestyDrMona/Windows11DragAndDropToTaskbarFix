@@ -30,6 +30,7 @@ bool AutomaticallyRunThisProgramOnStartup = false;
 bool ShowConsoleWindowOnStartup = false;
 bool PrintDebugInfo = false;
 bool UseFixForBugAfterSleepMode = true;
+bool ShowTrayIcon = true;
 bool UseTheNewBestMethodEver = true;
 bool AutoOpenFirstWindowInBestMethodEver = true;
 bool AutoOpenFirstWindowInBestMethodEverLimited = true;
@@ -64,7 +65,7 @@ int AnimationLagButtonsElevenPlusMilliseconds = 100;//Unused by default
 
 
 //Dynamic variables:
-wstring ProgramVersion = L"1.7.0.0";
+wstring ProgramVersion = L"1.8.0.0";
 wstring GitHubConfiguration = L"https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/blob/main/CONFIGURATION.md";
 wstring GitHubReleases = L"https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases";
 wstring GitHubAbout = L"https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix";
@@ -79,6 +80,33 @@ bool InterruptMainThread = false;
 bool InterruptMouseWatchdogThread = false;
 bool InterruptRestartProgram = false;
 bool InterruptRestartProgramRunAs = false;
+
+//Virtual Keys Remap:
+char REMAP_VK_LWIN =  VK_LWIN;
+char REMAP_VK_MENU = VK_MENU;
+char REMAP_VK_TAB = VK_TAB;
+char REMAP_VK_LCONTROL = VK_LCONTROL;
+char REMAP_VK_LSHIFT = VK_LSHIFT;
+char REMAP_VK_LEFT = VK_LEFT;
+char REMAP_VK_RIGHT = VK_RIGHT;
+char REMAP_VK_UP = VK_UP;
+char REMAP_VK_DOWN = VK_DOWN;
+char REMAP_VK_RETURN = VK_RETURN;
+char REMAP_VK_D = 0x44;
+char REMAP_VK_T = 0x54;
+
+UINT VIRTUAL_REMAP_VK_LWIN = MapVirtualKey(REMAP_VK_LWIN, 0);
+UINT VIRTUAL_REMAP_VK_MENU = MapVirtualKey(REMAP_VK_MENU, 0);
+UINT VIRTUAL_REMAP_VK_TAB = MapVirtualKey(REMAP_VK_TAB, 0);
+UINT VIRTUAL_REMAP_VK_LCONTROL = MapVirtualKey(REMAP_VK_LCONTROL, 0);
+UINT VIRTUAL_REMAP_VK_LSHIFT = MapVirtualKey(REMAP_VK_LSHIFT, 0);
+UINT VIRTUAL_REMAP_VK_LEFT = MapVirtualKey(REMAP_VK_LEFT, 0);
+UINT VIRTUAL_REMAP_VK_RIGHT = MapVirtualKey(REMAP_VK_RIGHT, 0);
+UINT VIRTUAL_REMAP_VK_UP = MapVirtualKey(REMAP_VK_UP, 0);
+UINT VIRTUAL_REMAP_VK_DOWN = MapVirtualKey(REMAP_VK_DOWN, 0);
+UINT VIRTUAL_REMAP_VK_RETURN = MapVirtualKey(REMAP_VK_RETURN, 0);
+UINT VIRTUAL_REMAP_VK_D = MapVirtualKey(REMAP_VK_D, 0);
+UINT VIRTUAL_REMAP_VK_T = MapVirtualKey(REMAP_VK_T, 0);
 
 //Tray icon Stuff
 UINT WM_TASKBAR = 0;
@@ -363,7 +391,120 @@ wstring ConfigFileBase = L"Windows11DragAndDropToTaskbarFixConfig.txt";
 wstring ConfigFileAlternative = L"Windows11DragAndDropToTaskbarFixConfig.txt.txt";
 wstring ConfigFileAlternative2 = L"Windows11DragAndDropToTaskbarFix.txt";
 
-void Mona_Load_Configuration() {
+string trololo(string troll) {
+	//const char* ca = troll.c_str();
+	int ca_l = troll.length();
+	char* ca2 = new char[ca_l];
+	memset(ca2, 0, sizeof(char) * ca_l);
+	int ca2_l = 0;
+	stringstream ss;
+	ss.clear();
+	char tmpch[3];
+	int tmpchint;
+	int tmpch_pos;
+	for (int i = 0; i < ca_l; ++i) {
+		tmpch_pos = i % 2;
+		tmpch[tmpch_pos] = troll[i];
+		if (tmpch_pos == 1) {
+			tmpch[2] = '\0';
+			ss << hex << tmpch;
+			ss >> tmpchint;
+			ca2[ca2_l++] = tmpchint;
+			ss.clear();
+		}
+	}
+	string troll2 = string(ca2, ca2_l);
+	//delete ca2;
+	delete[] ca2;
+	return troll2;
+}
+
+bool Mona_Remap_Key(string WhichKey, string ChangeTo, bool DebugPrintNow = false) {
+	std::size_t CatFelix = ChangeTo.find("0X");//its uppercase
+	if (CatFelix != std::string::npos) {
+		string KhloeKardashian = ChangeTo.substr(CatFelix + 2);
+		if (KhloeKardashian.length() > 0) {
+			string ChaneToHex = trololo(KhloeKardashian);
+			char ChangeToHexChar = ChaneToHex[0];
+
+			if (WhichKey == "VK_LWIN")
+			{
+				REMAP_VK_LWIN = ChangeToHexChar;
+				VIRTUAL_REMAP_VK_LWIN = MapVirtualKey(REMAP_VK_LWIN, 0);
+				return true;
+			}
+			else if (WhichKey == "VK_MENU")
+			{
+				REMAP_VK_MENU = ChangeToHexChar;
+				VIRTUAL_REMAP_VK_MENU = MapVirtualKey(REMAP_VK_MENU, 0);
+				return true;
+			}
+			else if (WhichKey == "VK_TAB")
+			{
+				REMAP_VK_TAB = ChangeToHexChar;
+				VIRTUAL_REMAP_VK_TAB = MapVirtualKey(REMAP_VK_TAB, 0);
+				return true;
+			}
+			else if (WhichKey == "VK_LCONTROL")
+			{
+				REMAP_VK_LCONTROL = ChangeToHexChar;
+				VIRTUAL_REMAP_VK_LCONTROL = MapVirtualKey(REMAP_VK_LCONTROL, 0);
+				return true;
+			}
+			else if (WhichKey == "VK_LSHIFT")
+			{
+				REMAP_VK_LSHIFT = ChangeToHexChar;
+				VIRTUAL_REMAP_VK_LSHIFT = MapVirtualKey(REMAP_VK_LSHIFT, 0);
+				return true;
+			}
+			else if (WhichKey == "VK_LEFT")
+			{
+				REMAP_VK_LEFT = ChangeToHexChar;
+				VIRTUAL_REMAP_VK_LEFT = MapVirtualKey(REMAP_VK_LEFT, 0);
+				return true;
+			}
+			else if (WhichKey == "VK_RIGHT")
+			{
+				REMAP_VK_RIGHT = ChangeToHexChar;
+				VIRTUAL_REMAP_VK_RIGHT = MapVirtualKey(REMAP_VK_RIGHT, 0);
+				return true;
+			}
+			else if (WhichKey == "VK_UP")
+			{
+				REMAP_VK_UP = ChangeToHexChar;
+				VIRTUAL_REMAP_VK_UP = MapVirtualKey(REMAP_VK_UP, 0);
+				return true;
+			}
+			else if (WhichKey == "VK_DOWN")
+			{
+				REMAP_VK_DOWN = ChangeToHexChar;
+				VIRTUAL_REMAP_VK_DOWN = MapVirtualKey(REMAP_VK_DOWN, 0);
+				return true;
+			}
+			else if (WhichKey == "VK_RETURN")
+			{
+				REMAP_VK_RETURN = ChangeToHexChar;
+				VIRTUAL_REMAP_VK_RETURN = MapVirtualKey(REMAP_VK_RETURN, 0);
+				return true;
+			}
+			else if (WhichKey == "VK_D")
+			{
+				REMAP_VK_D = ChangeToHexChar;
+				VIRTUAL_REMAP_VK_D = MapVirtualKey(REMAP_VK_D, 0);
+				return true;
+			}
+			else if (WhichKey == "VK_T")
+			{
+				REMAP_VK_T = ChangeToHexChar;
+				VIRTUAL_REMAP_VK_T = MapVirtualKey(REMAP_VK_T, 0);
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+void Mona_Load_Configuration(bool DebugPrintNow = false) {
 	string line = "";
 	int rowcnt = 0;
 	long long int TmpValueFromNewConfigGetIntFunction = -696969;
@@ -374,10 +515,10 @@ void Mona_Load_Configuration() {
 			getline(settingsfile, line);
 			++rowcnt;
 			if (line.length() > 0) {
-
 				find_and_replace(line, "\r\n", "");
 				find_and_replace(line, "\r", "");
 				find_and_replace(line, "\n", "");
+				string line_uppercase = Mona_toUpper(line);
 
 				if (rowcnt > 1000) {
 					//Just in case someone loads a 1000TB file as a config.
@@ -402,6 +543,39 @@ void Mona_Load_Configuration() {
 					}
 				}
 
+				//1.8.0 keys remapping:
+				std::size_t AngelaMerkel = line_uppercase.find("REMAP_");
+				if (AngelaMerkel != std::string::npos) {
+					string Putin = line_uppercase.substr(AngelaMerkel+6);
+					std::size_t Macron = Putin.find(" =");
+					string Obama = "";
+					if (Macron != std::string::npos) {
+						Obama = Putin.substr(Macron + 2);
+					}
+					else {
+						Macron = Putin.find("=");
+					}
+					if (Macron != std::string::npos) {
+						Obama = Putin.substr(Macron + 1);
+						Putin = Putin.substr(0, Macron);
+						if (Putin.length() > 1) {
+							if (Obama.length() > 0) {
+								if (Mona_Remap_Key(Putin, Obama, DebugPrintNow)) {
+									if (DebugPrintNow) {
+										std::cout << "Successfully remaped key: \"" << Putin << "\" to: \"" << Obama << "\". " << std::endl;
+									}
+								}
+								else {
+									if (DebugPrintNow) {
+										std::cout << "Failed to remap key: \"" << Putin << "\" to: \"" << Obama << "\". " << std::endl;
+									}
+								}
+							}
+						}
+					}
+				}
+
+
 				if (NewIsConfigLineEqualTo(line, "PrintDebugInfo", "1") || NewIsConfigLineEqualTo(line, "PrintDebugInfo", "true")) {
 					PrintDebugInfo = true;
 					continue;
@@ -417,6 +591,15 @@ void Mona_Load_Configuration() {
 				}
 				else if (NewIsConfigLineEqualTo(line, "UseFixForBugAfterSleepMode", "0") || NewIsConfigLineEqualTo(line, "UseFixForBugAfterSleepMode", "false")) {
 					UseFixForBugAfterSleepMode = false;
+					continue;
+				}
+
+				if (NewIsConfigLineEqualTo(line, "ShowTrayIcon", "1") || NewIsConfigLineEqualTo(line, "ShowTrayIcon", "true")) {
+					ShowTrayIcon = true;
+					continue;
+				}
+				else if (NewIsConfigLineEqualTo(line, "ShowTrayIcon", "0") || NewIsConfigLineEqualTo(line, "ShowTrayIcon", "false")) {
+					ShowTrayIcon = false;
 					continue;
 				}
 
@@ -1513,11 +1696,11 @@ void Simulate_Show_Desktop_Behaviour() {
 }
 
 void Simulate_ALT_Plus_TAB_Hotkey(int SleepFor = 50) {
-	keybd_event(VK_MENU, MapVirtualKey(VK_MENU, 0), 0, 0); //Press ALT
-	keybd_event(VK_TAB, MapVirtualKey(VK_TAB, 0), 0, 0); //Press TAB
+	keybd_event(REMAP_VK_MENU, VIRTUAL_REMAP_VK_MENU, 0, 0); //Press ALT
+	keybd_event(REMAP_VK_TAB, VIRTUAL_REMAP_VK_TAB, 0, 0); //Press TAB
 	Sleep(SleepFor);
-	keybd_event(VK_TAB, MapVirtualKey(VK_TAB, 0), KEYEVENTF_KEYUP, 0); //Release TAB
-	keybd_event(VK_MENU, MapVirtualKey(VK_MENU, 0), KEYEVENTF_KEYUP, 0); //Release ALT
+	keybd_event(REMAP_VK_TAB, VIRTUAL_REMAP_VK_TAB, KEYEVENTF_KEYUP, 0); //Release TAB
+	keybd_event(REMAP_VK_MENU, VIRTUAL_REMAP_VK_MENU, KEYEVENTF_KEYUP, 0); //Release ALT
 }
 
 #ifndef DONT_INCLUDE_UNUSED_FUNCTIONS_TO_PREVENT_PSEUDO_ANTIVIRUSES_FROM_THROWING_FALSE_POSITIVES
@@ -1943,21 +2126,21 @@ void Check_And_Issue_Auto_Enter_Best_Method_Ever(int ButtonID) {
 
 				//Moved it down in ver. 1.7
 
-				keybd_event(VK_UP, MapVirtualKey(VK_UP, 0), 0, 0);
+				keybd_event(REMAP_VK_UP, VIRTUAL_REMAP_VK_UP, 0, 0);
 				if (HowLongSleepBetweenTheSameKeysPressMilliseconds) {
 					Sleep(HowLongSleepBetweenTheSameKeysPressMilliseconds);
 				}
-				keybd_event(VK_UP, MapVirtualKey(VK_UP, 0), KEYEVENTF_KEYUP, 0);
+				keybd_event(REMAP_VK_UP, VIRTUAL_REMAP_VK_UP, KEYEVENTF_KEYUP, 0);
 				if (HowLongSleepBetweenTheSameKeysPressMilliseconds) {
 					Sleep(HowLongSleepBetweenTheSameKeysPressMilliseconds);
 				}
 
 				//Press UP second time (just in case):
-				keybd_event(VK_UP, MapVirtualKey(VK_UP, 0), 0, 0);
+				keybd_event(REMAP_VK_UP, VIRTUAL_REMAP_VK_UP, 0, 0);
 				if (HowLongSleepBetweenTheSameKeysPressMilliseconds) {
 					Sleep(HowLongSleepBetweenTheSameKeysPressMilliseconds);
 				}
-				keybd_event(VK_UP, MapVirtualKey(VK_UP, 0), KEYEVENTF_KEYUP, 0);
+				keybd_event(REMAP_VK_UP, VIRTUAL_REMAP_VK_UP, KEYEVENTF_KEYUP, 0);
 
 				//Sleep to make sure arrow arrives at the location. should be before IsWindowVisible!
 				if (HowLongSleepBetweenDifferentKeysPressMilliseconds > 0) {
@@ -1977,11 +2160,11 @@ void Check_And_Issue_Auto_Enter_Best_Method_Ever(int ButtonID) {
 				}
 
 				//Simulate the Space key. It then only opens the active window, not starting apps!!!
-				keybd_event(VK_RETURN, MapVirtualKey(VK_RETURN, 0), 0, 0);
+				keybd_event(REMAP_VK_RETURN, VIRTUAL_REMAP_VK_RETURN, 0, 0);
 				if (HowLongSleepBetweenTheSameKeysPressMilliseconds) {
 					Sleep(HowLongSleepBetweenTheSameKeysPressMilliseconds);
 				}
-				keybd_event(VK_RETURN, MapVirtualKey(VK_RETURN, 0), KEYEVENTF_KEYUP, 0);
+				keybd_event(REMAP_VK_RETURN, VIRTUAL_REMAP_VK_RETURN, KEYEVENTF_KEYUP, 0);
 
 
 				//We still need some sleep here, but different than window rect change detection look:
@@ -2165,18 +2348,18 @@ void Finally_The_Best_Method_Ever(int ButtonID, int AllButtonsNumber, int Window
 
 			//Check if CTRL is pressed, because this hotkey won't activate with it:
 			bool CTRL_Was_Down = false;
-			if (GetKeyState(VK_LCONTROL) & 0x8000)
+			if (GetKeyState(REMAP_VK_LCONTROL) & 0x8000)
 			{
 				CTRL_Was_Down = true;
-				keybd_event(VK_LCONTROL, MapVirtualKey(VK_LCONTROL, 0), KEYEVENTF_KEYUP, 0);//Release CTRL
+				keybd_event(REMAP_VK_LCONTROL, VIRTUAL_REMAP_VK_LCONTROL, KEYEVENTF_KEYUP, 0);//Release CTRL
 			}
 
 			//For some reasons doesn't seem to work, but we can leave it in code.
 			bool ALT_Was_Down = false;
-			if (GetKeyState(VK_MENU) & 0x8000)
+			if (GetKeyState(REMAP_VK_MENU) & 0x8000)
 			{
 				ALT_Was_Down = true;
-				keybd_event(VK_MENU, MapVirtualKey(VK_MENU, 0), KEYEVENTF_KEYUP, 0);//Release ALT
+				keybd_event(REMAP_VK_MENU, VIRTUAL_REMAP_VK_MENU, KEYEVENTF_KEYUP, 0);//Release ALT
 			}
 
 			if (CTRL_Was_Down || ALT_Was_Down) {
@@ -2185,19 +2368,19 @@ void Finally_The_Best_Method_Ever(int ButtonID, int AllButtonsNumber, int Window
 				}
 			}
 
-			keybd_event(VK_LWIN, MapVirtualKey(VK_LWIN, 0), 0, 0);//Pres Logo Win
+			keybd_event(REMAP_VK_LWIN, VIRTUAL_REMAP_VK_LWIN, 0, 0);//Pres Logo Win
 			if (WithShift) {
-				keybd_event(VK_LSHIFT, MapVirtualKey(VK_LSHIFT, 0), 0, 0);//Pres Shift
+				keybd_event(REMAP_VK_LSHIFT, VIRTUAL_REMAP_VK_LSHIFT, 0, 0);//Pres Shift
 			}
-			keybd_event(0x54, MapVirtualKey(0x54, 0), 0, 0);//Press T
+			keybd_event(REMAP_VK_T, VIRTUAL_REMAP_VK_T, 0, 0);//Press T
 			if (HowLongSleepBetweenTheSameKeysPressMilliseconds) {
 				Sleep(HowLongSleepBetweenTheSameKeysPressMilliseconds);
 			}
-			keybd_event(0x44, MapVirtualKey(0x54, 0), KEYEVENTF_KEYUP, 0); //Release T
+			keybd_event(REMAP_VK_T, VIRTUAL_REMAP_VK_T, KEYEVENTF_KEYUP, 0); //Release T
 			if (WithShift) {
-				keybd_event(VK_LSHIFT, MapVirtualKey(VK_LSHIFT, 0), KEYEVENTF_KEYUP, 0);//Release Shift
+				keybd_event(REMAP_VK_LSHIFT, VIRTUAL_REMAP_VK_LSHIFT, KEYEVENTF_KEYUP, 0);//Release Shift
 			}
-			keybd_event(VK_LWIN, MapVirtualKey(VK_LWIN, 0), KEYEVENTF_KEYUP, 0);//Release Logo Win
+			keybd_event(REMAP_VK_LWIN, VIRTUAL_REMAP_VK_LWIN, KEYEVENTF_KEYUP, 0);//Release Logo Win
 			
 			if (HowLongSleepBetweenDifferentKeysPressMilliseconds > 0) {
 				Sleep(HowLongSleepBetweenDifferentKeysPressMilliseconds);
@@ -2205,26 +2388,28 @@ void Finally_The_Best_Method_Ever(int ButtonID, int AllButtonsNumber, int Window
 
 			//Push CTRL again not to interrupt user's action
 			if (CTRL_Was_Down) {
-				keybd_event(VK_LCONTROL, MapVirtualKey(VK_LCONTROL, 0), 0, 0);//Pres Ctrl
+				keybd_event(REMAP_VK_LCONTROL, VIRTUAL_REMAP_VK_LCONTROL, 0, 0);//Pres Ctrl
 			}
 			if (ALT_Was_Down) {
-				keybd_event(VK_MENU, MapVirtualKey(VK_MENU, 0), 0, 0);//Pres Alt
+				keybd_event(REMAP_VK_MENU, VIRTUAL_REMAP_VK_MENU, 0, 0);//Pres Alt
 			}
 
 			for (int iii = 0; iii < RealNumberToClick - 1; iii++) {
 				if (WithShift) {
-					keybd_event(VK_LEFT, MapVirtualKey(VK_LEFT, 0), 0, 0);
+					keybd_event(REMAP_VK_LEFT, VIRTUAL_REMAP_VK_LEFT, 0, 0);
 					if (HowLongSleepBetweenTheSameKeysPressMilliseconds) {
 						Sleep(HowLongSleepBetweenTheSameKeysPressMilliseconds);
 					}
-					keybd_event(VK_LEFT, MapVirtualKey(VK_LEFT, 0), KEYEVENTF_KEYUP, 0);
+					keybd_event(REMAP_VK_LEFT, VIRTUAL_REMAP_VK_LEFT, KEYEVENTF_KEYUP, 0);
 				}
 				else {
-					keybd_event(VK_RIGHT, MapVirtualKey(VK_LEFT, 0), 0, 0);
+					keybd_event(REMAP_VK_RIGHT, VIRTUAL_REMAP_VK_RIGHT, 0, 0);
+					//keybd_event(REMAP_VK_RCONTROL, VIRTUAL_REMAP_VK_RCONTROL, 0, 0);
 					if (HowLongSleepBetweenTheSameKeysPressMilliseconds) {
 						Sleep(HowLongSleepBetweenTheSameKeysPressMilliseconds);
 					}
-					keybd_event(VK_RIGHT, MapVirtualKey(VK_LEFT, 0), KEYEVENTF_KEYUP, 0);
+					keybd_event(REMAP_VK_RIGHT, VIRTUAL_REMAP_VK_RIGHT, KEYEVENTF_KEYUP, 0);
+					//keybd_event(REMAP_VK_RCONTROL, VIRTUAL_REMAP_VK_RCONTROL, KEYEVENTF_KEYUP, 0);
 				}
 				//std::wcout << L"Click" << iii << endl;
 				if (HowLongSleepBetweenTheSameKeysPressMilliseconds) {
@@ -2253,9 +2438,9 @@ void Finally_The_Best_Method_Ever(int ButtonID, int AllButtonsNumber, int Window
 			Sleep(1);
 		}*/
 
-		/*keybd_event(VK_UP, MapVirtualKey(VK_UP, 0), 0, 0); //Press Up
+		/*keybd_event(REMAP_VK_UP, VIRTUAL_REMAP_VK_UP, 0, 0); //Press Up
 		Sleep(1);
-		keybd_event(VK_UP, MapVirtualKey(VK_UP, 0), KEYEVENTF_KEYUP, 0); //Release Up*/
+		keybd_event(REMAP_VK_UP, VIRTUAL_REMAP_VK_UP, KEYEVENTF_KEYUP, 0); //Release Up*/
 
 		//HWND FocusedWindow = GetFocus();
 		if (PrintDebugInfo) {
@@ -2270,28 +2455,28 @@ void Finally_The_Best_Method_Ever(int ButtonID, int AllButtonsNumber, int Window
 	}
 	else {
 		for (int iii = 0; iii < RealNumberToClick; iii++) {
-			keybd_event(VK_LWIN, MapVirtualKey(VK_LWIN, 0), 0, 0);//Pres Logo Win
+			keybd_event(REMAP_VK_LWIN, VIRTUAL_REMAP_VK_LWIN, 0, 0);//Pres Logo Win
 			Sleep(1);
 			if (WithShift) {
-				keybd_event(VK_LSHIFT, MapVirtualKey(VK_LSHIFT, 0), 0, 0);//Pres Shift
+				keybd_event(REMAP_VK_LSHIFT, VIRTUAL_REMAP_VK_LSHIFT, 0, 0);//Pres Shift
 			}
 			Sleep(1);
-			keybd_event(0x54, MapVirtualKey(0x54, 0), 0, 0);//Press T
+			keybd_event(REMAP_VK_T, VIRTUAL_REMAP_VK_T, 0, 0);//Press T
 			Sleep(1);
-			keybd_event(0x44, MapVirtualKey(0x54, 0), KEYEVENTF_KEYUP, 0); //Release T
+			keybd_event(REMAP_VK_T, VIRTUAL_REMAP_VK_T, KEYEVENTF_KEYUP, 0); //Release T
 			Sleep(1);
 			if (WithShift) {
-				keybd_event(VK_LSHIFT, MapVirtualKey(VK_LSHIFT, 0), KEYEVENTF_KEYUP, 0);//Pres Shift
+				keybd_event(REMAP_VK_LSHIFT, VIRTUAL_REMAP_VK_LSHIFT, KEYEVENTF_KEYUP, 0);//Pres Shift
 			}
 			Sleep(1);
-			keybd_event(VK_LWIN, MapVirtualKey(VK_LWIN, 0), KEYEVENTF_KEYUP, 0);//Release Logo Win
+			keybd_event(REMAP_VK_LWIN, VIRTUAL_REMAP_VK_LWIN, KEYEVENTF_KEYUP, 0);//Release Logo Win
 			Sleep(1);
 		}
 		/*Sleep(10);
 		//Press arrow up to reset selection
-		keybd_event(VK_UP, MapVirtualKey(VK_UP, 0), 0, 0); //Press Up
+		keybd_event(REMAP_VK_UP, VIRTUAL_REMAP_VK_UP, 0, 0); //Press Up
 		Sleep(1);
-		keybd_event(VK_UP, MapVirtualKey(VK_UP, 0), KEYEVENTF_KEYUP, 0); //Release Up*/
+		keybd_event(REMAP_VK_UP, VIRTUAL_REMAP_VK_UP, KEYEVENTF_KEYUP, 0); //Release Up*/
 	}
 	Previous_Button_Number = ButtonID;
 	Previous_WindowsScreenSet = WindowsScreenSet;
@@ -2646,13 +2831,17 @@ DWORD WINAPI ProgramWindowThread(void* data) {
 		NULL                 /* No Window Creation data */
 	);
 	/*Initialize the NOTIFYICONDATA structure only once*/
-	InitNotifyIconData();
+	if (ShowTrayIcon) {
+		InitNotifyIconData();
+	}
 
 	//ShowWindow(Hwnd, nShowCmdWindow);
 
 	//Hide window on program startup.
 	ShowWindow(Hwnd, SW_HIDE);
-	Shell_NotifyIcon(NIM_ADD, &notifyIconData);
+	if (ShowTrayIcon) {
+		Shell_NotifyIcon(NIM_ADD, &notifyIconData);
+	}
 
 	while (GetMessage(&messages, NULL, 0, 0))
 	{
@@ -2700,6 +2889,7 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 	LastSettingsChangeTime = NowSettingsChangeTime;
 	Mona_Load_Configuration();
 
+	bool ReloadConfigToShowDebugInfo = false;
 	if (!ShowConsoleWindowOnStartup) {
 		//ShowWindow(GetConsoleWindow(), SW_HIDE);
 		if (PrintDebugInfo) {
@@ -2726,6 +2916,9 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 			SetConsoleMode(hInput, ENABLE_EXTENDED_FLAGS |
 				(prev_mode & ~ENABLE_QUICK_EDIT_MODE));
 		}
+		else {
+			ReloadConfigToShowDebugInfo = true;
+		}
 	}
 
 	HANDLE handleMutex;
@@ -2749,6 +2942,11 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 		if (ShowConsoleWindowOnStartup) {
 			HideConsoleWindowSoon = true;
 		}
+	}
+
+	if (ReloadConfigToShowDebugInfo) {
+		//Load config AGAIN to show debug output this time.
+		Mona_Load_Configuration(true);
 	}
 
 	//Check auto start:
@@ -2830,7 +3028,9 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 						if (ReloadChangesConfUtx == IDYES) {
 							//NewFunctionToKill(true);
 							if (Hwnd) {
-								Shell_NotifyIcon(NIM_DELETE, &notifyIconData);
+								if (ShowTrayIcon) {
+									Shell_NotifyIcon(NIM_DELETE, &notifyIconData);
+								}
 								SendMessage(Hwnd, WM_NULL, 0, 0);
 								SendMessage(Hwnd, WM_DESTROY, 0, 0);
 							}
@@ -2888,7 +3088,7 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 		}
 		
 		//Check if left mouse button is pressed:
-		//if (!GetAsyncKeyState(VK_LBUTTON)) {
+		//if (!GetAsyncKeyState(REMAP_VK_LBUTTON)) {
 		//In ver 1.1 we use a new thread
 		if(!LeftButtonPressedATM){
 			if (CurrentlyLeftMouseButtonIsPressed) {
@@ -2917,7 +3117,7 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 					FirstTimeClickedLeftMouseButton = LastTimeClickedLeftMouseButton;
 					Previous_UniqueID_of_the_click = Current_UniqueID_of_the_click;
 					if (PrintDebugInfo) {
-						std::cout << "Different mouse click unique ID detected: " << Current_UniqueID_of_the_click << ". Resetting...\n";
+						std::wcout << L"Different mouse click unique ID detected: " << Current_UniqueID_of_the_click << L". Resetting...\n";
 					}
 				}
 			}
@@ -3026,7 +3226,7 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 				if (_wcsicmp(WindowClassName, L"MSTaskListWClass") == 0) {
 					if (WindowUnderMouse != hWndMSTaskSwWClass) {
 						if (PrintDebugInfo) {
-							std::cout << "Found Taskbar Window on Secondary Screen. Switching HWNDs to the other monitor mode. " << WindowUnderMouse << "\n";
+							std::wcout << L"Found Taskbar Window on Secondary Screen. Switching HWNDs to the other monitor mode. " << WindowUnderMouse << "\n";
 						}
 
 						if (Array_Windows_by_Screen.size() > 0) {
@@ -3034,13 +3234,19 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 								if (Array_Windows_by_Screen[iha].hWndMSTaskSwWClass == WindowUnderMouse) {
 									WindowsScreenSet = iha;
 									if (PrintDebugInfo) {
-										std::cout << "Found matching window in Array_Windows_by_Screen. " << WindowUnderMouse << "\n";
+										std::wcout << L"Found matching window in Array_Windows_by_Screen. " << WindowUnderMouse << "\n";
 									}
 									break;
 								}
 							}
 						}
 					}
+				}
+
+				//1.8:
+				size_t countVector = Array_Windows_by_Screen.size();
+				if (countVector < (WindowsScreenSet + 1)) {
+					WindowsScreenSet = 0;
 				}
 
 				//ver 1.5 continued:
@@ -3071,7 +3277,7 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 				TaskListThumbnailWnd = Array_Windows_by_Screen[0].TaskListThumbnailWnd;
 
 				if (PrintDebugInfo) {
-					std::cout << "Found Taskbar Window: " << hWndMSTaskSwWClass << "\n";
+					std::wcout << L"Found Taskbar Window: " << hWndMSTaskSwWClass << "\n";
 				}
 				RECT rect;
 				if (hWndMSTaskSwWClass) {
@@ -3087,12 +3293,12 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 				//std::cout << "Taskbar Window Rect: " << rect.left << ":" << rect.right << ":" << rect.bottom << ":" << rect.top << "\n";
 				TaskbarWindowWidth = rect.right - rect.left;
 				if (PrintDebugInfo) {
-					std::cout << "Taskbar Window Width: " << TaskbarWindowWidth << ". Taskbar Window Rect: " << rect.left << ":" << rect.right << ":" << rect.bottom << ":" << rect.top << "\n";
+					std::wcout << L"Taskbar Window Width: " << TaskbarWindowWidth << L". Taskbar Window Rect: " << rect.left << ":" << rect.right << L":" << rect.bottom << L":" << rect.top << "\n";
 				}
 
 				NumberOfItemsOnTaskbar = TaskbarWindowWidth / DefaultTaskbarIconWidth;
 				if (PrintDebugInfo) {
-					std::cout << "Number of icons on taskbar: " << NumberOfItemsOnTaskbar << "\n";
+					std::wcout << L"Number of icons on taskbar: " << NumberOfItemsOnTaskbar << "\n";
 				}
 				
 				//if (hWndMSTaskSwWClass) {
@@ -3138,7 +3344,7 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 						}*/
 
 						if (PrintDebugInfo) {
-							std::cout << "Client Mouse position. X:" << P_Client.x << " Y: " << P_Client.y << "\n";
+							std::wcout << L"Client Mouse position. X:" << P_Client.x << L" Y: " << P_Client.y << L"\n";
 						}
 
 						//Check if maybe in the "show desktop" area:
@@ -3173,7 +3379,7 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 							int HowLongOverThisIconCount = TimeNow.count() - FirstTimeHoveredOverThisAppIcon.count();
 
 							if (PrintDebugInfo) {
-								std::cout << "Currently in the taskbar area! App icon ID: " << CurrentAppIconPlusOne << ". Pressed for milliseconds: " << HowLongOverThisIconCount << "\n";
+								std::wcout << L"Currently in the taskbar area! App icon ID: " << CurrentAppIconPlusOne << L". Pressed for milliseconds: " << HowLongOverThisIconCount << "\n";
 							}
 
 							if (HowLongOverThisIconCount >= HowLongKeepMouseOverAppIconBeforeRestoringWindowMilliseconds) {
@@ -3198,15 +3404,15 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 											else {
 												//It should never be executed, because hWndTray couldn't be NULL at higher steps...
 												//Show desktop thing:
-												keybd_event(VK_LWIN, MapVirtualKey(VK_LWIN, 0), 0, 0);
-												keybd_event(0x44, MapVirtualKey(0x44, 0), 0, 0);
+												keybd_event(REMAP_VK_LWIN, VIRTUAL_REMAP_VK_LWIN, 0, 0);
+												keybd_event(REMAP_VK_D, VIRTUAL_REMAP_VK_D, 0, 0);
 												Sleep(50);
-												keybd_event(0x44, MapVirtualKey(0x44, 0), KEYEVENTF_KEYUP, 0);
-												keybd_event(VK_LWIN, MapVirtualKey(VK_LWIN, 0), KEYEVENTF_KEYUP, 0);
+												keybd_event(REMAP_VK_D, VIRTUAL_REMAP_VK_D, KEYEVENTF_KEYUP, 0);
+												keybd_event(REMAP_VK_LWIN, VIRTUAL_REMAP_VK_LWIN, KEYEVENTF_KEYUP, 0);
 											}
 
 											if (PrintDebugInfo) {
-												std::cout << "Simulating Logo Win + " << CurrentAppIconPlusOne << " key\n";
+												std::wcout << L"Simulating Logo Win + " << CurrentAppIconPlusOne << L" key\n";
 											}
 										}
 										else {
@@ -3220,19 +3426,19 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 										if (UseTheNewWMHOTKEYMethod && hWndTray) {
 											LRESULT SendMessageReturn = SendMessage(hWndTray, WM_HOTKEY, New_WM_HOTKEY_Array_LogoWin_CTRL_Num[CurrentAppIcon].first, New_WM_HOTKEY_Array_LogoWin_CTRL_Num[CurrentAppIcon].second);
 											if (PrintDebugInfo) {
-												std::cout << "Sending WM_HOTKEY message for Logo Win + CTRL + " << CurrentAppIconPlusOne << " key\n";
+												std::wcout << L"Sending WM_HOTKEY message for Logo Win + CTRL + " << CurrentAppIconPlusOne << L" key\n";
 											}
 										}
 										else {
-											keybd_event(VK_LWIN, MapVirtualKey(VK_LWIN, 0), 0, 0); //Press windows key
-											keybd_event(VK_LCONTROL, MapVirtualKey(VK_LCONTROL, 0), 0, 0); //Press CTRL key
-											keybd_event(Keyboard_Keys_One_to_Zero[CurrentAppIcon], MapVirtualKey(Keyboard_Keys_One_to_Zero[CurrentAppIcon], 0), 0, 0); //left Press
+											keybd_event(REMAP_VK_LWIN, VIRTUAL_REMAP_VK_LWIN, 0, 0); //Press windows key
+											keybd_event(REMAP_VK_LCONTROL, VIRTUAL_REMAP_VK_LCONTROL, 0, 0); //Press CTRL key
+											keybd_event(Keyboard_Keys_One_to_Zero[CurrentAppIcon], MapVirtualKey(Keyboard_Keys_One_to_Zero[CurrentAppIcon], 0), 0, 0);
 											Sleep(50);
-											keybd_event(Keyboard_Keys_One_to_Zero[CurrentAppIcon], MapVirtualKey(Keyboard_Keys_One_to_Zero[CurrentAppIcon], 0), KEYEVENTF_KEYUP, 0); // left Release
-											keybd_event(VK_LCONTROL, MapVirtualKey(VK_LCONTROL, 0), KEYEVENTF_KEYUP, 0); // left Release
-											keybd_event(VK_LWIN, MapVirtualKey(VK_LWIN, 0), KEYEVENTF_KEYUP, 0); // left Release
+											keybd_event(Keyboard_Keys_One_to_Zero[CurrentAppIcon], MapVirtualKey(Keyboard_Keys_One_to_Zero[CurrentAppIcon], 0), KEYEVENTF_KEYUP, 0);
+											keybd_event(REMAP_VK_LCONTROL, VIRTUAL_REMAP_VK_LCONTROL, KEYEVENTF_KEYUP, 0); // left Release
+											keybd_event(REMAP_VK_LWIN, VIRTUAL_REMAP_VK_LWIN, KEYEVENTF_KEYUP, 0); // left Release
 											if (PrintDebugInfo) {
-												std::cout << "Simulating Logo Win + CTRL + " << CurrentAppIconPlusOne << " key\n";
+												std::wcout << L"Simulating Logo Win + CTRL + " << CurrentAppIconPlusOne << L" key\n";
 											}
 										}
 
@@ -3248,15 +3454,15 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 										else {
 											//It should never be executed, because hWndTray couldn't be NULL at higher steps...
 											//Show desktop thing:
-											keybd_event(VK_LWIN, MapVirtualKey(VK_LWIN, 0), 0, 0);
-											keybd_event(0x44, MapVirtualKey(0x44, 0), 0, 0);
+											keybd_event(REMAP_VK_LWIN, VIRTUAL_REMAP_VK_LWIN, 0, 0);
+											keybd_event(REMAP_VK_D, VIRTUAL_REMAP_VK_D, 0, 0);
 											Sleep(50);
-											keybd_event(0x44, MapVirtualKey(0x44, 0), KEYEVENTF_KEYUP, 0); 
-											keybd_event(VK_LWIN, MapVirtualKey(VK_LWIN, 0), KEYEVENTF_KEYUP, 0);
+											keybd_event(REMAP_VK_D, VIRTUAL_REMAP_VK_D, KEYEVENTF_KEYUP, 0);
+											keybd_event(REMAP_VK_LWIN, VIRTUAL_REMAP_VK_LWIN, KEYEVENTF_KEYUP, 0);
 										}
 
 										if (PrintDebugInfo) {
-											std::cout << "Simulating Logo Win + " << CurrentAppIconPlusOne << " key\n";
+											std::wcout << L"Simulating Logo Win + " << CurrentAppIconPlusOne << L" key\n";
 										}
 									}
 
@@ -3269,7 +3475,7 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 									#endif
 									else {
 										if (PrintDebugInfo) {
-											std::cout << "Unfortunately, can't restore the window because App icon ID is greater than 10 :(\n";
+											std::wcout << L"Unfortunately, can't restore the window because App icon ID is greater than 10 :(\n";
 										}
 									}
 								}
@@ -3296,6 +3502,10 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 			ShellExecuteW(NULL, L"runas", CurrentExeWorks.c_str(), L"restart-ignore-mutex", NULL, SW_SHOW);
 		}
 	}
+}
+
+void ClickedOpenPathFromTray() {
+	ShellExecuteW(NULL, L"open", CurrentExeWorksPath.c_str(), NULL, NULL, SW_SHOWNORMAL);
 }
 
 void ClickedChangelogFromTray() {
@@ -3364,7 +3574,9 @@ void ClickedConfigureFromTray() {
 		int RunAsQuestionint = MessageBoxW(NULL, RunasQuestion.c_str(), RunasTitie.c_str(), MB_YESNO | MB_ICONEXCLAMATION | MB_TOPMOST | MB_SETFOREGROUND | MB_DEFBUTTON1);
 		if (RunAsQuestionint == IDYES) {
 			if (Hwnd) {
-				Shell_NotifyIcon(NIM_DELETE, &notifyIconData);
+				if (ShowTrayIcon) {
+					Shell_NotifyIcon(NIM_DELETE, &notifyIconData);
+				}
 				SendMessage(Hwnd, WM_NULL, 0, 0);
 				SendMessage(Hwnd, WM_DESTROY, 0, 0);
 			}
@@ -3400,37 +3612,38 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
 		break;
 	case WM_CREATE:
 		ShowWindow(Hwnd, SW_HIDE);
-		Hmenu = CreatePopupMenu();
 
-		NameAndVer = L"Windows 11 Drag && Drop to the Taskbar (Fix)";
-		NameAndVer2 = L"ver. " + ProgramVersion + L". Created by Dr. Mona Lisa.";
-		NameRestart = L"Restart (PID: " + to_wstring(CurrentProcessID) + L")...";
-		AppendMenuW(Hmenu, MF_MENUBREAK, 0, NULL);
-		//AppendMenu(Hmenu, MF_BITMAP, 2, (LPCTSTR)hbitmap);
-		AppendMenuW(Hmenu, MF_STRING, ID_TRAY_ABOUT, NameAndVer.c_str());
-		AppendMenuW(Hmenu, MF_STRING, ID_TRAY_ABOUT, NameAndVer2.c_str());
-		AppendMenuW(Hmenu, MF_SEPARATOR, 0, NULL);
-		//AppendMenuW(Hmenu, MF_STRING, ID_TRAY_ABOUT, L"About...");
-		AppendMenuW(Hmenu, MF_STRING, ID_TRAY_CHECKUPDATES, L"Check for updates...");
-		AppendMenuW(Hmenu, MF_STRING, ID_TRAY_CHANGELOG, L"Read the changelog...");
-		AppendMenuW(Hmenu, MF_STRING, ID_TRAY_CONFIGURE, L"Configure...");
-		AppendMenuW(Hmenu, MF_SEPARATOR, 0, NULL);
-		AppendMenuW(Hmenu, MF_STRING, ID_TRAY_RESTART, NameRestart.c_str());
-		AppendMenuW(Hmenu, MF_STRING, ID_TRAY_EXIT, L"Quit...");
-		AppendMenuW(Hmenu, MF_MENUBREAK, 0, NULL);
-
-		//Make some texts bold:
-		ZeroMemory(&ItemInfo, sizeof(ItemInfo));
-		ItemInfo.cbSize = sizeof(ItemInfo);
-		GetMenuItemInfo(Hmenu, 1, TRUE, &ItemInfo);
-		ItemInfo.fMask = MIIM_STATE;
-		ItemInfo.fState = MFS_ENABLED | MFS_DEFAULT;
-		SetMenuItemInfo(Hmenu, 1, TRUE, &ItemInfo);
-		GetMenuItemInfo(Hmenu, 2, TRUE, &ItemInfo);
-		ItemInfo.fMask = MIIM_STATE;
-		ItemInfo.fState = MFS_ENABLED | MFS_DEFAULT;
-		SetMenuItemInfo(Hmenu, 2, TRUE, &ItemInfo);
-
+		if (ShowTrayIcon) {
+			Hmenu = CreatePopupMenu();
+			NameAndVer = L"Windows 11 Drag && Drop to the Taskbar (Fix)";
+			NameAndVer2 = L"ver. " + ProgramVersion + L". Created by Dr. Mona Lisa.";
+			NameRestart = L"Restart (PID: " + to_wstring(CurrentProcessID) + L")...";
+			AppendMenuW(Hmenu, MF_MENUBREAK, 0, NULL);
+			//AppendMenu(Hmenu, MF_BITMAP, 2, (LPCTSTR)hbitmap);
+			AppendMenuW(Hmenu, MF_STRING, ID_TRAY_ABOUT, NameAndVer.c_str());
+			AppendMenuW(Hmenu, MF_STRING, ID_TRAY_ABOUT, NameAndVer2.c_str());
+			AppendMenuW(Hmenu, MF_SEPARATOR, 0, NULL);
+			//AppendMenuW(Hmenu, MF_STRING, ID_TRAY_ABOUT, L"About...");
+			AppendMenuW(Hmenu, MF_STRING, ID_TRAY_CHECKUPDATES, L"Check for updates...");
+			AppendMenuW(Hmenu, MF_STRING, ID_TRAY_CHANGELOG, L"Read the changelog...");
+			AppendMenuW(Hmenu, MF_STRING, ID_TRAY_CONFIGURE, L"Configure...");
+			AppendMenuW(Hmenu, MF_SEPARATOR, 0, NULL);
+			AppendMenuW(Hmenu, MF_STRING, ID_TRAY_OPENPATH, L"Open program folder...");
+			AppendMenuW(Hmenu, MF_STRING, ID_TRAY_RESTART, NameRestart.c_str());
+			AppendMenuW(Hmenu, MF_STRING, ID_TRAY_EXIT, L"Quit...");
+			AppendMenuW(Hmenu, MF_MENUBREAK, 0, NULL);
+			//Make some texts bold:
+			ZeroMemory(&ItemInfo, sizeof(ItemInfo));
+			ItemInfo.cbSize = sizeof(ItemInfo);
+			GetMenuItemInfo(Hmenu, 1, TRUE, &ItemInfo);
+			ItemInfo.fMask = MIIM_STATE;
+			ItemInfo.fState = MFS_ENABLED | MFS_DEFAULT;
+			SetMenuItemInfo(Hmenu, 1, TRUE, &ItemInfo);
+			GetMenuItemInfo(Hmenu, 2, TRUE, &ItemInfo);
+			ItemInfo.fMask = MIIM_STATE;
+			ItemInfo.fState = MFS_ENABLED | MFS_DEFAULT;
+			SetMenuItemInfo(Hmenu, 2, TRUE, &ItemInfo);
+		}
 		break;
 
 	case WM_SYSCOMMAND:
@@ -3446,6 +3659,10 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
 
 	case WM_SYSICON:
 	{
+		if (!ShowTrayIcon) {
+			break;
+		}
+
 		switch (wParam)
 		{
 		case ID_TRAY_APP_ICON:
@@ -3453,8 +3670,6 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
 
 			break;
 		}
-
-
 		/*if (lParam == WM_LBUTTONUP)
 		{
 
@@ -3489,42 +3704,58 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
 			UINT clicked = TrackPopupMenu(Hmenu, TPM_RETURNCMD | TPM_NONOTIFY, curPoint.x, curPoint.y, 0, hwnd, NULL);
 
 			SendMessage(hwnd, WM_NULL, 0, 0); // send benign message to window to make sure the menu goes away.
-			if (clicked == ID_TRAY_EXIT)
+			switch (clicked)
 			{
-				// quit the application.
-				Shell_NotifyIcon(NIM_DELETE, &notifyIconData);
+				case ID_TRAY_EXIT: {
+					// quit the application.
+					if (ShowTrayIcon) {
+						Shell_NotifyIcon(NIM_DELETE, &notifyIconData);
+					}
 
-				//Terminate other threads.
-				InterruptMouseWatchdogThread = true;
-				InterruptMainThread = true;
-				PostQuitMessage(0);
-			}
-			else if (clicked == ID_TRAY_SHOW)
-			{
-				restore();
-			}
-			else if (clicked == ID_TRAY_RESTART)
-			{
-				Shell_NotifyIcon(NIM_DELETE, &notifyIconData);
+					//Terminate other threads.
+					InterruptMouseWatchdogThread = true;
+					InterruptMainThread = true;
+					PostQuitMessage(0);
+					break;
+				}
+				case ID_TRAY_SHOW: {
+					restore();
+					break;
+				}
+				case ID_TRAY_RESTART: {
+					if (ShowTrayIcon) {
+						Shell_NotifyIcon(NIM_DELETE, &notifyIconData);
+					}
 
-				InterruptMouseWatchdogThread = true;
-				//NewFunctionToKill(true);
-				InterruptRestartProgram = true;
-				InterruptMainThread = true;
-				PostQuitMessage(0);
+					InterruptMouseWatchdogThread = true;
+					//NewFunctionToKill(true);
+					InterruptRestartProgram = true;
+					InterruptMainThread = true;
+					PostQuitMessage(0);
+					break;
+				}
+				case ID_TRAY_CONFIGURE: {
+					ClickedConfigureFromTray();
+					break;
+				}
+				case ID_TRAY_CHECKUPDATES: {
+					ClickedCheckForUpdatesFromTray();
+					break;
+				}
+				case ID_TRAY_ABOUT: {
+					ClickedAboutFromTray();
+					break;
+				}
+				case ID_TRAY_CHANGELOG: {
+					ClickedChangelogFromTray();
+					break;
+				}
+				case ID_TRAY_OPENPATH: {
+					ClickedOpenPathFromTray();
+					break;
+				}
 			}
-			else if (clicked == ID_TRAY_CONFIGURE) {
-				ClickedConfigureFromTray();
-			}
-			else if (clicked == ID_TRAY_CHECKUPDATES) {
-				ClickedCheckForUpdatesFromTray();
-			}
-			else if (clicked == ID_TRAY_ABOUT) {
-				ClickedAboutFromTray();
-			}
-			else if (clicked == ID_TRAY_CHANGELOG) {
-				ClickedChangelogFromTray();
-			}
+
 		}
 	}
 	break;

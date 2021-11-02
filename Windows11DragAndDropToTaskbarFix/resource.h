@@ -23,5 +23,6 @@
 #define ID_TRAY_CHECKUPDATES        1006
 #define ID_TRAY_ABOUT        1007
 #define ID_TRAY_CHANGELOG        1008
+#define ID_TRAY_OPENPATH        1009
 #define WM_SYSICON          (WM_USER + 1)
 
