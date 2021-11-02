@@ -1,63 +1,107 @@
 ## **Custom Configuration**
 
-Since version 1.1 it's possible to configure the program by creating a configuration file at the same location as `Windows11DragAndDropToTaskbarFix.exe`. The configuration file should be named: `Windows11DragAndDropToTaskbarFixConfig.txt`. You can automate this process by clicking on the Mona Lisa Megan Fox `Tray icon` and then `Configure...` from the menu. It will create the correct file and open this GitHub page for reference.
+It's possible to configure the program by creating a configuration file at the same location as `Windows11DragAndDropToTaskbarFix.exe`. The configuration file should be named: `Windows11DragAndDropToTaskbarFixConfig.txt`. You can automate this process by clicking on the Mona Lisa Megan Fox `Tray icon` and then `Configure...` from the menu. It will create the correct file and open this GitHub page for reference.
 
-When you modify `Windows11DragAndDropToTaskbarFixConfig.txt`, the program will ask you to automatically restart itself. So you don't need to restart it each time you want to test something.
+When you modify `Windows11DragAndDropToTaskbarFixConfig.txt`, the program will ask you to automatically restart itself. So you don't need to manually restart it each time you want to test something.
+
+You don't need to add all variables to your configuration file. Please only add the ones you need. The program will use the same default values as present after `Variable=Value` listed below.
 
 You can include the following variables to your `Windows11DragAndDropToTaskbarFixConfig.txt` file:
 
+### General Options
+
+#### Should the program run automatically on system startup?
+- 1 = YES. The program will create the `Software\Microsoft\Windows\CurrentVersion\Run\Windows11DragAndDropToTaskbarPartialFix` registry key.
+- 0 = NO. The program will delete the existing autorun registry key if it exists.
 ```
-//Should the program run automatically on system startup? 1 = true, 0 = false.
 AutomaticallyRunThisProgramOnStartup=0
+```
 
-//Should the program show the console window when it starts? 1 = true, 0 = false.
+#### Should the program show the console window when it starts?
+- 1 = YES. A console window will be shown on program start.
+- 0 = NO. The program will start invisibly and no extra window will pop-up.
+```
 ShowConsoleWindowOnStartup=0
+```
 
-//Should the program print debug information? 1 = true, 0 = false.
+#### Should the program print the debug information?
+- 1 = YES. If `ShowConsoleWindowOnStartup=1` the program will print a lot of messages about the actions done.
+- 0 = NO. The program won't show any debug information and run as fast as possible (recommended).
+```
 PrintDebugInfo=0
+```
 
-//Should the program use a fix after detecting a wake up from the Sleep Mode? It fixes issues where the
-//program did not work correctly before ver. 1.5.1. 1 = true, 0 = false.
+#### Should the program use a fix for an issue where sometimes incorrect icons are hovered on the taskbar? This bug usually occurs after the computer wakes up from Sleep Mode, connecting or disconnecting secondary screens, or plugging out the laptop charger. The fix opens the self-created window for around 100 milliseconds, forcing the taskbar window to update and return the correct `RECT`.
+- 1 = YES (recommended).
+- 0 = NO. It's a high chance that you will experience the issue mentioned above.
+```
 UseFixForBugAfterSleepMode=1
+```
 
-//Should the program show the Tray Icon in the system tray? Available since ver 1.8. 1 = true, 0 = false.
+#### Should the program show the Tray Icon in the system tray?
+- 1 = YES. The program will show a Mona Lisa Megan Fox tray icon with options: `Check for updates`, `Read the changelog`, `Configure`, `Open program folder`, `Restart`, `Quit`.
+- 0 = No. The tray icon of the program will not be created. You will have to manually kill the `Windows11DragAndDropToTaskbarFix.exe` by the Task Manager in case you want to terminate the program.
+```
 ShowTrayIcon=1
+```
 
-//Should the program use ver. 1.2.0 improvements that remove all previous limitations? 1 = true, 0 = false.
+#### Should the program use ver. 1.2.0+ improvements that remove all previous limitations?
+- 1 = YES (highly recommended). The program will use the new advanced `Win+T` method that works for all taskbar icons.
+- 0 = NO. The program will use the old behaviour where it's limited to the frist 10 icons on the taskbar and is generally bad.
+```
 UseTheNewBestMethodEver=1
+```
 
-//Available since ver. 1.3. Should the program automatically open the first active window under the cursor,
-//except pinned apps with no active window? 1 = true, 0 = false, 2 = only if no more than 1 window under the icon.
+#### Should the program automatically open the first active window under the cursor, except pinned apps with no active window?
+- 2 = LIMITED. Open only if no more than 1 window is visible under the icon.
+- 1 = ALWAYS. Always open the first window under the icon, even when there are multiple windows under it.
+- 0 = NEVER. Never open the first window under the icon, only show the preview thumbnails.
+
+```
 AutoOpenFirstWindowInBestMethodEver=2
+```
 
-//Sleep time (in milliseconds) between simulating different keys in the new "BestMethodEver"
-HowLongSleepBetweenDifferentKeysPressMilliseconds=10
-
-//Sleep time (in milliseconds) between simulating the same keys in the new "BestMethodEver" 
-HowLongSleepBetweenTheSameKeysPressMilliseconds=0
-
-//Sleep time (in milliseconds) after opening the first window under the icon in the new "BestMethodEver"
-HowLongSleepAfterAutoOpenFirstWindowMilliseconds=100
-
-//Delay (in milliseconds) before opening the first window under the icon in the new "BestMethodEver"
-HowLongKeepMouseOverAppIconBeforeAutoOpeningMilliseconds=550
-
-//Timeout (in milliseconds) after which the program interrupts the loop where it's detecting for the
-//preview window changes. It's to avoid opening pinned apps with no active window. It can be a greater
-//value, becauseit's a non-blocking loop which usually breaks much quicker. Only for "BestMethodEver".
-PreviewWindowChangeDetectionMaxMilliseconds=1000
-
-//For how long (in milliseconds) should the left mouse button be clicked before
-//the program starts checking if the mouse is hovering over the task bar.
+#### For how long (in milliseconds) should the left or the right mouse button be clicked before the program starts checking if the mouse cursor is currently in the task bar area.
+```
 HowLongLeftMouseButtonPressedBeforeContinueMilliseconds=750
+```
 
-//For how long (in milliseconds) should the mouse be hovered over the same icon
-//on taskbar in order to restore its window.
+#### For how long (in milliseconds) should the mouse cursor be hovered over the same icon on the taskbar in order to restore its window.
+```
 HowLongKeepMouseOverAppIconBeforeRestoringWindowMilliseconds=200
+```
 
-//Since ver. 1.8 it's possible to remap keys used by the program. Please use
-//https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
-//to find the right value (0x...). This allows simulating different keys instead of default ones.
+### Options available when `UseTheNewBestMethodEver=1`:
+
+#### Sleep time (in milliseconds) between simulating different keyboard keys.
+```
+HowLongSleepBetweenDifferentKeysPressMilliseconds=10
+```
+
+#### Sleep time (in milliseconds) between simulating the same keyboard keys.
+```
+HowLongSleepBetweenTheSameKeysPressMilliseconds=0
+```
+
+#### Sleep time (in milliseconds) after opening the first window under the icon.
+```
+HowLongSleepAfterAutoOpenFirstWindowMilliseconds=100
+```
+
+#### Delay (in milliseconds) before opening the first window under the icon. Only if `AutoOpenFirstWindowInBestMethodEver` is `2` or `1`.
+```
+HowLongKeepMouseOverAppIconBeforeAutoOpeningMilliseconds=550
+```
+
+#### Timeout (in milliseconds) after which the program interrupts the loop where it's detecting for the preview window changes. It's to avoid opening pinned apps with no active window. It can be a greater value, because it's a non-blocking loop which usually breaks much quicker.
+```
+PreviewWindowChangeDetectionMaxMilliseconds=1000
+```
+
+### Remapping keys used by the program in order to simulate hotkeys
+- Since version 1.8 it's possible to configure the program to use different keyboard keys than default ones. It's useful for example in the case described in issue [#17](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/17), where an user manually remapped his keyboard after damaging some of his keyboard keys with a coffee spill.
+- Please read the [Virtual-Key Codes](https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes) article at docs.microsoft.com to find the right values (0x...).
+```
 REMAP_VK_LWIN=0x5B
 REMAP_VK_MENU=0x12
 REMAP_VK_TAB=0x09
@@ -70,15 +114,26 @@ REMAP_VK_DOWN=0x28
 REMAP_VK_RETURN=0x0D
 REMAP_VK_D=0x44
 REMAP_VK_T=0x54
+```
 
-//You can skip options below. It's only to change main thread sleeping times or default icon sizes.
+### Less important options
+- You can skip the options below. They're only used to change the main thread sleeping times or default icon sizes.
 DefaultSleepPeriodInTheLoopMilliseconds=100
 SleepPeriodWhenLeftMouseButtonIsPressedInTheLoopMilliseconds=25
 SleepPeriodWhenMouseIsOnAppIconInTheLoopMilliseconds=10
 DefaultTaskbarIconWidth=44
 DefaultTaskbarIconHeight=48
 DefaultShowDesktopButtonWidth=20
+DefaultSingleWindowPreviewThumbnailWidth=250
+DefaultSingleWindowPreviewThumbnailHeight=250
+```
+
+#### Should the program monitor file `Windows11DragAndDropToTaskbarFixConfig.txt` for changes?
+- 1 = YES. When you save changes to the configuration file, the program will ask you to restart itself.
+- 0 = NO. The program won't check for the configuration file changes.
+```
 ConfigFileChangeTimeMonitorAllowed=1
 ```
 
-
+### Questions?
+Please feel free to open [#Issues](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues) or [#Discussions](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/discussions) if you have additional questions regarding options behaviour, or if you need help to configure the program on your machine. Please remember that asking questions is not something shameful, it's an advantage showing that you care about customization for your own needs.
