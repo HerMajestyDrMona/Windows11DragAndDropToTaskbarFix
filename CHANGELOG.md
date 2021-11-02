@@ -1,6 +1,14 @@
 # Change Log for Windows 11 Drag & Drop to the Taskbar (Fix)
 Don't read if you're sensitive to misspellings and grammatical errors.
 
+## [[ver. 1.8.0.0](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases/tag/v.1.8.0.0-release)]  - 2021-11-02, 07:00 CET
+- Added `ShowTrayIcon=1` configuration option that allows you to disable the new Mona Lisa Megan Fox tray icon. Please read [CONFIGURATION](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/blob/main/CONFIGURATION.md) for details. It solves issue [#15](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/15).
+- Added a possibility to remap keyboard keys used by the program to simulate hotkeys. Please read [CONFIGURATION](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/blob/main/CONFIGURATION.md) for details. It solves issue [#17](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/17).
+- Added `Open program folder...` option to the tray menu, so you can easily find out where your `Windows11DragAndDropToTaskbarFix.exe` is. Useful when you're downloading updates.
+- Fixed a bug where the `T` key press was not released when simulated the `Win+T` hotkey.
+- Optimized the program by caching the `MapVirtualKey` results. Obviously it won't be noticeable, as the program used less than 0.1% CPU when dragging files.
+- Maybe something else that I don't remember. I don't like writing changelog. It's boring and annoying.
+
 ## [[ver. 1.7.0.0](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases/tag/v.1.7.0.0-release)]  - 2021-10-31, 17:10 CET
 - Happy Halloween.
 - Added the taskbar Tray Icon for `Windows 11 Drag & Drop to the Taskbar (Fix)`, identified by the Mona Lisa Megan Fox icon:
