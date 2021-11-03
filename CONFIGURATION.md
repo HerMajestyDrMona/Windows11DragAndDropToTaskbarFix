@@ -99,7 +99,7 @@ PreviewWindowChangeDetectionMaxMilliseconds=1000
 ```
 
 ### Remapping keys used by the program in order to simulate hotkeys
-- Since version 1.8 it's possible to configure the program to use different keyboard keys than default ones. It's useful for example in the case described in issue [#17](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/17), where an user manually remapped his keyboard after damaging some of his keyboard keys with a coffee spill.
+- Since version 1.8 it's possible to configure the program to use different keyboard keys than default ones. It's useful for example in the case described in issue [#17](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/17), where a user manually remapped his keyboard after damaging some of keys with a coffee spill.
 - Please read the [Virtual-Key Codes](https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes) article at docs.microsoft.com to find the right values (0x...).
 ```
 REMAP_VK_LWIN=0x5B
