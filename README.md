@@ -12,7 +12,7 @@ Windows11DragAndDropToTaskbarFix works with the new Windows 11 taskbar and does 
 
 
 ## **How Does It Work?**
-<img align="right" src="https://user-images.githubusercontent.com/24290461/140068775-473a45f7-1f6a-4b10-8664-e5f8d49440ab.png">
+<a href="https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases/"><img align="right" src="https://user-images.githubusercontent.com/24290461/140068775-473a45f7-1f6a-4b10-8664-e5f8d49440ab.png"></a>
 
 The program detects if you're currently pressing the Left or the Right Mouse Button and determines which icon on the taskbar you hover the mouse pointer on. If the cursor stays in the same area for definied number of milliseconds - it simulates the `Win+T` hotkey and arrow keys in order to restore the intended window, using a quite complicated method. It also supports dropping files to the "Show desktop" button (bottom-right of the screen). The program supports multiple screens, auto startup, and has many configuration options (please read below). Windows11DragAndDropToTaskbarFix has no auto-update function and never connects to the Internet, so you don't need to worry about your privacy.
 
