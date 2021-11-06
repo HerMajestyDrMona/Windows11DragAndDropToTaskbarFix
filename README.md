@@ -42,7 +42,7 @@ To quit this program, please click on the Drag&Drop Tray icon, and select "Quit.
 <a href="#special-thanks-to"><img align="left" style="margin-right: 10px" height="70px" src="https://i2.paste.pics/63edf1886b2ebdf060f34d2d384bdfab.png"></a>
     - **Dr. Mona Lisa** for creating this program. Please also check [Unofficial Patch](https://ee2.eu/patch/) for Empire Earth II.
      <br>
-    - [**QuestYouCraft**](https://github.com/QuestYouCraft) for creating & giving permissions to use his awesome drag&drop icon (will be used as the primary program icon).
+    - [**QuestYouCraft**](https://github.com/QuestYouCraft) for creating & giving permissions to use his awesome Drag&Drop icon (will be used as the primary program icon).
      <br>
     - **Martin Morano** for giving permissions to use his awesome "Mona Lisa Megan Fox" artwork.
     <br>
