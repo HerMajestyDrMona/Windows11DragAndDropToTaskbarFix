@@ -60,4 +60,4 @@ If you get an error saying that "VCRUNTIME140_1.dll" is missing, please install 
 
 ### **Donation?**
 
-If you love this software so much that you would like to buy me a cola, pizza, or anything else - you can make a donation using the button available on my other project's website: [Click here](https://ee2.eu/overview/#donate). Please don't forget to mention in the donation message that it's for this fix, so I can spend them for other things than multiplayer servers on that game :)
+If you love this software so much that you would like to buy me a cola, pizza, or anything else - you can make a donation using the button available on my other project's website: [Click here](https://ee2.eu/overview/#donate). Please don't forget to mention in the donation message that it's for this fix, so I can spend it for other things than multiplayer servers for that game :)
