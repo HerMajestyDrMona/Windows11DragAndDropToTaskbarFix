@@ -3544,6 +3544,8 @@ void ClickedConfigureFromTray() {
 			}
 		}
 
+		ShellExecuteW(NULL, L"open", GitHubConfiguration.c_str(), NULL, NULL, SW_SHOWNORMAL);
+
 		ShExecInfo.cbSize = sizeof(SHELLEXECUTEINFO);
 		ShExecInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
 		ShExecInfo.hwnd = NULL;
