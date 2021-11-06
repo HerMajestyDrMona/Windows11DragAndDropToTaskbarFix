@@ -16,11 +16,11 @@ Windows11DragAndDropToTaskbarFix works with the new Windows 11 taskbar and does 
 
 The program detects if you're currently pressing the Left or the Right Mouse Button and determines which icon on the taskbar you hover the mouse pointer on. If the cursor stays in the same area for definied number of milliseconds - it simulates the `Win+T` hotkey and arrow keys in order to restore the intended window, using a quite complicated method. It also supports dropping files to the "Show desktop" button (bottom-right of the screen). The program supports multiple screens, auto startup, and has many configuration options (please read below). Windows11DragAndDropToTaskbarFix has no auto-update function and never connects to the Internet, so you don't need to worry about your privacy.
 
-You can click on the Mona Lisa Megan Fox tray icon to show menu that allows you to `Check for updates`, `Read the changelog`, `Configure`, `Open program folder`, `Restart` and `Quit`.
+You can click on the Drag&Drop tray icon to show menu that allows you to `Check for updates`, `Read the changelog`, `Configure`, `Open program folder`, `Restart` and `Quit`.
 <br>
 
 ## **Custom Configuration: Autostart, Timings, Keys Remapping and more**
-It's possible to configure the program by creating a configuration file at the same location as `Windows11DragAndDropToTaskbarFix.exe`. The configuration file should be named: `Windows11DragAndDropToTaskbarFixConfig.txt`. You can automate this process by clicking on the Mona Lisa Megan Fox `Tray icon` and then `Configure...` from the menu. It will create the correct file and open the GitHub page for reference.
+It's possible to configure the program by creating a configuration file at the same location as `Windows11DragAndDropToTaskbarFix.exe`. The configuration file should be named: `Windows11DragAndDropToTaskbarFixConfig.txt`. You can automate this process by clicking on the Drag&Drop `Tray icon` and then `Configure...` from the menu. It will create the correct file and open the GitHub page for reference.
 
 Please read a separate article: [CONFIGURATION](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/blob/main/CONFIGURATION.md) for details.
 
@@ -35,15 +35,16 @@ Please read a separate article: [CONFIGURATION](https://github.com/HerMajestyDrM
 
 To use the fix, please simply download the binary file above (or compile it yourself) and **start it as any other program**. It works as an independent C++ process.
 
-To quit this program, please click on the Mona Lisa Megan Fox Tray icon, and select "Quit..." from the menu. You can also **kill** `Windows11DragAndDropToTaskbarFix.exe` or `Windows 11 Drag & Drop to the Taskbar (Fix)` **by the Task Manager**.
+To quit this program, please click on the Drag&Drop Tray icon, and select "Quit..." from the menu. You can also **kill** `Windows11DragAndDropToTaskbarFix.exe` or `Windows 11 Drag & Drop to the Taskbar (Fix)` **by the Task Manager**.
 
 
 ## Special Thanks To:
-<a href="#special-thanks-to"><img align="left" style="margin-right: 10px" height="70px" src="https://user-images.githubusercontent.com/24290461/140594900-93d603d1-4fbc-4865-a211-fcab1de5507d.png"></a>
+<a href="#special-thanks-to"><img align="left" style="margin-right: 10px" height="70px" src="https://i2.paste.pics/63edf1886b2ebdf060f34d2d384bdfab.png"></a>
     - **Dr. Mona Lisa** for creating this program. Please also check [Unofficial Patch](https://ee2.eu/patch/) for Empire Earth II.
      <br>
-    - **Martin Morano** for giving permissions to use his awesome "Mona Lisa Megan Fox" artwork (used as the program icon).
+    - [**QuestYouCraft**](https://github.com/QuestYouCraft) for creating & giving permissions to use his awesome drag&drop icon (will be used as the primary program icon).
      <br>
+    - **Martin Morano** for giving permissions to use his awesome "Mona Lisa Megan Fox" artwork.
     <br>
 
 ## Before / After Videos
