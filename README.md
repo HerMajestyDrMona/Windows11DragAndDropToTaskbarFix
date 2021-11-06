@@ -39,23 +39,25 @@ To quit this program, please click on the Mona Lisa Megan Fox Tray icon, and sel
 
 
 ## Special Thanks To:
-- **Martin Morano** for giving permissions to use his awesome "Mona Lisa Megan Fox" artwork (used as the program icon).
+<a href="https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases/"><img align="left" style="margin-right: 10px" height="70px" src="https://user-images.githubusercontent.com/24290461/140594900-93d603d1-4fbc-4865-a211-fcab1de5507d.png"></a>
+    - **Dr. Mona Lisa** for creating this program. Please also check [Unofficial Patch](https://ee2.eu/patch/) for Empire Earth II.
+     <br>
+    - **Martin Morano** for giving permissions to use his awesome "Mona Lisa Megan Fox" artwork (used as the program icon).
+     <br>
+    <br>
+
+## Before / After Videos
+
+Videos recorded by [@Mohammad Suleman](https://www.ilovefreesoftware.com/author/suleman_ilfs) for [ilovefreesoftware.com](https://www.ilovefreesoftware.com/19/windows/how-to-enable-drag-drop-support-in-windows-11-taskbar.html). Thank you!
+
+Before Windows11DragAndDropToTaskbarFix | After Windows11DragAndDropToTaskbarFix
+:-: | :-:
+<video src='https://user-images.githubusercontent.com/24290461/140594641-6975cb11-9a1b-434f-a67f-e3cf339366b7.mp4' width=180/> | <video src='https://user-images.githubusercontent.com/24290461/140594643-4f4f01e5-0382-4781-90d6-eafb1d55f361.mp4' width=180/>
 
 
 ### "VCRUNTIME140_1.dll" was not found error
 If you get an error saying that "VCRUNTIME140_1.dll" is missing, please install [Microsoft Visual C++ 2015 - 2019 Redistributable x64](https://aka.ms/vs/16/release/vc_redist.x64.exe). Normally, these runtime libraries are installed by default on Windows 11. If you get this error then you most likely manually removed them before, using "Add or remove programs".
 
-
-### **New Ideas Are Welcome**
-
-If you have any idea how to improve this program, or if you found a different method of determining the window under the cursor - please share it with us!
-
-
-### **Code Quality**
-
-It's not beautiful, but it works. I also believe that it has been well-optimized by the dynamic thread sleep times and avoiding unnecessary steps (depending on the mouse button click time). Please feel free to issue pull requests to improve it. The software will for sure be updated by me, I just wanted to share it with people as soon as possible. Microsoft seems to do the same thing with their Operating System :)
-
-
 ### **Donation?**
 
-If you love this software so much that you would like to buy me a cola, pizza, or anything else - you can make a donation using the button available on my other project's website: [Click here](https://ee2.eu/overview/#donate). Please don't forget to mention in the donation message that it's for this fix :)
+If you love this software so much that you would like to buy me a cola, pizza, or anything else - you can make a donation using the button available on my other project's website: [Click here](https://ee2.eu/overview/#donate). Please don't forget to mention in the donation message that it's for this fix, so I can spend them for other things than multiplayer servers on that game :)
