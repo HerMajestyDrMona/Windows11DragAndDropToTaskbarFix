@@ -39,7 +39,7 @@ To quit this program, please click on the Mona Lisa Megan Fox Tray icon, and sel
 
 
 ## Special Thanks To:
-<a href="https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases/"><img align="left" style="margin-right: 10px" height="70px" src="https://user-images.githubusercontent.com/24290461/140594900-93d603d1-4fbc-4865-a211-fcab1de5507d.png"></a>
+<a href="#special-thanks-to"><img align="left" style="margin-right: 10px" height="70px" src="https://user-images.githubusercontent.com/24290461/140594900-93d603d1-4fbc-4865-a211-fcab1de5507d.png"></a>
     - **Dr. Mona Lisa** for creating this program. Please also check [Unofficial Patch](https://ee2.eu/patch/) for Empire Earth II.
      <br>
     - **Martin Morano** for giving permissions to use his awesome "Mona Lisa Megan Fox" artwork (used as the program icon).
