@@ -39,7 +39,7 @@ To quit this program, please click on the Drag&Drop Tray icon, and select "Quit.
 
 
 ## Special Thanks To:
-<a href="#special-thanks-to"><img align="left" style="margin-right: 10px" height="70px" src="https://i2.paste.pics/63edf1886b2ebdf060f34d2d384bdfab.png"></a>
+<a href="#special-thanks-to"><img align="left" style="margin-right: 10px" height="70px" src="https://i2.paste.pics/93cc3dc6afd7fd005db19f1113fabe62.png"></a>
     - **Dr. Mona Lisa** for creating this program. Please also check [Unofficial Patch](https://ee2.eu/patch/) for Empire Earth II.
      <br>
     - [**QuestYouCraft**](https://github.com/QuestYouCraft) for creating & giving permissions to use his awesome Drag&Drop icon (will be used as the primary program icon).
