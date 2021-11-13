@@ -1,6 +1,6 @@
 ## **Custom Configuration**
 
-It's possible to configure the program by creating a configuration file at the same location as `Windows11DragAndDropToTaskbarFix.exe`. The configuration file should be named: `Windows11DragAndDropToTaskbarFixConfig.txt`. You can automate this process by clicking on the Drag&Drop `Tray icon` and then `Configure...` from the menu. It will create the correct file and open this GitHub page for reference.
+It's possible to configure the program by creating a configuration file at the same location as `Windows11DragAndDropToTaskbarFix.exe`. The configuration file should be named: `Windows11DragAndDropToTaskbarFixConfig.txt`. You can automate this process by clicking on the Mona Lisa Megan Fox `Tray icon` and then `Configure...` from the menu. It will create the correct file and open this GitHub page for reference.
 
 When you modify `Windows11DragAndDropToTaskbarFixConfig.txt`, the program will ask you to automatically restart itself. So you don't need to manually restart it each time you want to test something.
 
@@ -39,7 +39,7 @@ UseFixForBugAfterSleepMode=1
 ```
 
 #### Should the program show the Tray Icon in the system tray?
-- 1 = YES. The program will show a Drag&Drop tray icon with options: `Check for updates`, `Read the changelog`, `Configure`, `Open program folder`, `Restart`, `Quit`.
+- 1 = YES. The program will show a Mona Lisa Megan Fox tray icon with options: `Check for updates`, `Read the changelog`, `Configure`, `Open program folder`, `Restart`, `Quit`.
 - 0 = No. The tray icon of the program will not be created. You will have to manually kill the `Windows11DragAndDropToTaskbarFix.exe` by the Task Manager in case you want to terminate the program.
 ```
 ShowTrayIcon=1
