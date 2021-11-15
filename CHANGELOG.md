@@ -1,6 +1,15 @@
 # Change Log for Windows 11 Drag & Drop to the Taskbar (Fix)
 Don't read if you're sensitive to misspellings and grammatical errors.
 
+## [[ver. 1.9.0.0](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases/tag/v.1.9.0.0-release)]  - 2021-11-15, 06:00 CET
+- Added `UseAlternativeTrayIcon=0` configuration option that allows you to use the alternative program icon, modified by [QuestYouCraft](https://github.com/QuestYouCraft). Please read [CONFIGURATION](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/blob/main/CONFIGURATION.md) for details.
+- When `AutoOpenFirstWindowInBestMethodEver=2` (default), and there is only 1 window under the icon - the program will no longer show the preview window after restoring the app window. This way the program has exactly the same drag & drop behaviour as in previous versions of Windows.
+- Clicking `Configure...` from the tray menu will now open your default text editor instead of Windows Notepad.
+- Source code: added file `Windows11DragAndDropToTaskbarFix.h`. Moved variables and function definitions to it.
+- Some other stability changes.
+- Compiled the program using Visual Studio 2022, but kept the `2019 (v142)` toolset, because the program crashed for me a few times when it was compiled with the `2022 (v143) toolset`. Idk why.
+- The development process has slowed a bit, because most likely there's nothing left to do. I tried to add the `Drop to Pin` feature, unfortunately there are very limited possibilities and it's impossible to add different files than .exe links. So it's pointless as pinning ordinary files is what users are looking for the most.
+
 ## [[ver. 1.8.0.0](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases/tag/v.1.8.0.0-release)]  - 2021-11-02, 07:00 CET
 - Added `ShowTrayIcon=1` configuration option that allows you to disable the new Mona Lisa Megan Fox tray icon. Please read [CONFIGURATION](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/blob/main/CONFIGURATION.md) for details. It solves issue [#15](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/15).
 - Added a possibility to remap keyboard keys used by the program to simulate hotkeys. Please read [CONFIGURATION](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/blob/main/CONFIGURATION.md) for details. It solves issue [#17](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/17).
