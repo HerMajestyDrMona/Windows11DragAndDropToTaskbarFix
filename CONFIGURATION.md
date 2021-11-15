@@ -136,5 +136,12 @@ DefaultSingleWindowPreviewThumbnailHeight=250
 ConfigFileChangeTimeMonitorAllowed=1
 ```
 
+#### Should the program use an alternative tray icon, modified by QuestYouCraft?
+- 1 = YES. A different tray icon with a hand drag gesture will be used.
+- 0 = NO. The default Mona Lisa Megan Fox icon will be used.
+```
+UseAlternativeTrayIcon=0
+```
+
 ### Questions?
 Please feel free to open [#Issues](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues) or [#Discussions](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/discussions) if you have additional questions regarding options behaviour, or if you need help to configure the program on your machine. Please remember that asking questions is not something shameful, it's an advantage showing that you care about customization for your own needs.
