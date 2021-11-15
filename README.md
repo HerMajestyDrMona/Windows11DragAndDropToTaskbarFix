@@ -39,20 +39,24 @@ To quit this program, please click on the Mona Lisa Megan Fox Tray icon, and sel
 
 
 ## Special Thanks To:
-<a href="#special-thanks-to"><img align="left" style="margin-right: 1px" height="100px" src="https://user-images.githubusercontent.com/24290461/140594900-93d603d1-4fbc-4865-a211-fcab1de5507d.png"></a>
-<a href="#special-thanks-to"><img align="right" style="margin-left: 1px" height="100px" src="https://user-images.githubusercontent.com/24290461/141721061-7fcf595f-da2b-4560-b028-0e317e97a7cb.png"></a>
-
+<a href="#special-thanks-to"><img align="left" style="margin-right: 1px" height="70px" src="https://user-images.githubusercontent.com/24290461/140594900-93d603d1-4fbc-4865-a211-fcab1de5507d.png"></a>
+<div>
+ 
 – **Dr. Mona Lisa** for creating this program. Please also check [Unofficial Patch](https://ee2.eu/patch/) for Empire Earth II.
      <br>
-– **Martin Morano** for giving permissions to use his awesome "Mona Lisa Megan Fox" artwork, used as the program icon.
      <br>
+– **Martin Morano** for giving permissions to use his awesome "Mona Lisa Megan Fox" artwork, used as the program icon.
+     <br></div>
+  
+<a href="#special-thanks-to"><img align="left" style="margin-right: 1px" height="70px" src="https://user-images.githubusercontent.com/24290461/141721061-7fcf595f-da2b-4560-b028-0e317e97a7cb.png"></a>
+
 – **zhongxia_87887** ([veryicon.com](https://www.veryicon.com/icons/system/gesture-series/drag-drop.html)) for providing the free alternative program icon, modified & enhanced by our contributor: [**QuestYouCraft**](https://github.com/QuestYouCraft).
      <br>
     <br>
 
 ## Before / After Videos
 
-Videos recorded by [@Mohammad Suleman](https://www.ilovefreesoftware.com/author/suleman_ilfs) for [ilovefreesoftware.com](https://www.ilovefreesoftware.com/19/windows/how-to-enable-drag-drop-support-in-windows-11-taskbar.html). Thank you!
+Videos recorded thanks to [@Mohammad Suleman](https://www.ilovefreesoftware.com/author/suleman_ilfs) from [ilovefreesoftware.com](https://www.ilovefreesoftware.com/19/windows/how-to-enable-drag-drop-support-in-windows-11-taskbar.html).
 
 Before Windows11DragAndDropToTaskbarFix | After Windows11DragAndDropToTaskbarFix
 :-: | :-:
