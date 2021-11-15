@@ -46,7 +46,7 @@ To quit this program, please click on the Mona Lisa Megan Fox Tray icon, and sel
      <br>
 – **Martin Morano** for giving permissions to use his awesome "Mona Lisa Megan Fox" artwork, used as the program icon.
      <br>
-– **zhongxia_87887** ([veryicon.com](https://www.veryicon.com/icons/system/gesture-series/drag-drop.html)) for providing the free alternative program icon, modified & enhanced by our contributor: [@**QuestYouCraft**](https://github.com/QuestYouCraft).
+– **zhongxia_87887** ([veryicon.com](https://www.veryicon.com/icons/system/gesture-series/drag-drop.html)) for providing the free alternative program icon, modified & enhanced by our contributor: [**QuestYouCraft**](https://github.com/QuestYouCraft).
      <br>
     <br>
 
