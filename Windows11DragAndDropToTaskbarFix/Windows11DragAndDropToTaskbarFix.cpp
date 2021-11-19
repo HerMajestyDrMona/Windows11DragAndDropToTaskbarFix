@@ -1541,8 +1541,8 @@ static BOOL CALLBACK enumWindowCallback_SecondaryTrayWnd(HWND hWnd, LPARAM lpara
 	wstring ClassNameLower = Mona_toLowerWs(ClassName);
 	if (ClassNameLower == L"shell_secondarytraywnd") {
 		CurrentSecondaryScreen = windowsHWNDs();
-		TmpWorkerW = 0;
-		TmpTaskList = 0;
+		TmpWorkerW = NULL;
+		TmpTaskList = NULL;
 		CurrentSecondaryScreen.hWndTray = hWnd;
 		EnumChildWindows(hWnd, enumChildWindowCallback_SecondaryTrayWnd, NULL);
 		CurrentSecondaryScreen.hWndMSTaskSwWClass = TmpTaskList;
@@ -1954,9 +1954,6 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 
 
 					if (!DetectedHWNDsForThisMouseClick) {
-						DetectedHWNDsForThisMouseClick = true;
-
-						Array_Windows_by_Screen.clear();
 						//Primary screen variables:
 						Update_Primary_Screen_Windows_HWNDSs();
 
@@ -1965,6 +1962,7 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 							if (PrimaryScreen.hWndMSTaskSwWClass) {
 								if (Fix_Taskbar_Size_Bug(PrimaryScreen.hWndMSTaskSwWClass)) {
 									//Fixed. Ignore this loop to get potentially new HWND and RECTs.
+									DetectedHWNDsForThisMouseClick = false;//IMPORTANT ver. 1.9.1 to fix program crash after the sleep mode.
 									if (UseFixForBugAfterSleepMode) {
 										SleepModeFix_Previous_TimeNow = TimeNow;
 									}
@@ -1974,6 +1972,8 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 							}
 						}
 
+						Array_Windows_by_Screen.clear();
+						//Before version 1.9.1 this array could be empty after the sleep mode bug fix, causing program crashes.
 						Array_Windows_by_Screen.push_back(PrimaryScreen);
 						//Shell_SecondaryTrayWnd:
 						EnumWindows(enumWindowCallback_SecondaryTrayWnd, NULL);
@@ -1981,6 +1981,8 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 						hDesktop = GetDesktopWindow();
 						GetWindowRect(hDesktop, &desktop);
 						ShowDesktopStartPosition = desktop.right - DefaultShowDesktopButtonWidth;
+
+						DetectedHWNDsForThisMouseClick = true;//Moved from top to bottom.
 					}
 
 					//Unfortunately we can't optimize it at the moment since cursor might move with dragged file from screen-to-screen.
@@ -1991,7 +1993,7 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 					GetClassNameW(WindowUnderMouse, WindowClassName, MAX_PATH);
 					//std::wcout << L"Class Name Under Mouse: " << WindowClassName << L"\n";
 					if (_wcsicmp(WindowClassName, L"MSTaskListWClass") == 0) {
-						if (WindowUnderMouse != hWndMSTaskSwWClass) {
+						if (WindowUnderMouse != PrimaryScreen.hWndMSTaskSwWClass) {
 							if (PrintDebugInfo) {
 								std::wcout << L"Found Taskbar Window on Secondary Screen. Switching HWNDs to the other monitor mode. " << WindowUnderMouse << "\n";
 							}
@@ -2017,30 +2019,58 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 					}
 
 					//ver 1.5 continued:
-					hWndTray = Array_Windows_by_Screen[WindowsScreenSet].hWndTray;
-					if (hWndTray) {
-						hWndTrayNotify = Array_Windows_by_Screen[0].hWndTrayNotify;
+					//WARNING: Detected some program crashes at this location. Attempting to code it more securely.
+
+					if (Array_Windows_by_Screen[WindowsScreenSet].hWndTray) {
+						hWndTray = Array_Windows_by_Screen[WindowsScreenSet].hWndTray;
 					}
 					else {
-						hWndTrayNotify = 0;
+						hWndTray = NULL;
 					}
 
 					if (hWndTray) {
-						hWndRebar = Array_Windows_by_Screen[0].hWndRebar;
+						if (Array_Windows_by_Screen[0].hWndTrayNotify) {
+							hWndTrayNotify = Array_Windows_by_Screen[0].hWndTrayNotify;
+						}
+						else {
+							hWndTrayNotify = NULL;
+						}
 					}
 					else {
-						hWndRebar = 0;
+						hWndTrayNotify = NULL;
+					}
+
+					if (hWndTray) {
+						if (Array_Windows_by_Screen[0].hWndRebar) {
+							hWndRebar = Array_Windows_by_Screen[0].hWndRebar;
+						}
+						else {
+							hWndRebar = NULL;
+						}
+					}
+					else {
+						hWndRebar = NULL;
 					}
 
 					if (hWndRebar) {
-						hWndMSTaskSwWClass = Array_Windows_by_Screen[WindowsScreenSet].hWndMSTaskSwWClass;
+						if (Array_Windows_by_Screen[WindowsScreenSet].hWndMSTaskSwWClass) {
+							hWndMSTaskSwWClass = Array_Windows_by_Screen[WindowsScreenSet].hWndMSTaskSwWClass;
+						}
+						else {
+							hWndMSTaskSwWClass = NULL;
+						}
 					}
 					else {
-						hWndMSTaskSwWClass = 0;
+						hWndMSTaskSwWClass = NULL;
 					}
 
 					//Find a window that should be invisible when app has no active window!
-					TaskListThumbnailWnd = Array_Windows_by_Screen[0].TaskListThumbnailWnd;
+					if (Array_Windows_by_Screen[0].TaskListThumbnailWnd) {
+						TaskListThumbnailWnd = Array_Windows_by_Screen[0].TaskListThumbnailWnd;
+					}
+					else {
+						TaskListThumbnailWnd = NULL;
+					}
 
 					if (PrintDebugInfo) {
 						std::wcout << L"Found Taskbar Window: " << hWndMSTaskSwWClass << "\n";

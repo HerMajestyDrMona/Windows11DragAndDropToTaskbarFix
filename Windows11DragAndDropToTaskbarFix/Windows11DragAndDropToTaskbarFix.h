@@ -66,7 +66,7 @@ int SleepTimeButtonsElevenPlusMilliseconds = 5;//Unused by default
 int AnimationLagButtonsElevenPlusMilliseconds = 100;//Unused by default
 
 //Dynamic variables:
-wstring ProgramVersion = L"1.9.0.0";
+wstring ProgramVersion = L"1.9.1.0";
 wstring GitHubConfiguration = L"https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/blob/main/CONFIGURATION.md";
 wstring GitHubReleases = L"https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases";
 wstring GitHubAbout = L"https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix";
@@ -155,14 +155,14 @@ const std::vector<std::pair<WPARAM, LPARAM>> New_WM_HOTKEY_Array_LogoWin_CTRL_Nu
 };
 bool CurrentlyLeftMouseButtonIsPressed = false;
 bool DetectedHWNDsForThisMouseClick = false;
-HWND hWndTray = 0;
-HWND hWndTrayNotify = 0;
-HWND hWndRebar = 0;
-HWND hWndMSTaskSwWClass = 0;
-HWND hWndWindowForShowDesktopArea = 0;
-HWND TaskListThumbnailWnd = 0;
+HWND hWndTray = NULL;
+HWND hWndTrayNotify = NULL;
+HWND hWndRebar = NULL;
+HWND hWndMSTaskSwWClass = NULL;
+HWND hWndWindowForShowDesktopArea = NULL;
+HWND TaskListThumbnailWnd = NULL;
 RECT desktop;
-HWND hDesktop = 0;
+HWND hDesktop = NULL;
 int ShowDesktopStartPosition = 0;
 int TaskbarWindowWidth = 0;
 int NumberOfItemsOnTaskbar = 0;
@@ -189,18 +189,18 @@ std::chrono::milliseconds AwaitingForEnterClickSince = std::chrono::milliseconds
 wchar_t WindowClassName[MAX_PATH];
 class windowsHWNDs {
 public:
-	HWND hWndTray = 0;
-	HWND hWndTrayNotify = 0;
-	HWND hWndRebar = 0;
-	HWND hWndMSTaskSwWClass = 0;
-	HWND TaskListThumbnailWnd = 0;
+	HWND hWndTray = NULL;
+	HWND hWndTrayNotify = NULL;
+	HWND hWndRebar = NULL;
+	HWND hWndMSTaskSwWClass = NULL;
+	HWND TaskListThumbnailWnd = NULL;
 
 };
 windowsHWNDs PrimaryScreen;
 windowsHWNDs CurrentSecondaryScreen;
 std::vector<windowsHWNDs> Array_Windows_by_Screen;
-HWND TmpWorkerW = 0;
-HWND TmpTaskList = 0;
+HWND TmpWorkerW = NULL;
+HWND TmpTaskList = NULL;
 int Current_Mouse_Button_Zero_Left_One_Right = -1;
 int Previous_Mouse_Button_Zero_Left_One_Right = -1;
 std::wstring Current_Button_Name = L"Unknown";
