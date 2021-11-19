@@ -1,6 +1,9 @@
 # Change Log for Windows 11 Drag & Drop to the Taskbar (Fix)
 Don't read if you're sensitive to misspellings and grammatical errors.
 
+## [[ver. 1.9.1.0](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases/tag/v.1.9.1.0-release)]  - 2021-11-19, 06:00 CET
+- Fixed the program crash that could occur when `UseFixForBugAfterSleepMode` was enabled (default), caused by clearing the vector and not pushing updated screen windows to it. I was investigating this problem for some time, but I thought it's something wrong with HWNDs being 0, not the array being empty :(
+
 ## [[ver. 1.9.0.0](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases/tag/v.1.9.0.0-release)]  - 2021-11-15, 06:00 CET
 - Added `UseAlternativeTrayIcon=0` configuration option that allows you to use the alternative program icon, modified by [QuestYouCraft](https://github.com/QuestYouCraft). Please read [CONFIGURATION](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/blob/main/CONFIGURATION.md) for details.
 - When `AutoOpenFirstWindowInBestMethodEver=2` (default), and there is only 1 window under the icon - the program will no longer show the preview window after restoring the app window. This way the program has exactly the same drag & drop behaviour as in previous versions of Windows.
