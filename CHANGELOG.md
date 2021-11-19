@@ -2,7 +2,7 @@
 Don't read if you're sensitive to misspellings and grammatical errors.
 
 ## [[ver. 1.9.1.0](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases/tag/v.1.9.1.0-release)]  - 2021-11-19, 06:00 CET
-- Fixed the program crash that could occur when `UseFixForBugAfterSleepMode` was enabled (default), caused by clearing the vector and not pushing updated screen windows to it. I was investigating this problem for some time, but I thought it's something wrong with HWNDs being 0, not the array being empty :(
+- Fixed the program crash (present since version 1.6.1) which could occur when `UseFixForBugAfterSleepMode` was enabled (default), caused by clearing the vector and not pushing updated screen windows to it. It could be identified in Event Viewer by the Application Error offset `000000000000c366` (at least on ver. 1.9).
 
 ## [[ver. 1.9.0.0](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases/tag/v.1.9.0.0-release)]  - 2021-11-15, 06:00 CET
 - Added `UseAlternativeTrayIcon=0` configuration option that allows you to use the alternative program icon, modified by [QuestYouCraft](https://github.com/QuestYouCraft). Please read [CONFIGURATION](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/blob/main/CONFIGURATION.md) for details.
