@@ -1689,9 +1689,9 @@ bool IsCursorIconAllowed() {
 			return false;
 		}
 		//Excel + icon:
-		if (cursorInfo.hCursor == (HCURSOR)0xB09CB) {
+		/*if (cursorInfo.hCursor == (HCURSOR)0xB09CB) {
 			return false;
-		}
+		}*/
 	}
 	return true;
 }
