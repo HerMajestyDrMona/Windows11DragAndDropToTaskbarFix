@@ -67,7 +67,7 @@ int SleepTimeButtonsElevenPlusMilliseconds = 5;//Unused by default
 int AnimationLagButtonsElevenPlusMilliseconds = 100;//Unused by default
 
 //Dynamic variables:
-wstring ProgramVersion = L"1.9.2.0";
+wstring ProgramVersion = L"1.9.2.1";
 wstring GitHubConfiguration = L"https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/blob/main/CONFIGURATION.md";
 wstring GitHubReleases = L"https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases";
 wstring GitHubAbout = L"https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix";

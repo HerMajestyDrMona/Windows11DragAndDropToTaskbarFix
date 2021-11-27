@@ -1688,6 +1688,10 @@ bool IsCursorIconAllowed() {
 		if (cursorInfo.hCursor == hCursorBeam) {
 			return false;
 		}
+		//Excel + icon:
+		if (cursorInfo.hCursor == (HCURSOR)0xB09CB) {
+			return false;
+		}
 	}
 	return true;
 }
