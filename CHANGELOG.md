@@ -1,6 +1,10 @@
 # Change Log for Windows 11 Drag & Drop to the Taskbar (Fix)
 Don't read if you're sensitive to misspellings and grammatical errors.
 
+## [[ver. 1.9.2.0](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases/tag/v.1.9.2.0-release)]  - 2021-11-27, 14:35 CET
+- Added `IgnorePotentiallyUnwantedDragsFromCertainCursorIcons=1` configuration option (enabled by default). It solves issue [#28](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/28).
+  - This option blocks potentially unwanted drags, for example when the mouse curosr icon is the I-beam (e.g. selecting a text in the Word document).
+
 ## [[ver. 1.9.1.0](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases/tag/v.1.9.1.0-release)]  - 2021-11-19, 06:00 CET
 - Fixed the program crash (present since version 1.7.0) which could occur when `UseFixForBugAfterSleepMode` was enabled (default), caused by clearing the vector and not pushing updated screen windows to it. It could be identified in Event Viewer by the Application Error offset `000000000000c366` (at least on ver. 1.9).
 
