@@ -35,6 +35,7 @@ bool ShowTrayIcon = true;
 bool UseTheNewBestMethodEver = true;
 bool AutoOpenFirstWindowInBestMethodEver = true;
 bool AutoOpenFirstWindowInBestMethodEverLimited = true;
+bool IgnorePotentiallyUnwantedDragsFromCertainCursorIcons = true;
 int HowLongSleepBetweenDifferentKeysPressMilliseconds = 20;
 int HowLongSleepBetweenTheSameKeysPressMilliseconds = 0;
 int HowLongSleepAfterAutoOpenFirstWindowMilliseconds = 100;
@@ -66,7 +67,7 @@ int SleepTimeButtonsElevenPlusMilliseconds = 5;//Unused by default
 int AnimationLagButtonsElevenPlusMilliseconds = 100;//Unused by default
 
 //Dynamic variables:
-wstring ProgramVersion = L"1.9.1.0";
+wstring ProgramVersion = L"1.9.2.0";
 wstring GitHubConfiguration = L"https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/blob/main/CONFIGURATION.md";
 wstring GitHubReleases = L"https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases";
 wstring GitHubAbout = L"https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix";
@@ -215,6 +216,8 @@ wstring NameAndVer = L"";
 wstring NameAndVer2 = L"";
 wstring NameRestart = L"";
 MENUITEMINFO	ItemInfo;
+bool AllowedCursorIconInThisClick = true;
+bool DetectedIconInThisClick = false;
 
 //Functions:
 LRESULT CALLBACK WindowProcedure(HWND, UINT, WPARAM, LPARAM);
@@ -270,6 +273,8 @@ void ClickedAboutFromTray();
 void ClickedCheckForUpdatesFromTray();
 void ClickedConfigureFromTray();
 LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
+bool IsCursorIconAllowed();
+void AdvancedSleep();
 
 
 #ifndef DONT_INCLUDE_UNUSED_FUNCTIONS_TO_PREVENT_PSEUDO_ANTIVIRUSES_FROM_THROWING_FALSE_POSITIVES

@@ -470,6 +470,15 @@ void Mona_Load_Configuration(bool DebugPrintNow = false) {
 					continue;
 				}
 
+				if (NewIsConfigLineEqualTo(line, "IgnorePotentiallyUnwantedDragsFromCertainCursorIcons", "1") || NewIsConfigLineEqualTo(line, "IgnorePotentiallyUnwantedDragsFromCertainCursorIcons", "true")) {
+					IgnorePotentiallyUnwantedDragsFromCertainCursorIcons = true;
+					continue;
+				}
+				else if (NewIsConfigLineEqualTo(line, "IgnorePotentiallyUnwantedDragsFromCertainCursorIcons", "0") || NewIsConfigLineEqualTo(line, "IgnorePotentiallyUnwantedDragsFromCertainCursorIcons", "false")) {
+					IgnorePotentiallyUnwantedDragsFromCertainCursorIcons = false;
+					continue;
+				}
+
 				if (NewIsConfigLineEqualTo(line, "UseAlternativeTrayIcon", "1") || NewIsConfigLineEqualTo(line, "UseAlternativeTrayIcon", "true")) {
 					UseAlternativeTrayIcon = true;
 					continue;
@@ -981,6 +990,8 @@ void ResetTmpVariablesFull() {
 }
 
 void ResetTmpVariables() {
+	AllowedCursorIconInThisClick = true;
+	DetectedIconInThisClick = false;
 	SleepPeriodNow = DefaultSleepPeriodInTheLoopMilliseconds;
 	FirstTimeClickedLeftMouseButton = std::chrono::milliseconds(0);
 	if (Last_Step_Reached >= 2) {
@@ -1666,6 +1677,28 @@ DWORD WINAPI ProgramWindowThread(void* data) {
 	return (DWORD)messages.wParam;
 }
 
+
+bool IsCursorIconAllowed() {
+	CURSORINFO cursorInfo = { 0 };
+	cursorInfo.cbSize = sizeof(cursorInfo);
+	if (::GetCursorInfo(&cursorInfo))
+	{
+		std::wcout << L"Cursor Info: " << cursorInfo.hCursor << endl;
+		HCURSOR hCursorBeam = LoadCursor(NULL, IDC_IBEAM);
+		if (cursorInfo.hCursor == hCursorBeam) {
+			return false;
+		}
+	}
+	return true;
+}
+
+void AdvancedSleep() {
+	if (UseFixForBugAfterSleepMode) {
+		SleepModeFix_Previous_TimeNow = TimeNow;
+	}
+	Sleep(SleepPeriodNow);
+}
+
 int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nShowCmd)
 { 
 	hPrevWindow = hPrev;
@@ -1940,8 +1973,29 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 						}
 					}
 				}
+
 				SleepPeriodNow = SleepPeriodWhenLeftMouseButtonIsPressedInTheLoopMilliseconds;
 				CurrentlyLeftMouseButtonIsPressed = true;
+
+				//1.9.2 detect cursor icon to prevent issues when scrolling in the Word document:
+				if (IgnorePotentiallyUnwantedDragsFromCertainCursorIcons) {
+					if (!DetectedIconInThisClick) {
+						DetectedIconInThisClick = true;
+						if (!IsCursorIconAllowed()) {
+							AllowedCursorIconInThisClick = false;
+							if (PrintDebugInfo) {
+								std::wcout << L"Disallowed Mouse Cursor Icon detected on click. Ignoring for this click session ID..." << endl;
+							}
+							AdvancedSleep();
+							continue;
+						}
+					}
+					if (!AllowedCursorIconInThisClick) {
+						AdvancedSleep();
+						continue;
+					}
+				}
+
 				if ((FirstTimeClickedLeftMouseButton.count() != 0) && (TimeNow.count() >= (FirstTimeClickedLeftMouseButton.count() + HowLongLeftMouseButtonPressedBeforeContinueMilliseconds))) {
 					if (Last_Step_Reached < 2) {
 						Last_Step_Reached = 2;
@@ -1951,7 +2005,6 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 					if (PrintDebugInfo) {
 						std::wcout << Current_Button_Name << L" Mouse Button was pressed for > " << HowLongLeftMouseButtonPressedBeforeContinueMilliseconds << L" milliseconds...\n";
 					}
-
 
 					if (!DetectedHWNDsForThisMouseClick) {
 						//Primary screen variables:
@@ -1963,10 +2016,7 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 								if (Fix_Taskbar_Size_Bug(PrimaryScreen.hWndMSTaskSwWClass)) {
 									//Fixed. Ignore this loop to get potentially new HWND and RECTs.
 									DetectedHWNDsForThisMouseClick = false;//IMPORTANT ver. 1.9.1 to fix program crash after the sleep mode.
-									if (UseFixForBugAfterSleepMode) {
-										SleepModeFix_Previous_TimeNow = TimeNow;
-									}
-									Sleep(SleepPeriodNow);
+									AdvancedSleep();
 									continue;
 								}
 							}
@@ -2123,10 +2173,7 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 									std::wcout << Current_Button_Name << L" Mouse Click Started in the taskbar area: X: " << MouseClickStartPoint_Client.x << " Y: " << MouseClickStartPoint_Client.y << ", so skipping.\n";
 								}
 								//The sleep was missing there causing heavy CPU usage. Fixed in ver 1.1.1
-								if (UseFixForBugAfterSleepMode) {
-									SleepModeFix_Previous_TimeNow = TimeNow;
-								}
-								Sleep(SleepPeriodNow);
+								AdvancedSleep();
 								continue;
 							}
 
@@ -2283,10 +2330,7 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 					}
 				}
 			}
-			if (UseFixForBugAfterSleepMode) {
-				SleepModeFix_Previous_TimeNow = TimeNow;
-			}
-			Sleep(SleepPeriodNow);
+			AdvancedSleep();
 		}
 		catch (...) {
 			//In case program crashes restart it automatically, but not more than 100 times.
