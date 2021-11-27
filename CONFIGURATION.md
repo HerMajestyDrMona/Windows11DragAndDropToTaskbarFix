@@ -61,6 +61,14 @@ UseTheNewBestMethodEver=1
 AutoOpenFirstWindowInBestMethodEver=2
 ```
 
+#### Should the program ignore potentially unwanted drags, for example when the mouse curosr icon is the I-beam? It solves issue [#28](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/28)
+- 1 = YES. The program will not continue, for example if you're currently selecting a text in the Word document.
+- 0 = NO. The program will not check for the mouse cursor icon.
+
+```
+IgnorePotentiallyUnwantedDragsFromCertainCursorIcons=1
+```
+
 #### For how long (in milliseconds) should the left or the right mouse button be clicked before the program starts checking if the mouse cursor is currently in the task bar area.
 ```
 HowLongLeftMouseButtonPressedBeforeContinueMilliseconds=750
