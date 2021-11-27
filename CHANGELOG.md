@@ -1,7 +1,7 @@
 # Change Log for Windows 11 Drag & Drop to the Taskbar (Fix)
 Don't read if you're sensitive to misspellings and grammatical errors.
 
-## [[ver. 1.9.2.0](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases/tag/v.1.9.2.1-release)]  - 2021-11-27, 14:35 CET
+## [[ver. 1.9.2.1](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases/tag/v.1.9.2.1-release)]  - 2021-11-27, 14:35 CET
 - Added `IgnorePotentiallyUnwantedDragsFromCertainCursorIcons=1` configuration option (enabled by default). It solves issue [#28](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/28).
   - This option blocks potentially unwanted drags, for example when the mouse curosr icon is the I-beam (e.g. selecting a text in the Word document).
 
