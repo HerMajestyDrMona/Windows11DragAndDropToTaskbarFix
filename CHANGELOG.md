@@ -1,6 +1,12 @@
 # Change Log for Windows 11 Drag & Drop to the Taskbar (Fix)
 Don't read if you're sensitive to misspellings and grammatical errors.
 
+## [[ver. 2.0.0.0](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases/tag/v.2.0.0.0-release)]  - 2021-11-28, 15:30 CET
+- Added `DetectKnownPixelColorsToPreventAccidentalEvents=1` configuration option (enabled by default) which prevents the accidental events when no item is being dragged. It fixes issues [#1](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/1) and [#28](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/28)
+  - The function checks a few colors of pixels above the mouse pointer on the taskbar. It detects the "incorrect" sign that is shown when something is being dragged over Windows 11 taskbar. When the sign is not detected, the program will not restore the window from the icon. It's useful when selecting files by the drag gesture, or when selecting text / rows in Word / Excel, and probably many other programs.
+- Changed the status of option `IgnorePotentiallyUnwantedDragsFromCertainCursorIcons` to `0` (disabled by default), because it's not longer needed with the new pixels detection method.
+- Fixed an issue where the taskbar icons could not be selected when the mouse pointer was on the very bottom of the taskbar, when DPI scaling settings were set to 175% or more. It's because function `WindowFromPoint` was returning `NULL`, so as a workaround we now also check the mouse POINT Y that is 1 above the original one.
+
 ## [[ver. 1.9.2.1](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases/tag/v.1.9.2.1-release)]  - 2021-11-27, 14:35 CET
 - Added `IgnorePotentiallyUnwantedDragsFromCertainCursorIcons=1` configuration option (enabled by default). It solves issue [#28](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/28).
   - This option blocks potentially unwanted drags, for example when the mouse curosr icon is the I-beam (e.g. selecting a text in the Word document).
