@@ -479,6 +479,15 @@ void Mona_Load_Configuration(bool DebugPrintNow = false) {
 					continue;
 				}
 
+				if (NewIsConfigLineEqualTo(line, "DetectKnownPixelColorsToPreventAccidentalEvents", "1") || NewIsConfigLineEqualTo(line, "DetectKnownPixelColorsToPreventAccidentalEvents", "true")) {
+					DetectKnownPixelColorsToPreventAccidentalEvents = true;
+					continue;
+				}
+				else if (NewIsConfigLineEqualTo(line, "DetectKnownPixelColorsToPreventAccidentalEvents", "0") || NewIsConfigLineEqualTo(line, "DetectKnownPixelColorsToPreventAccidentalEvents", "false")) {
+					DetectKnownPixelColorsToPreventAccidentalEvents = false;
+					continue;
+				}
+
 				if (NewIsConfigLineEqualTo(line, "UseAlternativeTrayIcon", "1") || NewIsConfigLineEqualTo(line, "UseAlternativeTrayIcon", "true")) {
 					UseAlternativeTrayIcon = true;
 					continue;
@@ -983,6 +992,7 @@ void ResetTmpVariablesFull2() {
 }
 
 void ResetTmpVariablesFull() {
+	DetectedCorrectPixelsInThisClick = false;
 	DetectedHWNDsForThisMouseClick = false;
 	if (Last_Step_Reached >= 4) {
 		ResetTmpVariablesFull2();
@@ -1229,7 +1239,9 @@ void Check_And_Issue_Auto_Enter_Best_Method_Ever(int ButtonID) {
 			//No, we must move it to above call
 		}
 		else {
-			std::wcout << L"Button is the same so skipping ENTER." << endl;
+			if (PrintDebugInfo) {
+				std::wcout << L"Button is the same so skipping ENTER." << endl;
+			}
 		}
 	}
 }
@@ -1570,17 +1582,24 @@ bool Fix_Taskbar_Size_Bug(HWND Moomintrollen) {
 	if (SleepModeFixTaskbarHeight < 44) { //48 is normal height, 40 when bug occurs, so lets make it 44.
 		//Bug occurred
 		TaskbarSizeBugDetectedTimes++;
-		if (TimeNow.count() > LastTimeFixedTaskbarSizeBug.count() + 10000) {//We can have 10 secs here because it counts real time, not GetTickCount() which would not differ much after the sleep mode.
+		if (TimeNow.count() > LastTimeFixedTaskbarSizeBug.count() + 5000) {//We can have 5 secs here because it counts real time, not GetTickCount() which would not differ much after the sleep mode.
 			
 			if (Hwnd) {
 				if (PrintDebugInfo) {
 					std::wcout << L"MSTaskSwWClass size bug detected. The current height is: " << SleepModeFixTaskbarHeight << L" (and should be 48). Opening an empty Windows11DragAndDropToTaskbarFix window to fix it...\n";
+				}
+				if (ShowConsoleWindowOnStartup) {
+					ShowWindow(GetConsoleWindow(), SW_HIDE);
 				}
 				ShowWindow(Hwnd, SW_HIDE);
 				Sleep(5);
 				ShowWindow(Hwnd, SW_SHOW);
 				Sleep(100);
 				ShowWindow(Hwnd, SW_HIDE);
+				if (ShowConsoleWindowOnStartup) {
+					ShowWindow(GetConsoleWindow(), SW_SHOW);
+				}
+				LastTimeFixedTaskbarSizeBug = TimeNow;//was missing before ver 1.10
 			}
 			else {
 				if (PrintDebugInfo) {
@@ -1683,7 +1702,9 @@ bool IsCursorIconAllowed() {
 	cursorInfo.cbSize = sizeof(cursorInfo);
 	if (::GetCursorInfo(&cursorInfo))
 	{
-		std::wcout << L"Cursor Info: " << cursorInfo.hCursor << endl;
+		if (PrintDebugInfo) {
+			std::wcout << L"Cursor Info: " << cursorInfo.hCursor << endl;
+		}
 		HCURSOR hCursorBeam = LoadCursor(NULL, IDC_IBEAM);
 		if (cursorInfo.hCursor == hCursorBeam) {
 			return false;
@@ -1703,8 +1724,117 @@ void AdvancedSleep() {
 	Sleep(SleepPeriodNow);
 }
 
+void Update_Pseudo_DPI_Scale() {
+	double UpdatedDPIScaleX = 1.0;
+	double UpdatedDPIScaleY = 1.0;
+	//https://stackoverflow.com/questions/33507031/detect-if-non-dpi-aware-application-has-been-scaled-virtualized/36864741
+	//Get current monitor:
+	HMONITOR hMonitor = MonitorFromPoint(P, MONITOR_DEFAULTTONEAREST);
+
+	// Get the logical width and height of the monitor.
+	MONITORINFOEX miex;
+	miex.cbSize = sizeof(miex);
+	GetMonitorInfo(hMonitor, &miex);
+	int cxLogical = (miex.rcMonitor.right - miex.rcMonitor.left);
+	int cyLogical = (miex.rcMonitor.bottom - miex.rcMonitor.top);
+
+	// Get the physical width and height of the monitor.
+	DEVMODE dm;
+	dm.dmSize = sizeof(dm);
+	dm.dmDriverExtra = 0;
+	EnumDisplaySettings(miex.szDevice, ENUM_CURRENT_SETTINGS, &dm);
+	int cxPhysical = dm.dmPelsWidth;
+	int cyPhysical = dm.dmPelsHeight;
+
+	// Calculate the scaling factor.
+	double horzScale = ((double)cxPhysical / (double)cxLogical);
+	double vertScale = ((double)cyPhysical / (double)cyLogical);
+	if (PrintDebugInfo) {
+		std::wcout << L"horzScale: " << horzScale << ". vertScale: " << vertScale << "." << endl;
+	}
+	//it differs sometimes:
+	/*if (horzScale == vertScale) {
+		UpdatedDPIScale = vertScale;
+	}*/
+	if (horzScale >= 1.0f && horzScale < 10.1f) {
+		UpdatedDPIScaleX = horzScale;
+	}
+	if (vertScale >= 1.0f && vertScale < 10.1f) {
+		UpdatedDPIScaleY = vertScale;
+	}
+
+	Current_DPI_Scale_X = UpdatedDPIScaleX;
+	Current_DPI_Scale_Y = UpdatedDPIScaleY;
+}
+
+bool CheckControlPixelsAboveTheMouseOnTaskbar() {
+	//Update DPI only if different session ID, or if mouse enters a different monitor.
+	if ((Current_UniqueID_of_the_click != Previous_DPI_UniqueID_of_the_click) || (WindowsScreenSet != PreviousDPI_WindowsScreenSet)) {
+		Update_Pseudo_DPI_Scale();
+		Previous_DPI_UniqueID_of_the_click = Current_UniqueID_of_the_click;
+		PreviousDPI_WindowsScreenSet = WindowsScreenSet;
+		if (PrintDebugInfo) {
+			std::wcout << L"Different Session ID or Monitor detected. Current DPI X: " << Current_DPI_Scale_X << ". Y: " << Current_DPI_Scale_Y << "." << endl;
+		}
+	}
+
+	//we have cursor position P updated in the code earlier, so no need to do this again.
+
+	//15 = 242 242 242 #F2F2F2
+	//21 = 255 0 0 #FF0000
+
+	bool ToReturn = false;
+	COLORREF PrevColor1 = RGB(0, 0, 0);
+	COLORREF PrevColor2 = RGB(0, 0, 0);
+	COLORREF PrevColor3 = RGB(0, 0, 0);
+
+	COLORREF our_white = RGB(242, 242, 242);
+	COLORREF our_red = RGB(255, 0, 0);
+
+	HDC dc = GetDC(NULL);
+	int PointYScaled = static_cast<int>((P.y * Current_DPI_Scale_Y));
+	int PointXScaled = static_cast<int>((P.x * Current_DPI_Scale_X));
+	for (int iii = 14; iii < 31; iii++) {
+		int PointYWithOffsetNow = PointYScaled - iii;
+		COLORREF color_now = GetPixel(dc, PointXScaled, PointYWithOffsetNow);
+		if (color_now == our_red) {
+			if (PrevColor1 == our_white && PrevColor2 == our_white && PrevColor3 == our_white) {
+				ToReturn = true;
+				break;
+			}
+		}
+		PrevColor1 = PrevColor2;
+		PrevColor2 = PrevColor3;
+		PrevColor3 = color_now;
+	}
+	ReleaseDC(NULL, dc);
+	return ToReturn;
+
+	/*int PointYWithOffset1 = static_cast<int>((P.y * Current_DPI_Scale_Y)) - 15;
+	COLORREF color1 = GetPixel(dc, static_cast<int>((P.x * Current_DPI_Scale_X)), PointYWithOffset1);
+	if (color1 == RGB(242, 242, 242)) {
+		int PointYWithOffset2 = static_cast<int>((P.y * Current_DPI_Scale_Y)) - 21;
+		COLORREF color2 = GetPixel(dc, static_cast<int>((P.x * Current_DPI_Scale_X)), PointYWithOffset2);
+		if (color2 == RGB(255, 0, 0)) {
+			ToReturn = true;
+		}
+	}
+	ReleaseDC(NULL, dc);
+	return ToReturn;*/
+
+	/*PrintDebugInfo = false;
+	HDC dcTest = GetDC(NULL);
+	for (int iii = 0; iii < 40; iii++) {
+		int PointYWithOffset = static_cast<int>((P.y * Current_DPI_Scale_Y)) - iii;
+		COLORREF color_current = GetPixel(dcTest, static_cast<int>((P.x * Current_DPI_Scale_X)), PointYWithOffset);
+		printf("Mouse X: %i, Y: %i. Offset: %i (%i). R: %i, G: %i, B: %i\n", P.x, P.y, iii, PointYWithOffset, GetRValue(color_current), GetGValue(color_current), GetBValue(color_current));
+	}
+	ReleaseDC(NULL, dcTest);
+	return false;*/
+}
+
 int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nShowCmd)
-{ 
+{
 	hPrevWindow = hPrev;
 	hInstWindow = hInst;
 	nShowCmdWindow = nShowCmd;
@@ -2041,8 +2171,15 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 
 					//Unfortunately we can't optimize it at the moment since cursor might move with dragged file from screen-to-screen.
 					GetCursorPos(&P);
+
 					HWND WindowUnderMouse = WindowFromPoint(P);
-					int WindowsScreenSet = 0;//Primary
+					if (!WindowUnderMouse) {
+						POINT P_Hotfix = P;
+						P_Hotfix.y = P_Hotfix.y - 1;
+						WindowUnderMouse = WindowFromPoint(P_Hotfix);
+					}
+
+					WindowsScreenSet = 0;//Primary
 					//Secondary Screen Fix ver 1.5:
 					GetClassNameW(WindowUnderMouse, WindowClassName, MAX_PATH);
 					//std::wcout << L"Class Name Under Mouse: " << WindowClassName << L"\n";
@@ -2161,6 +2298,26 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 						if (WindowUnderMouse == hWndMSTaskSwWClass || WindowUnderMouse == hWndTrayNotify) {
 							if (Last_Step_Reached < 3) {
 								Last_Step_Reached = 3;
+							}
+							//Test pixel check, ver. 2.0.0.0:
+							if (DetectKnownPixelColorsToPreventAccidentalEvents) {
+								if (!DetectedCorrectPixelsInThisClick) {
+									if (CheckControlPixelsAboveTheMouseOnTaskbar()) {
+										DetectedCorrectPixelsInThisClick = true;
+										if (PrintDebugInfo) {
+											std::wcout << L"DetectKnownPixelColorsToPreventAccidentalEvents: Detected CORRECT pixel colors. Continuing..." << endl;
+										}
+									}
+									else {
+										if (PrintDebugInfo) {
+											std::wcout << L"DetectKnownPixelColorsToPreventAccidentalEvents: Detected INCORRECT pixel colors. Ignoring the loop..." << endl;
+										}
+									}
+								}
+								if (!DetectedCorrectPixelsInThisClick) {
+									AdvancedSleep();
+									continue;
+								}
 							}
 
 							P_Client = P;

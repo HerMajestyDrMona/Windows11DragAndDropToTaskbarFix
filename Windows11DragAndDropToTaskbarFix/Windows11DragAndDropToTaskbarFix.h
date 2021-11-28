@@ -35,7 +35,8 @@ bool ShowTrayIcon = true;
 bool UseTheNewBestMethodEver = true;
 bool AutoOpenFirstWindowInBestMethodEver = true;
 bool AutoOpenFirstWindowInBestMethodEverLimited = true;
-bool IgnorePotentiallyUnwantedDragsFromCertainCursorIcons = true;
+bool DetectKnownPixelColorsToPreventAccidentalEvents = true;
+bool IgnorePotentiallyUnwantedDragsFromCertainCursorIcons = false;//False since ver 1.10.0.0, because we don't need it with pixels test.
 int HowLongSleepBetweenDifferentKeysPressMilliseconds = 20;
 int HowLongSleepBetweenTheSameKeysPressMilliseconds = 0;
 int HowLongSleepAfterAutoOpenFirstWindowMilliseconds = 100;
@@ -67,7 +68,7 @@ int SleepTimeButtonsElevenPlusMilliseconds = 5;//Unused by default
 int AnimationLagButtonsElevenPlusMilliseconds = 100;//Unused by default
 
 //Dynamic variables:
-wstring ProgramVersion = L"1.9.2.1";
+wstring ProgramVersion = L"2.0.0.0";
 wstring GitHubConfiguration = L"https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/blob/main/CONFIGURATION.md";
 wstring GitHubReleases = L"https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases";
 wstring GitHubAbout = L"https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix";
@@ -218,6 +219,12 @@ wstring NameRestart = L"";
 MENUITEMINFO	ItemInfo;
 bool AllowedCursorIconInThisClick = true;
 bool DetectedIconInThisClick = false;
+bool DetectedCorrectPixelsInThisClick = false;
+int WindowsScreenSet = 0;//Primary
+int PreviousDPI_WindowsScreenSet = -1;
+long long int Previous_DPI_UniqueID_of_the_click = -1;
+double Current_DPI_Scale_X = 1.0;
+double Current_DPI_Scale_Y = 1.0;
 
 //Functions:
 LRESULT CALLBACK WindowProcedure(HWND, UINT, WPARAM, LPARAM);
@@ -275,6 +282,8 @@ void ClickedConfigureFromTray();
 LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 bool IsCursorIconAllowed();
 void AdvancedSleep();
+void Update_Pseudo_DPI_Scale();
+bool CheckControlPixelsAboveTheMouseOnTaskbar();
 
 
 #ifndef DONT_INCLUDE_UNUSED_FUNCTIONS_TO_PREVENT_PSEUDO_ANTIVIRUSES_FROM_THROWING_FALSE_POSITIVES
