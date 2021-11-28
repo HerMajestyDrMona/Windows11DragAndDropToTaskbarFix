@@ -61,12 +61,12 @@ UseTheNewBestMethodEver=1
 AutoOpenFirstWindowInBestMethodEver=2
 ```
 
-#### Should the program check colors of pixels in order to prevent the accidental drop events when no item is being dragged? It solves issues [#1](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/1) and [#28](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/28).
+#### Should the program check colors of pixels in order to prevent the accidental events when no item is being dragged? It solves issues [#1](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/1) and [#28](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/28).
 - 1 = YES. The program will check for a few pixels colors above the mouse pointer on the taskbar. It detects the "incorrect" sign that is shown when something is being dragged over Windows 11 taskbar.
 - 0 = NO. The program will not check for pixels colours.
 
 ```
-DetectKnownPixelColorsToPreventAccidentalDropEvents=1
+DetectKnownPixelColorsToPreventAccidentalEvents=1
 ```
 
 #### Should the program ignore potentially unwanted drags, for example when the mouse curosr icon is the I-beam? It solves issue [#28](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/28). It is not longer needed in ver. 2.0, because we use a better method.
