@@ -61,6 +61,14 @@ UseTheNewBestMethodEver=1
 AutoOpenFirstWindowInBestMethodEver=2
 ```
 
+#### Should the program open pinned apps, even when there is no active window? It solves discussion [#37](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/discussions/37).
+- 1 = YES. Open programs under the pinned icons, even when they have no active window present.
+- 0 = NO. Never open pinned apps with no active window.
+
+```
+AutoOpenPinnedAppsEvenWhenNoWindowActive=0
+```
+
 #### Should the program check colors of pixels in order to prevent the accidental events when no item is being dragged? It solves issues [#1](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/1) and [#28](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/28).
 - 1 = YES. The program will check for a few pixels colors above the mouse pointer on the taskbar. It detects the "incorrect" sign that is shown when something is being dragged over Windows 11 taskbar.
 - 0 = NO. The program will not check for pixels colours.
@@ -102,6 +110,11 @@ HowLongSleepBetweenTheSameKeysPressMilliseconds=0
 #### Sleep time (in milliseconds) after opening the first window under the icon.
 ```
 HowLongSleepAfterAutoOpenFirstWindowMilliseconds=100
+```
+
+#### Sleep time (in milliseconds) after opening pinned apps (only used when option `AutoOpenPinnedAppsEvenWhenNoWindowActive` is `1`).
+```
+HowLongSleepAfterOpeningPinnedAppMilliseconds=500
 ```
 
 #### Delay (in milliseconds) before opening the first window under the icon. Only if `AutoOpenFirstWindowInBestMethodEver` is `2` or `1`.
@@ -146,6 +159,7 @@ DefaultSingleWindowPreviewThumbnailHeight=250
 ```
 
 #### Should the program monitor file `Windows11DragAndDropToTaskbarFixConfig.txt` for changes?
+- 2 = AUTORESTART. When you save changes to the configuration file, the program will automatically restart itself.
 - 1 = YES. When you save changes to the configuration file, the program will ask you to restart itself.
 - 0 = NO. The program won't check for the configuration file changes.
 ```
