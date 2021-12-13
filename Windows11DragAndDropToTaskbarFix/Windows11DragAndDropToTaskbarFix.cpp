@@ -522,12 +522,28 @@ void Mona_Load_Configuration(bool DebugPrintNow = false) {
 					continue;
 				}
 
+				if (NewIsConfigLineEqualTo(line, "AutoOpenPinnedAppsEvenWhenNoWindowActive", "1") || NewIsConfigLineEqualTo(line, "AutoOpenPinnedAppsEvenWhenNoWindowActive", "true")) {
+					AutoOpenPinnedAppsEvenWhenNoWindowActive = true;
+					continue;
+				}
+				else if (NewIsConfigLineEqualTo(line, "AutoOpenPinnedAppsEvenWhenNoWindowActive", "0") || NewIsConfigLineEqualTo(line, "AutoOpenPinnedAppsEvenWhenNoWindowActive", "false")) {
+					AutoOpenPinnedAppsEvenWhenNoWindowActive = false;
+					continue;
+				}
+
+				if (NewIsConfigLineEqualTo(line, "ConfigFileChangeTimeMonitorAllowed", "2") || NewIsConfigLineEqualTo(line, "ConfigFileChangeTimeMonitorAllowed", "autorestart")) {
+					ConfigFileChangeTimeMonitorAllowed = true;
+					ConfigFileChangeTimeMonitorAutoRestart = true;
+					continue;
+				}
 				if (NewIsConfigLineEqualTo(line, "ConfigFileChangeTimeMonitorAllowed", "1") || NewIsConfigLineEqualTo(line, "ConfigFileChangeTimeMonitorAllowed", "true")) {
 					ConfigFileChangeTimeMonitorAllowed = true;
+					ConfigFileChangeTimeMonitorAutoRestart = false;
 					continue;
 				}
 				else if (NewIsConfigLineEqualTo(line, "ConfigFileChangeTimeMonitorAllowed", "0") || NewIsConfigLineEqualTo(line, "ConfigFileChangeTimeMonitorAllowed", "false")) {
 					ConfigFileChangeTimeMonitorAllowed = false;
+					ConfigFileChangeTimeMonitorAutoRestart = false;
 					continue;
 				}
 
@@ -652,6 +668,14 @@ void Mona_Load_Configuration(bool DebugPrintNow = false) {
 				if (TmpValueFromNewConfigGetIntFunction != -696969) {
 					if (TmpValueFromNewConfigGetIntFunction > -1) {//For performance purposes disallow 0s for now.
 						HowLongSleepAfterAutoOpenFirstWindowMilliseconds = static_cast<int>(TmpValueFromNewConfigGetIntFunction);
+						continue;
+					}
+				}
+
+				TmpValueFromNewConfigGetIntFunction = NewConfigGetIntValueAfter(line, "HowLongSleepAfterOpeningPinnedAppMilliseconds");
+				if (TmpValueFromNewConfigGetIntFunction != -696969) {
+					if (TmpValueFromNewConfigGetIntFunction > -1) {//For performance purposes disallow 0s for now.
+						HowLongSleepAfterOpeningPinnedAppMilliseconds = static_cast<int>(TmpValueFromNewConfigGetIntFunction);
 						continue;
 					}
 				}
@@ -963,6 +987,8 @@ static LRESULT CALLBACK LowLevelMousePressProc(int nCode, WPARAM wParam, LPARAM 
 
 DWORD WINAPI MouseClickWatchdogThread(void* data) {
 	
+	milliseconds LowLevelMouseHookThreadStartedTime = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
+
 	HINSTANCE hInstLowLevelMousePressProc = GetModuleHandle(NULL);
 	HandleLowLevelMousePressProc = SetWindowsHookEx(WH_MOUSE_LL, LowLevelMousePressProc, hInstLowLevelMousePressProc, 0);
 	MSG msgMouseClickWatchdog;
@@ -975,6 +1001,22 @@ DWORD WINAPI MouseClickWatchdogThread(void* data) {
 			break;
 		}*/
 	}
+
+	// Not sure if this has any use. If for some reasons Mouse Hook dies restart the program. But will GetMessage get interrupted?...
+	if (duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count() > (LowLevelMouseHookThreadStartedTime.count() + 15000)) {
+		//Restart the program, because Mouse Hook got interrupted?
+		if (RestartedCrashedTimes < 101) {
+			RestartedCrashedTimes++;
+			RestartExtraWstring = L"-restarted-times-" + to_wstring(RestartedCrashedTimes) + L"-";
+			InterruptMainThread = true;
+			InterruptRestartProgram = true;
+		}
+		else {
+			InterruptMainThread = true;
+			InterruptRestartProgram = false;
+		}
+	}
+
 	UnhookWindowsHookEx(HandleLowLevelMousePressProc);
 	return 0;
 }
@@ -1221,10 +1263,75 @@ void Check_And_Issue_Auto_Enter_Best_Method_Ever(int ButtonID) {
 					Sleep(HowLongSleepAfterAutoOpenFirstWindowMilliseconds);
 				}
 			}
-
 			else {
-				if (PrintDebugInfo) {
-					std::wcout << L"TaskListThumbnailWnd is INVISIBLE. Skipping..." << endl;
+				//Check if pinned apps opening is available.
+				if (AutoOpenPinnedAppsEvenWhenNoWindowActive) {
+					//Hotfix to prevent hotkeys spam
+					if (AutoOpenFirstWindowInBestMethodEverLimited) {
+						//Dont display the preview window again if only 1 app was under the icon.
+						if (JustClickedEnterForBestMethodEver >= 2) {
+							//do nothing
+						}
+						else {
+							JustClickedEnterForBestMethodEver = 1;
+						}
+					}
+					else {
+						JustClickedEnterForBestMethodEver = 1;
+					}
+
+					if (PrintDebugInfo) {
+						std::wcout << L"TaskListThumbnailWnd is INVISIBLE, but AutoOpenPinnedAppsEvenWhenNoWindowActive is True, so opening the pinned app." << endl;
+					}
+
+					//Longer sleep
+					if (HowLongSleepBetweenDifferentKeysPressMilliseconds > 0) {
+						Sleep(HowLongSleepBetweenDifferentKeysPressMilliseconds);
+					}
+
+					//BUG, sometimes Win+T won't open apps on ENTER press. As workaround we add the old hotkey here for the first 10 icons:
+					if (ButtonID <= 10) {
+						if (UseTheNewWMHOTKEYMethod && hWndTray) {
+							LRESULT SendMessageReturn = SendMessage(hWndTray, WM_HOTKEY, New_WM_HOTKEY_Array_LogoWin_CTRL_Num[ButtonID].first, New_WM_HOTKEY_Array_LogoWin_CTRL_Num[ButtonID].second);
+							if (PrintDebugInfo) {
+								std::wcout << L"Sending WM_HOTKEY message for Logo Win + CTRL + " << ButtonID << L" key\n";
+							}
+						}
+						else {
+							keybd_event(REMAP_VK_LWIN, VIRTUAL_REMAP_VK_LWIN, 0, 0); //Press windows key
+							keybd_event(REMAP_VK_LCONTROL, VIRTUAL_REMAP_VK_LCONTROL, 0, 0); //Press CTRL key
+							keybd_event(Keyboard_Keys_One_to_Zero[ButtonID], MapVirtualKey(Keyboard_Keys_One_to_Zero[ButtonID], 0), 0, 0);
+							if (HowLongSleepBetweenTheSameKeysPressMilliseconds) {
+								Sleep(HowLongSleepBetweenTheSameKeysPressMilliseconds);
+							}
+							keybd_event(Keyboard_Keys_One_to_Zero[ButtonID], MapVirtualKey(Keyboard_Keys_One_to_Zero[ButtonID], 0), KEYEVENTF_KEYUP, 0);
+							keybd_event(REMAP_VK_LCONTROL, VIRTUAL_REMAP_VK_LCONTROL, KEYEVENTF_KEYUP, 0); // left Release
+							keybd_event(REMAP_VK_LWIN, VIRTUAL_REMAP_VK_LWIN, KEYEVENTF_KEYUP, 0); // left Release
+							if (PrintDebugInfo) {
+								std::wcout << L"Simulating Logo Win + CTRL + " << ButtonID << L" key\n";
+							}
+						}
+					}
+					else {
+						//It might not always work due to bug in Windows:
+
+						keybd_event(REMAP_VK_RETURN, VIRTUAL_REMAP_VK_RETURN, 0, 0);
+						if (HowLongSleepBetweenTheSameKeysPressMilliseconds) {
+							Sleep(HowLongSleepBetweenTheSameKeysPressMilliseconds);
+						}
+						keybd_event(REMAP_VK_RETURN, VIRTUAL_REMAP_VK_RETURN, KEYEVENTF_KEYUP, 0);
+					}
+
+					//We still need some sleep here, but different than window rect change detection look:
+					if (HowLongSleepAfterOpeningPinnedAppMilliseconds > 0) {
+						Sleep(HowLongSleepAfterOpeningPinnedAppMilliseconds);
+					}
+
+				}
+				else {
+					if (PrintDebugInfo) {
+						std::wcout << L"TaskListThumbnailWnd is INVISIBLE. Skipping..." << endl;
+					}
 				}
 			}
 
@@ -1629,7 +1736,87 @@ void Update_Primary_Screen_Windows_HWNDSs() {
 	}
 }
 
+
+HINSTANCE hInst;
+
 DWORD WINAPI ProgramWindowThread(void* data) {
+
+	/*bool CreateTaskManagerButtonOnTaskbar = false;
+	if (CreateTaskManagerButtonOnTaskbar) {
+		int popUPWidth = 151;
+		int popUPHeight = 37;
+
+		HRGN Rounded = CreateRoundRectRgn(0, 0, popUPWidth, popUPHeight, 20, 20);
+
+		//Task manager button window:
+
+		// The main window class name.
+		bool CreatedTaskManagerButton = false;
+		static wchar_t szWindowClass[] = L"Windows11DragAndDropToTaskbarFixTaskManager";
+		// The string that appears in the application's title bar.
+		static wchar_t szTitle[] = L"Windows 11 Drag & Drop to the Taskbar(Fix)";
+
+		WNDCLASSEXW wcex;
+
+		wcex.cbSize = sizeof(WNDCLASSEX);
+		wcex.style = CS_HREDRAW | CS_VREDRAW;
+		wcex.lpfnWndProc = WndProc;
+		wcex.cbClsExtra = 0;
+		wcex.cbWndExtra = 0;
+		wcex.hInstance = hInstWindow;
+		wcex.hIcon = LoadIcon(hInstWindow, MAKEINTRESOURCE(IDI_APPLICATION));
+		wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
+		//wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+		wcex.hbrBackground = (HBRUSH)(CreateSolidBrush(RGB(48, 51, 56)));
+		wcex.lpszMenuName = NULL;
+		wcex.lpszClassName = szWindowClass;
+		wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_APPLICATION));
+
+		if (!RegisterClassEx(&wcex))
+		{
+				//return 1;
+		}
+		else {
+			CreatedTaskManagerButton = true;
+		}
+
+		if (CreatedTaskManagerButton) {
+			CreatedTaskManagerButton = false;
+			hInst = hInstWindow; // Store instance handle in our global variable
+
+			HWND hWnd = CreateWindowEx(WS_EX_APPWINDOW,
+				szWindowClass,
+				szTitle,
+				WS_POPUP,
+				CW_USEDEFAULT, CW_USEDEFAULT,
+				popUPWidth, popUPHeight,
+				NULL,
+				NULL,
+				hInstWindow,
+				NULL
+			);
+
+			if (!hWnd)
+			{
+	
+			}
+			else {
+				CreatedTaskManagerButton = true;
+			}
+			// The parameters to ShowWindow explained:
+			// hWnd: the value returned from CreateWindow
+			// nCmdShow: the fourth parameter from WinMain
+			if (CreatedTaskManagerButton) {
+				SetWindowRgn(hWnd, Rounded, TRUE);
+				ShowWindow(hWnd,
+					SW_SHOW);
+				UpdateWindow(hWnd);
+			}
+		}
+	}*/
+
+	
+
 	MSG messages;
 	WNDCLASSEXW wincl;
 	WM_TASKBAR = RegisterWindowMessageW(L"Windows11DragAndDropToTaskbarFixTaskbarCreated");
@@ -1860,10 +2047,9 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 		IgnoreMutex = true;
 		size_t RestartedTimesFind = Commandline.find(L"-restarted-times-");
 		if(RestartedTimesFind != std::wstring::npos) {
-			wstring restartedtimes = Commandline.substr(RestartedTimesFind + 16);
+			wstring restartedtimes = Commandline.substr(RestartedTimesFind + 17);
 			RestartedTimesFind = restartedtimes.find(L"-");
 			if (RestartedTimesFind != std::wstring::npos) {
-				restartedtimes = restartedtimes.substr(0, RestartedTimesFind);
 				RestartedCrashedTimes = _wtoll(restartedtimes.c_str());
 			}
 		}
@@ -2010,7 +2196,13 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 							wstring ReloadChangesTitie = L"Windows11DragAndDropToTaskbarFix.exe by Dr.MonaLisa:";
 							wstring ReloadChangesQuestion = L"The configuration file \"" + ConfigFile + L"\" has been modified by another program.\n\nDo you want to restart \"Windows 11 Drag & Drop to the Taskbar (Fix)\" in order to reload settings?\n\n- Click \"YES\" to reload settings from the file\n\n- Click \"NO\" to keep the current settings\n\n- Click \"CANCEL\" to keep the current settings and to not display this warning again";
 
-							int ReloadChangesConfUtx = MessageBoxW(NULL, ReloadChangesQuestion.c_str(), ReloadChangesTitie.c_str(), MB_YESNOCANCEL | MB_ICONEXCLAMATION | MB_TOPMOST | MB_SETFOREGROUND | MB_DEFBUTTON1);
+							int ReloadChangesConfUtx = IDNO;
+							if (!ConfigFileChangeTimeMonitorAutoRestart){
+								ReloadChangesConfUtx = MessageBoxW(NULL, ReloadChangesQuestion.c_str(), ReloadChangesTitie.c_str(), MB_YESNOCANCEL | MB_ICONEXCLAMATION | MB_TOPMOST | MB_SETFOREGROUND | MB_DEFBUTTON1);
+							}
+							else {
+								ReloadChangesConfUtx = IDYES;
+							}
 							if (ReloadChangesConfUtx == IDYES) {
 								//NewFunctionToKill(true);
 								if (Hwnd) {
@@ -2047,6 +2239,7 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 			LeftButtonPressedATM = false;//Default
 			//We actually don't need to worry too much as tmp variables will be automatically reset below if click UniqueID missmatches.
 			Current_Mouse_Button_Zero_Left_One_Right = -1;
+			BugMouseButtonNotReallyClicked = false;
 			if (RightButtonPressedATM_Real) {
 				if (!LeftButtonPressedATM_Real) {
 					Current_Mouse_Button_Zero_Left_One_Right = 1;
@@ -2054,12 +2247,18 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 					if (PrintDebugInfo) {
 						Current_Button_Name = Button_Name_Right;
 					}
+					if (!GetAsyncKeyState(VK_RBUTTON)) {
+						BugMouseButtonNotReallyClicked = true;
+					}
 				}
 				else {
 					Current_Mouse_Button_Zero_Left_One_Right = 0;
 					LastTimeClickedLeftMouseButton = LastTimeClickedLeftMouseButton_Real;
 					if (PrintDebugInfo) {
 						Current_Button_Name = Button_Name_Left;
+					}
+					if (!GetAsyncKeyState(VK_LBUTTON)) {
+						BugMouseButtonNotReallyClicked = true;
 					}
 				}
 				LeftButtonPressedATM = true;
@@ -2070,6 +2269,16 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 				LeftButtonPressedATM = true;
 				if (PrintDebugInfo) {
 					Current_Button_Name = Button_Name_Left;
+				}
+				if (!GetAsyncKeyState(VK_LBUTTON)) {
+					BugMouseButtonNotReallyClicked = true;
+				}
+			}
+
+			if (BugMouseButtonNotReallyClicked) {
+				LeftButtonPressedATM = false;
+				if (PrintDebugInfo) {
+					std::wcout << L"A strange problem has been detected. The Low Level Mouse Hook thread claims that the mouse button is pressed, but GetAsyncKeyState returned false. Interrupting not to cause issues.\n";
 				}
 			}
 
@@ -2304,6 +2513,7 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 								if (!DetectedCorrectPixelsInThisClick) {
 									if (CheckControlPixelsAboveTheMouseOnTaskbar()) {
 										DetectedCorrectPixelsInThisClick = true;
+										EVERDetectedCorrectPixels = true;
 										if (PrintDebugInfo) {
 											std::wcout << L"DetectKnownPixelColorsToPreventAccidentalEvents: Detected CORRECT pixel colors. Continuing..." << endl;
 										}
@@ -2314,10 +2524,15 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 										}
 									}
 								}
-								if (!DetectedCorrectPixelsInThisClick) {
-									AdvancedSleep();
-									continue;
-								}
+								//Hotfix. If somebody uses different curosr styles, or some icons modifications that make pixels detection impossible, then behave as if DetectKnownPixelColorsToPreventAccidentalEvents was false. So always after program restart... or no thats a bad idea. Might be annoying for people working in Word since computer start.
+								// TODO some different detection.
+								//if (EVERDetectedCorrectPixels) {
+
+									if (!DetectedCorrectPixelsInThisClick) {
+										AdvancedSleep();
+										continue;
+									}
+								//}
 							}
 
 							P_Client = P;
@@ -2496,9 +2711,10 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 		catch (...) {
 			//In case program crashes restart it automatically, but not more than 100 times.
 			if (RestartedCrashedTimes < 101) {
+				RestartedCrashedTimes++;
+				RestartExtraWstring = L"-restarted-times-" + to_wstring(RestartedCrashedTimes) + L"-";
 				InterruptMainThread = true;
 				InterruptRestartProgram = true;
-				RestartExtraWstring = L"-restarted-times-" + to_wstring(RestartedCrashedTimes) + L"-";
 
 			}
 			else {
@@ -3754,6 +3970,155 @@ void TestErrorIconDetection() {
 		}
 		Sleep(1000);
 	}
+}
+
+HBITMAP MakeBitMapTransparent(HBITMAP hbmSrc, COLORREF CustomBackgroundColor = NULL, COLORREF CustomTransparentColor = NULL, int CustomWidth = NULL, int CustomHeight = NULL)
+{
+	HDC hdcSrc, hdcDst;
+	HBITMAP hbmOld, hbmNew = hbmSrc;
+	BITMAP bm;
+	COLORREF clrTP, clrBK;
+
+	if ((hdcSrc = CreateCompatibleDC(NULL)) != NULL) {
+		if ((hdcDst = CreateCompatibleDC(NULL)) != NULL) {
+			int nRow, nCol;
+			GetObject(hbmSrc, sizeof(bm), &bm);
+			hbmOld = (HBITMAP)SelectObject(hdcSrc, hbmSrc);
+
+			int bmWidth = bm.bmWidth;
+			int bmHeight = bm.bmHeight;
+			if (CustomWidth != NULL) {
+				bmWidth = CustomWidth;
+			}
+			if (CustomHeight != NULL) {
+				bmHeight = CustomHeight;
+			}
+
+			hbmNew = CreateBitmap(bmWidth, bmHeight, bm.bmPlanes, bm.bmBitsPixel, NULL);
+			SelectObject(hdcDst, hbmNew);
+
+			BitBlt(hdcDst, 0, 0, bmWidth, bmHeight, hdcSrc, 0, 0, SRCCOPY);
+
+			clrTP = GetPixel(hdcDst, 0, 0);// Get color of first pixel at 0,0
+			if (CustomTransparentColor != NULL) {
+				clrTP = CustomTransparentColor;
+			}
+			clrBK = GetSysColor(COLOR_BTNFACE);// Get the current background color of the menu
+			if (CustomBackgroundColor != NULL) {
+				clrBK = CustomBackgroundColor;
+			}
+
+			for (nRow = 0; nRow < bm.bmHeight; nRow++)// work our way through all the pixels changing their color
+				for (nCol = 0; nCol < bm.bmWidth; nCol++)// when we hit our set transparency color.
+					if (GetPixel(hdcDst, nCol, nRow) == clrTP)
+						SetPixel(hdcDst, nCol, nRow, clrBK);
+
+			DeleteDC(hdcDst);
+		}
+		DeleteDC(hdcSrc);
+
+	}
+
+	return hbmNew;
+}
+
+HBITMAP TaskManagerIcon() {
+	HDC Screen_Handle = GetDC(NULL);
+	HDC Device_Handle = CreateCompatibleDC(Screen_Handle);
+
+	HBITMAP Bitmap_Handle =
+		CreateCompatibleBitmap(Device_Handle, GetSystemMetrics(SM_CXICON),
+			GetSystemMetrics(SM_CYICON));
+
+	HBITMAP Old_Bitmap = (HBITMAP)SelectObject(Device_Handle, Bitmap_Handle);
+
+	/*/HINSTANCE hDll;
+	hDll = LoadLibraryW(L"Taskmgr.exe");
+	//HICON TaskManagerIcon = ExtractIconW((HINSTANCE)hDll, L"Taskmgr.exe", 0);
+	HICON TaskManagerIcon = LoadIcon(hDll, MAKEINTRESOURCE(0)); */
+
+
+		HICON hIconLarge, hIconSmall;
+	ICONINFO oIconInfo;
+	ExtractIconExW(L"shell32.dll", 1, &hIconLarge, &hIconSmall, 1);
+	GetIconInfo(hIconSmall, &oIconInfo);
+	HICON TaskManagerIcon = hIconSmall;
+
+	if (TaskManagerIcon) {
+		std::wcout << L"Not null ICON" << std::endl;
+	}
+
+
+	//HICON TaskManagerIcon = LoadIcon(hDll, MAKEINTRESOURCE(0));
+
+	DrawIcon(Device_Handle, 0, 0, TaskManagerIcon);
+	SelectObject(Device_Handle, Old_Bitmap);
+
+	DeleteDC(Device_Handle);
+	ReleaseDC(NULL, Screen_Handle);
+	return Bitmap_Handle;
+}
+
+HBITMAP Bitmap1;
+HWND TaskManagerIconWindow;
+HDC MemDC;
+HBITMAP hOldBmp;
+
+LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	PAINTSTRUCT ps;
+	HDC hdc;
+	wchar_t greeting[] = L"Task Manager";
+
+	switch (message)
+	{
+	case WM_CREATE:
+		/*/Bitmap1 = TaskManagerIcon();
+		Bitmap1 = MakeBitMapTransparent(Bitmap1);
+		TaskManagerIconWindow = CreateWindowW(L"BUTTON", L"", WS_VISIBLE | WS_CHILD | BS_BITMAP | WS_EX_CONTROLPARENT, 5, 2, 25, 25, hWnd, (HMENU)121212, NULL, NULL);
+		SendMessageW(TaskManagerIconWindow, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)Bitmap1);*/
+
+
+		break;
+	case WM_PAINT:
+		hdc = BeginPaint(hWnd, &ps);
+
+		//Bitmap:
+		 // Load the bitmap from the resource
+		Bitmap1 = TaskManagerIcon();
+		//Bitmap1 = MakeBitMapTransparent(Bitmap1);
+		// Create a memory device compatible with the above DC variable
+		MemDC = CreateCompatibleDC(hdc);
+		// Select the new bitmap
+		hOldBmp = (HBITMAP)SelectObject(MemDC, Bitmap1);
+
+		// Copy the bits from the memory DC into the current dc
+		BitBlt(hdc, 5, 2, 32, 32, MemDC, 0, 0, SRCCOPY);
+
+		// Restore the old bitmap
+		SelectObject(MemDC, hOldBmp);
+		DeleteObject(Bitmap1);
+
+
+		// Here your application is laid out.
+		// For this introduction, we just print out "Hello, World!"
+		// in the top left corner.
+		TextOutW(hdc,
+			20, 5,
+			greeting, wcslen(greeting));
+		// End application-specific layout section.
+
+		EndPaint(hWnd, &ps);
+		break;
+	case WM_DESTROY:
+		PostQuitMessage(0);
+		break;
+	default:
+		return DefWindowProc(hWnd, message, wParam, lParam);
+		break;
+	}
+
+	return 0;
 }*/
 
 #endif

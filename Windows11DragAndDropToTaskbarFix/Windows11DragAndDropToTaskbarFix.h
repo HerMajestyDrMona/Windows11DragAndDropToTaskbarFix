@@ -35,11 +35,13 @@ bool ShowTrayIcon = true;
 bool UseTheNewBestMethodEver = true;
 bool AutoOpenFirstWindowInBestMethodEver = true;
 bool AutoOpenFirstWindowInBestMethodEverLimited = true;
+bool AutoOpenPinnedAppsEvenWhenNoWindowActive = false;
 bool DetectKnownPixelColorsToPreventAccidentalEvents = true;
 bool IgnorePotentiallyUnwantedDragsFromCertainCursorIcons = false;//False since ver 1.10.0.0, because we don't need it with pixels test.
 int HowLongSleepBetweenDifferentKeysPressMilliseconds = 20;
 int HowLongSleepBetweenTheSameKeysPressMilliseconds = 0;
 int HowLongSleepAfterAutoOpenFirstWindowMilliseconds = 100;
+int HowLongSleepAfterOpeningPinnedAppMilliseconds = 500;
 int HowLongKeepMouseOverAppIconBeforeAutoOpeningMilliseconds = 550;//So it will open after 200+550 (750 ms as in ver. 1.0)
 int PreviewWindowChangeDetectionMaxMilliseconds = 1000;//Keep it higher. It's non-blocking time.
 
@@ -57,9 +59,10 @@ bool UseAlternativeTrayIcon = false;
 //bool KeepConsoleWindowVisibleEvenWhenDebugInfoIsDisabled = false;
 
 bool ConfigFileChangeTimeMonitorAllowed = true;
+bool ConfigFileChangeTimeMonitorAutoRestart = false;
 
 //Unused (or actually can be used), but not important. Warning, some functions are not longer included in the release
-bool UseTheNewWMHOTKEYMethod = true;//Not that reliable method as I thought
+bool UseTheNewWMHOTKEYMethod = false;//Not that reliable method as I thought. False since ver 2.1, too pro blematic.
 bool UseTheNewWorkaroundForButtonsElevenPlus = false;//Not needed. Wasted time on it :(
 bool CheckIfPinnedAppsWindowsAreVisible = false;//Not needed. Wasted time on it :(
 bool DetectIfFileIsCurrentlyDraggedUsingClipboard = true;//Not working for now
@@ -68,7 +71,7 @@ int SleepTimeButtonsElevenPlusMilliseconds = 5;//Unused by default
 int AnimationLagButtonsElevenPlusMilliseconds = 100;//Unused by default
 
 //Dynamic variables:
-wstring ProgramVersion = L"2.0.0.0";
+wstring ProgramVersion = L"2.1.0.0";
 wstring GitHubConfiguration = L"https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/blob/main/CONFIGURATION.md";
 wstring GitHubReleases = L"https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases";
 wstring GitHubAbout = L"https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix";
@@ -131,6 +134,7 @@ HHOOK HandleLowLevelMousePressProc;
 bool LeftButtonPressedATM = false;
 bool LeftButtonPressedATM_Real = false;
 bool RightButtonPressedATM_Real = false;
+bool BugMouseButtonNotReallyClicked = false;
 short Last_Step_Reached = 0;
 std::chrono::milliseconds LastTimeClickedLeftMouseButton = std::chrono::milliseconds(0);
 std::chrono::milliseconds LastTimeClickedLeftMouseButton_Real = std::chrono::milliseconds(0);
@@ -225,6 +229,7 @@ int PreviousDPI_WindowsScreenSet = -1;
 long long int Previous_DPI_UniqueID_of_the_click = -1;
 double Current_DPI_Scale_X = 1.0;
 double Current_DPI_Scale_Y = 1.0;
+bool EVERDetectedCorrectPixels = false;//Always false on program start.
 
 //Functions:
 LRESULT CALLBACK WindowProcedure(HWND, UINT, WPARAM, LPARAM);
