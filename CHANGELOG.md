@@ -1,6 +1,13 @@
 # Change Log for Windows 11 Drag & Drop to the Taskbar (Fix)
 Don't read if you're sensitive to misspellings and grammatical errors.
 
+## [[ver. 2.1.0.0](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases/tag/v.2.1.0.0-release)]  - 2021-12-13, 16:00 CET
+- Added `AutoOpenPinnedAppsEvenWhenNoWindowActive=0` configuration option (disabled by default), which allows you to open pinned apps, even when they have no active window. It solves discussion [#37](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/discussions/37).
+- Updated the `ConfigFileChangeTimeMonitorAllowed` configuration option. When it's set to `2`, the program will automatically restart itself when you make changes to the configuration file. It was requested in issue [#35](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/35).
+- Added an additional detection if the left/right mouse button is pressed in order to minimize the risk of issues that may occur when the `Low Level Mouse Hook` thread gets terminated by Windows (???). Discussed in issue [#36](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/36)
+- Added program autorestarts in case when `Low Level Mouse Hook` terminates. But it doesn't work anyway :D (because it's still waiting for messages, I'm just sentimental and I don't like removing things already added).
+- Probably some other minor fixes. Please read [CONFIGURATION](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/blob/main/CONFIGURATION.md) for details about the newly added options.
+
 ## [[ver. 2.0.0.0](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases/tag/v.2.0.0.0-release)]  - 2021-11-28, 15:30 CET
 - Added `DetectKnownPixelColorsToPreventAccidentalEvents=1` configuration option (enabled by default) which prevents the accidental events when no item is being dragged. It fixes issues [#1](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/1) and [#28](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/28)
   - The function checks a few colors of pixels above the mouse pointer on the taskbar. It detects the "incorrect" sign that is shown when something is being dragged over Windows 11 taskbar. When the sign is not detected, the program will not restore the window from the icon. It's useful when selecting files by the drag gesture, or when selecting text / rows in Word / Excel, and probably many other programs.
