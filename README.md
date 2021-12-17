@@ -6,6 +6,9 @@ Windows11DragAndDropToTaskbarFix works with the new Windows 11 taskbar and does 
 
 ### [Download Binary (Windows11DragAndDropToTaskbarFix.exe)](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases/)
 
+### [Install Microsoft Visual C++ 2015-2022 Redistributable x64](https://aka.ms/vs/17/release/vc_redist.x64.exe) 
+(in case you're getting the missing `VCRUNTIME140_1.dll` error).
+
 ### [Read the Changelog](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/blob/main/CHANGELOG.md)
 
 ### [View the source code (Windows11DragAndDropToTaskbarFix.cpp)](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/blob/main/Windows11DragAndDropToTaskbarFix/Windows11DragAndDropToTaskbarFix.cpp)
@@ -65,7 +68,7 @@ Before Windows11DragAndDropToTaskbarFix | After Windows11DragAndDropToTaskbarFix
 
 
 ### "VCRUNTIME140_1.dll" was not found error
-If you get an error saying that "VCRUNTIME140_1.dll" is missing, please install [Microsoft Visual C++ 2015 - 2019 Redistributable x64](https://aka.ms/vs/16/release/vc_redist.x64.exe). Normally, these runtime libraries are installed by default on Windows 11. If you get this error then you most likely manually removed them before, using "Add or remove programs".
+If you get an error saying that "VCRUNTIME140_1.dll" is missing, please install [Microsoft Visual C++ 2015-2022 Redistributable x64](https://aka.ms/vs/17/release/vc_redist.x64.exe). Normally, these runtime libraries are installed by default on Windows 11. If you get this error then you most likely manually removed them before, using "Add or remove programs".
 
 ### **Donation?**
 
