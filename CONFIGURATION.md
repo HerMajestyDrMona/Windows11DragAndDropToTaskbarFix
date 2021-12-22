@@ -11,7 +11,7 @@ You can include the following variables to your `Windows11DragAndDropToTaskbarFi
 ### General Options
 
 #### Should the program run automatically on system startup?
-- 1 = YES. The program will create the `Software\Microsoft\Windows\CurrentVersion\Run\Windows11DragAndDropToTaskbarPartialFix` registry key.
+- 1 = YES. The program will create the `HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run\Windows11DragAndDropToTaskbarPartialFix` registry key.
 - 0 = NO. The program will delete the existing autorun registry key if it exists.
 ```
 AutomaticallyRunThisProgramOnStartup=0
