@@ -56,6 +56,9 @@ int DefaultShowDesktopButtonWidth = 20;
 int DefaultSingleWindowPreviewThumbnailWidth = 250;
 int DefaultSingleWindowPreviewThumbnailHeight = 250;
 bool UseAlternativeTrayIcon = false;
+bool StartThisProgramAsAdministrator = false;//ver 2.2
+bool TheProgramIsRunningAsAdministratorRightNow = false;
+
 //bool KeepConsoleWindowVisibleEvenWhenDebugInfoIsDisabled = false;
 
 bool ConfigFileChangeTimeMonitorAllowed = true;
@@ -71,11 +74,12 @@ int SleepTimeButtonsElevenPlusMilliseconds = 5;//Unused by default
 int AnimationLagButtonsElevenPlusMilliseconds = 100;//Unused by default
 
 //Dynamic variables:
-wstring ProgramVersion = L"2.1.0.0";
+wstring ProgramVersion = L"2.2.0.0";
 wstring GitHubConfiguration = L"https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/blob/main/CONFIGURATION.md";
 wstring GitHubReleases = L"https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases";
 wstring GitHubAbout = L"https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix";
 wstring GitHubChangeLog = L"https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/blob/main/CHANGELOG.md";
+wstring KnownPixelDetectedCookieFilename = L"W11DADTTPX_KnownPixelDetected.emptyfile";
 wstring CurrentExeWorks = L"";
 wstring CurrentExeWorksFilenameOnly = L"";
 wstring CurrentExeWorksPath = L"";
@@ -220,6 +224,7 @@ int ConfigButtonID = 6;
 wstring NameAndVer = L"";
 wstring NameAndVer2 = L"";
 wstring NameRestart = L"";
+wstring NameRestartAsAdmin = L"";
 MENUITEMINFO	ItemInfo;
 bool AllowedCursorIconInThisClick = true;
 bool DetectedIconInThisClick = false;
@@ -230,6 +235,7 @@ long long int Previous_DPI_UniqueID_of_the_click = -1;
 double Current_DPI_Scale_X = 1.0;
 double Current_DPI_Scale_Y = 1.0;
 bool EVERDetectedCorrectPixels = false;//Always false on program start.
+bool CorrectPixelsEverDetectedUsingCookieFile = false;//False on program start
 
 //Functions:
 LRESULT CALLBACK WindowProcedure(HWND, UINT, WPARAM, LPARAM);
@@ -286,9 +292,13 @@ void ClickedCheckForUpdatesFromTray();
 void ClickedConfigureFromTray();
 LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 bool IsCursorIconAllowed();
+bool IsCurrentCursorIconStopOrDrag();
 void AdvancedSleep();
 void Update_Pseudo_DPI_Scale();
 bool CheckControlPixelsAboveTheMouseOnTaskbar();
+bool KnownPixelColors_CookieFileExists();
+bool KnownPixelColors_CookieFileCreate();
+BOOL IsElevated();
 
 
 #ifndef DONT_INCLUDE_UNUSED_FUNCTIONS_TO_PREVENT_PSEUDO_ANTIVIRUSES_FROM_THROWING_FALSE_POSITIVES

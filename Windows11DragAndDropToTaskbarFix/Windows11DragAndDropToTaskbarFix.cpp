@@ -497,6 +497,15 @@ void Mona_Load_Configuration(bool DebugPrintNow = false) {
 					continue;
 				}
 
+				if (NewIsConfigLineEqualTo(line, "StartThisProgramAsAdministrator", "1") || NewIsConfigLineEqualTo(line, "StartThisProgramAsAdministrator", "true")) {
+					StartThisProgramAsAdministrator = true;
+					continue;
+				}
+				else if (NewIsConfigLineEqualTo(line, "StartThisProgramAsAdministrator", "0") || NewIsConfigLineEqualTo(line, "StartThisProgramAsAdministrator", "false")) {
+					StartThisProgramAsAdministrator = false;
+					continue;
+				}
+
 				if (NewIsConfigLineEqualTo(line, "UseTheNewBestMethodEver", "1") || NewIsConfigLineEqualTo(line, "UseTheNewBestMethodEver", "true")) {
 					UseTheNewBestMethodEver = true;
 					continue;
@@ -1701,7 +1710,8 @@ bool Fix_Taskbar_Size_Bug(HWND Moomintrollen) {
 				ShowWindow(Hwnd, SW_HIDE);
 				Sleep(5);
 				ShowWindow(Hwnd, SW_SHOW);
-				Sleep(100);
+				//Sleep(100);
+				Sleep(500);//Attempt to fix issue https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/45
 				ShowWindow(Hwnd, SW_HIDE);
 				if (ShowConsoleWindowOnStartup) {
 					ShowWindow(GetConsoleWindow(), SW_SHOW);
@@ -1904,6 +1914,27 @@ bool IsCursorIconAllowed() {
 	return true;
 }
 
+bool IsCurrentCursorIconStopOrDrag() {
+	CURSORINFO cursorInfo = { 0 };
+	cursorInfo.cbSize = sizeof(cursorInfo);
+	if (::GetCursorInfo(&cursorInfo))
+	{
+		if (PrintDebugInfo) {
+			std::wcout << L"IsCurrentCursorIconStop(): Cursor Info: " << cursorInfo.hCursor << endl;
+		}
+
+		/*HCURSOR hCursorBeam = LoadCursor(NULL, IDC_NO);
+		if (cursorInfo.hCursor == hCursorBeam) {
+			return true;
+		}*/
+
+		if (cursorInfo.hCursor == (HCURSOR)0x170DE9 || cursorInfo.hCursor == (HCURSOR)0x10017) {
+			return true;
+		}
+	}
+	return false;
+}
+
 void AdvancedSleep() {
 	if (UseFixForBugAfterSleepMode) {
 		SleepModeFix_Previous_TimeNow = TimeNow;
@@ -2020,6 +2051,54 @@ bool CheckControlPixelsAboveTheMouseOnTaskbar() {
 	return false;*/
 }
 
+
+bool KnownPixelColors_CookieFileExists() {
+	//Windows11DragAndDropToTaskbarPartialFix
+	wstring TmpFile = std::filesystem::temp_directory_path().wstring() + KnownPixelDetectedCookieFilename;
+	if (FileExists(TmpFile.c_str())) {
+		return true;
+	}
+	return false;
+}
+
+bool KnownPixelColors_CookieFileCreate() {
+	wstring TmpFile = std::filesystem::temp_directory_path().wstring() + KnownPixelDetectedCookieFilename;
+	HANDLE h = CreateFileW(TmpFile.c_str(),    // name of the file
+		GENERIC_WRITE, // open for writing
+		0,             // sharing mode, none in this case
+		0,             // use default security descriptor
+		CREATE_ALWAYS, // overwrite if exists
+		FILE_ATTRIBUTE_NORMAL,
+		0);
+	if (h)
+	{
+		CloseHandle(h);
+		return true;
+		//std::cout << "CreateFile() succeeded\n";
+	}
+	else
+	{
+		//std::cerr << "CreateFile() failed:" << GetLastError() << "\n";
+	}
+	return false;
+}
+
+BOOL IsElevated() {
+	BOOL fRet = FALSE;
+	HANDLE hToken = NULL;
+	if (OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken)) {
+		TOKEN_ELEVATION Elevation;
+		DWORD cbSize = sizeof(TOKEN_ELEVATION);
+		if (GetTokenInformation(hToken, TokenElevation, &Elevation, sizeof(Elevation), &cbSize)) {
+			fRet = Elevation.TokenIsElevated;
+		}
+	}
+	if (hToken) {
+		CloseHandle(hToken);
+	}
+	return fRet;
+}
+
 int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nShowCmd)
 {
 	hPrevWindow = hPrev;
@@ -2059,6 +2138,24 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 	NowSettingsChangeTime = ReturnConfigFileTime();
 	LastSettingsChangeTime = NowSettingsChangeTime;
 	Mona_Load_Configuration();
+
+	//ver 2.2 check if run as administrator:
+	if (StartThisProgramAsAdministrator) {
+		if (!IsElevated()) {
+			if (Commandline.find(L"restart-as-administrator") != std::wstring::npos) {
+				//Do nothing, just in case it failed so we don't create a forkbomb
+			}
+			else {
+				wstring RestartNowWstr = L"restart-as-administrator-restart-ignore-mutex";
+				ShellExecuteW(NULL, L"runas", CurrentExeWorks.c_str(), RestartNowWstr.c_str(), NULL, SW_SHOW);
+				return 0;
+			}
+		}
+	}
+
+	if (IsElevated()) {
+		TheProgramIsRunningAsAdministratorRightNow = true;
+	}
 
 	bool ReloadConfigToShowDebugInfo = false;
 	if (!ShowConsoleWindowOnStartup) {
@@ -2148,6 +2245,12 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 					std::wcout << L"Incorrect taskbar height on program start detected: " << XSleepModeFixTaskbarHeight << L". Possibly `UndockingDisabled` is configured in registry. Setting UseFixForBugAfterSleepMode to FALSE in order to prevent the continuous fix execution." << endl;
 				}
 			}
+		}
+	}
+
+	if (DetectKnownPixelColorsToPreventAccidentalEvents) {
+		if (KnownPixelColors_CookieFileExists()) {
+			CorrectPixelsEverDetectedUsingCookieFile = true;
 		}
 	}
 
@@ -2510,6 +2613,12 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 							}
 							//Test pixel check, ver. 2.0.0.0:
 							if (DetectKnownPixelColorsToPreventAccidentalEvents) {
+
+								//ver. 2.2 check if "stop" cursor icon instead.
+								if (IsCurrentCursorIconStopOrDrag()) {
+									DetectedCorrectPixelsInThisClick = true;
+								}
+
 								if (!DetectedCorrectPixelsInThisClick) {
 									if (CheckControlPixelsAboveTheMouseOnTaskbar()) {
 										DetectedCorrectPixelsInThisClick = true;
@@ -2523,15 +2632,34 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 											std::wcout << L"DetectKnownPixelColorsToPreventAccidentalEvents: Detected INCORRECT pixel colors. Ignoring the loop..." << endl;
 										}
 									}
+									//ver. 2.2
+									if (!CorrectPixelsEverDetectedUsingCookieFile) {
+										if (DetectedCorrectPixelsInThisClick) {
+											CorrectPixelsEverDetectedUsingCookieFile = true;
+											if (KnownPixelColors_CookieFileCreate()) {
+												if (PrintDebugInfo) {
+													std::wcout << L"DetectKnownPixelColorsToPreventAccidentalEvents: SUCCESSFULLY created Tmp File..." << endl;
+												}
+											}
+											else {
+												if (PrintDebugInfo) {
+													std::wcout << L"DetectKnownPixelColorsToPreventAccidentalEvents: FAILED to create Tmp File..." << endl;
+												}
+											}
+										}
+									}
 								}
+
+								// 
 								//Hotfix. If somebody uses different curosr styles, or some icons modifications that make pixels detection impossible, then behave as if DetectKnownPixelColorsToPreventAccidentalEvents was false. So always after program restart... or no thats a bad idea. Might be annoying for people working in Word since computer start.
 								// TODO some different detection.
 								//if (EVERDetectedCorrectPixels) {
-
+								if (CorrectPixelsEverDetectedUsingCookieFile) {
 									if (!DetectedCorrectPixelsInThisClick) {
 										AdvancedSleep();
 										continue;
 									}
+								}
 								//}
 							}
 
@@ -2758,7 +2886,7 @@ void ClickedConfigureFromTray() {
 	if (!FileExistsW(ConfigFileBase.c_str())) {
 		std::ofstream ofs(ConfigFileBase.c_str(), std::ofstream::out);
 		ofs << "//Should the program run automatically on system startup? 1 = true, 0 = false." << endl
-			<< "AutomaticallyRunThisProgramOnStartup=1"<< endl << endl << "//For more configuration options, please visit: https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/blob/main/CONFIGURATION.md" << endl;
+			<< "AutomaticallyRunThisProgramOnStartup=1" << endl << "StartThisProgramAsAdministrator=0" << endl << endl << "//For more configuration options, please visit: https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/blob/main/CONFIGURATION.md" << endl;
 		ofs.close();
 		if (FileExistsW(ConfigFileBase.c_str())) {
 			LastSettingsChangeTime = ReturnConfigFileTime();
@@ -2844,6 +2972,9 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
 			NameAndVer = L"Windows 11 Drag && Drop to the Taskbar (Fix)";
 			NameAndVer2 = L"ver. " + ProgramVersion + L". Created by Dr. Mona Lisa.";
 			NameRestart = L"Restart (PID: " + to_wstring(CurrentProcessID) + L")";
+			if (!TheProgramIsRunningAsAdministratorRightNow) {
+				NameRestart = L"* Restart (PID: " + to_wstring(CurrentProcessID) + L")";
+			}
 			if (RestartedCrashedTimes == 1) {
 				NameRestart = NameRestart + L" [Crashed: " + to_wstring(RestartedCrashedTimes) + L" time]...";
 			}
@@ -2851,6 +2982,10 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
 				NameRestart = NameRestart + L" [Crashed:" + to_wstring(RestartedCrashedTimes) + L" times]...";
 			}
 			NameRestart = NameRestart + L"...";
+			NameRestartAsAdmin = L"Restart as administrator...";
+			if (TheProgramIsRunningAsAdministratorRightNow) {
+				NameRestartAsAdmin = L"* Restart as administrator...";
+			}
 
 			AppendMenuW(Hmenu, MF_MENUBREAK, 0, NULL);
 			//AppendMenu(Hmenu, MF_BITMAP, 2, (LPCTSTR)hbitmap);
@@ -2864,6 +2999,7 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
 			AppendMenuW(Hmenu, MF_SEPARATOR, 0, NULL);
 			AppendMenuW(Hmenu, MF_STRING, ID_TRAY_OPENPATH, L"Open program folder...");
 			AppendMenuW(Hmenu, MF_STRING, ID_TRAY_RESTART, NameRestart.c_str());
+			AppendMenuW(Hmenu, MF_STRING, ID_TRAY_RESTARTADMIN, NameRestartAsAdmin.c_str());
 			AppendMenuW(Hmenu, MF_STRING, ID_TRAY_EXIT, L"Quit...");
 			AppendMenuW(Hmenu, MF_MENUBREAK, 0, NULL);
 			//Make some texts bold:
@@ -2963,6 +3099,17 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
 
 					InterruptMouseWatchdogThread = true;
 					//NewFunctionToKill(true);
+					InterruptRestartProgram = true;
+					InterruptMainThread = true;
+					PostQuitMessage(0);
+					break;
+				}
+				case ID_TRAY_RESTARTADMIN: {
+					if (ShowTrayIcon) {
+						Shell_NotifyIcon(NIM_DELETE, &notifyIconData);
+					}
+					InterruptRestartProgramRunAs = true;
+					InterruptMouseWatchdogThread = true;
 					InterruptRestartProgram = true;
 					InterruptMainThread = true;
 					PostQuitMessage(0);
