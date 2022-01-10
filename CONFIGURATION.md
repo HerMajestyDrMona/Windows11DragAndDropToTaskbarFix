@@ -17,6 +17,13 @@ You can include the following variables to your `Windows11DragAndDropToTaskbarFi
 AutomaticallyRunThisProgramOnStartup=0
 ```
 
+#### Should the program start as administrator?
+- 1 = YES. The program will check if the current instance is elevated. If it isn't, the program will show the UAC prompt asking to start it as administrator.
+- 0 = NO. The program will work in the normal mode, but dragging from the other programs that are running as administrator might not work.
+```
+StartThisProgramAsAdministrator=0
+```
+
 #### Should the program show the console window when it starts?
 - 1 = YES. A console window will be shown on program start.
 - 0 = NO. The program will start invisibly and no extra window will pop-up.
