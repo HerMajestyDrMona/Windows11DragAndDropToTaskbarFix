@@ -1,6 +1,14 @@
 # Change Log for Windows 11 Drag & Drop to the Taskbar (Fix)
 Don't read if you're sensitive to misspellings and grammatical errors.
 
+## [[ver. 2.2.0.0](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases/tag/v.2.2.0.0-release)]  - 2022-01-10, 14:00 CET
+- Added `StartThisProgramAsAdministrator=0` configuration option (disabled by default), which allows you to start this program as administrator. It's useful when you often use the Drag & Drop from the other programs that are running as administrator.
+- Added `Restart as administrator...` option to the Tray menu. It additionally shows the `*` asterix in front of the option to show which mode the program is currently running in.
+- Improved `DetectKnownPixelColorsToPreventAccidentalEvents` behaviour:
+  - It now additionally detects if the mouse icon has changed to the slashed circle or the drop icon. It works this way when a file is being dragged from a window created by the program that is running as administrator. It then looks different than the default Windows 11 taskbar error icon, that's why it wasn't working correctly. It solves issue [#48](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/48).
+  - Added a cookie file: `W11DADTTPX_KnownPixelDetected.emptyfile` created in the User's Temp folder. The `DetectKnownPixelColorsToPreventAccidentalEvents` option will remain disabled until the correct pixels are detected for the first time. It will then create a cookie file (so the program will know if it ever worked correctly after restart). It's because some users use the custom themes / skins which change the taskbar error icon, therefore the program thinks that no file is being dragged. I believe this allows us to keep this good checking method enabled by default, without giving the bad first impression to new users who are not aware how this option works.
+- Increased the time of displaying the "fix" window from the `UseFixForBugAfterSleepMode` option. Discussed in issue [#45](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/45). I'm still not sure if it will fix it, because I was not able to reproduce this issue myself, but it's worth a try.
+
 ## [[ver. 2.1.0.0](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases/tag/v.2.1.0.0-release)]  - 2021-12-13, 16:00 CET
 - Added `AutoOpenPinnedAppsEvenWhenNoWindowActive=0` configuration option (disabled by default), which allows you to open pinned apps, even when they have no active window. It solves discussion [#37](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/discussions/37).
 - Updated the `ConfigFileChangeTimeMonitorAllowed` configuration option. When it's set to `2`, the program will automatically restart itself when you make changes to the configuration file. It was requested in issue [#35](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/35).
