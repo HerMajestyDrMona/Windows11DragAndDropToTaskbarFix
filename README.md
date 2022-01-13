@@ -29,7 +29,7 @@ Please read a separate article: [CONFIGURATION](https://github.com/HerMajestyDrM
 
 
 ## **Limitations**
-- The program does not support pinning apps to the taskbar using the drag and drop gesture, and this feature is currently not planned. However, you still can pin apps to the taskbar by clicking on their icons with the right mouse button, and then "Pin to taskbar" from the list.
+- The program does not support pinning apps to the taskbar using the drag and drop gesture, and this feature is currently not planned. However, you still can pin apps to the taskbar by clicking on their icons with the right mouse button, and then "Show more options" -> "Pin to taskbar" from the list. [Example](https://www.thewindowsclub.com/how-to-pin-any-app-to-the-taskbar-in-windows-11).
 
 - If the program does not work for you, and you're using the custom skin modifications / themes, please add the following line to your [configuration file](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/blob/main/CONFIGURATION.md):
 ```
