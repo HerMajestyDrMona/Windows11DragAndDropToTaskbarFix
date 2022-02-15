@@ -1,6 +1,18 @@
 # Change Log for Windows 11 Drag & Drop to the Taskbar (Fix)
 Don't read if you're sensitive to misspellings and grammatical errors.
 
+## [[ver. 2.3.0.0](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases/tag/v.2.3.0.0-release)]  - 2022-02-15, 17:30 CET
+- Added the static build: `Windows11DragAndDropToTaskbarFix_Static.exe`, as requested in issue [#57](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/57)
+- Compiled the program using the `Visual Studio 2022 (v143)` platform toolset.
+- Added the new custom configuration variables. Please read [CONFIGURATION](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/blob/main/CONFIGURATION.md) for details:
+  - `FixForBugAfterSleepModeUseOldMethod=0`. `1` = true, `2` = false.
+  - `FixForBugAfterSleepModeWindowDisplayTimeMilliseconds=100`. Time in milliseconds. It reduces the time changed in ver. 2.2.0.0 which could make people notice the hotfix window more frequently.
+  - `CustomLogFile=`. Custom log file name. If non-empty, it will redirect the program output to a file with the name defined after `=`.
+- Improved the `FixForBugAfterSleepMode` function behaviour: it will no longer open the hotfix window when the drag-and-drop gesture is not currently being done. It will also make sure that the mouse pointer is hovered over the taskbar window before opening the hotfix window, in order to minimize the risk of full-screen programs being minimized when the taskbar size bug occurs. It solves issue [#52](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/52)
+- Improved `DetectKnownPixelColorsToPreventAccidentalEvents` behaviour: It will no longer check for correct pixels, if the mouse button was pressed down on a different screen than the one where a file is being drag-and-dropped to. It might also fix issue [#60](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/60).
+- Fixed a bug where the program did not work when the `Primary Mouse Button` was changed to `Right` in Windows 11 Settings -> Bluetooth & Devices -> Mouse. Thanks for the report in discussion [#64](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/discussions/64).
+- Probably some other minor tweaks which I don't remember now.
+
 ## [[ver. 2.2.0.0](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases/tag/v.2.2.0.0-release)]  - 2022-01-10, 14:00 CET
 - Added `StartThisProgramAsAdministrator=0` configuration option (disabled by default), which allows you to start this program as administrator. It's useful when you often use the Drag & Drop from the other programs that are running as administrator.
 - Added `Restart as administrator...` option to the Tray menu. It additionally shows the `*` asterix in front of the option to show which mode the program is currently running in.
