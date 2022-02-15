@@ -128,6 +128,84 @@ void find_and_replace_ws(wstring& source, wstring const& find, wstring const& re
 	}
 }
 
+std::wstring s2ws(const std::string& s)
+{
+	/*int len;
+	int slength = (int)s.length() + 1;
+	len = MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, 0, 0);
+	wchar_t* buf = new wchar_t[len];
+	MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, buf, len);
+	std::wstring r(buf);
+	delete[] buf;
+	return r;*/
+
+	//to get rid of c++17 warnings
+	//UINT codePage = CP_THREAD_ACP;
+	UINT codePage = CP_UTF8;
+	if (s.empty())
+	{
+		return std::wstring();
+	}
+
+	int required = ::MultiByteToWideChar(codePage, 0, s.data(), (int)s.size(), NULL, 0);
+	if (0 == required)
+	{
+		return std::wstring();
+	}
+
+	std::wstring str2;
+	str2.resize(required);
+
+	int converted = ::MultiByteToWideChar(codePage, 0, s.data(), (int)s.size(), &str2[0], str2.capacity());
+	if (0 == converted)
+	{
+		return std::wstring();
+	}
+
+	return str2;
+}
+
+string ws2s(const std::wstring& wstr)
+{
+	/*typedef std::codecvt_utf8<wchar_t> convert_typeX;
+	std::wstring_convert<convert_typeX, wchar_t> converterX;
+
+	return converterX.to_bytes(wstr);*/
+
+	//other:
+	/*std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> conv;
+	return conv.to_bytes(wstr);*/
+
+
+	//to get rid of c++17 warnings
+	//https://gist.github.com/vurdalakov/29d05d1820a241e3ba482ceaf28af2de
+
+	//UINT codePage = CP_THREAD_ACP;
+	UINT codePage = CP_UTF8;
+	if (wstr.empty())
+	{
+		return std::string();
+	}
+
+	int required = ::WideCharToMultiByte(codePage, 0, wstr.data(), (int)wstr.size(), NULL, 0, NULL, NULL);
+	if (0 == required)
+	{
+		return std::string();
+	}
+
+	std::string str2;
+	str2.resize(required);
+
+	int converted = ::WideCharToMultiByte(codePage, 0, wstr.data(), (int)wstr.size(), &str2[0], str2.capacity(), NULL, NULL);
+	if (0 == converted)
+	{
+		return std::string();
+	}
+
+	return str2;
+
+}
+
 //Mona's config loader:
 
 bool NewIsConfigLineEqualTo(string ConfigLine, string SearchFor, string SearchForValue) {
@@ -429,12 +507,12 @@ void Mona_Load_Configuration(bool DebugPrintNow = false) {
 							if (Obama.length() > 0) {
 								if (Mona_Remap_Key(Putin, Obama, DebugPrintNow)) {
 									if (DebugPrintNow) {
-										std::cout << "Successfully remaped key: \"" << Putin << "\" to: \"" << Obama << "\". " << std::endl;
+										std::wcout << L"Successfully remaped key: \"" << s2ws(Putin) << L"\" to: \"" << s2ws(Obama) << L"\". " << std::endl;
 									}
 								}
 								else {
 									if (DebugPrintNow) {
-										std::cout << "Failed to remap key: \"" << Putin << "\" to: \"" << Obama << "\". " << std::endl;
+										std::wcout << L"Failed to remap key: \"" << s2ws(Putin) << L"\" to: \"" << s2ws(Obama) << L"\". " << std::endl;
 									}
 								}
 							}
@@ -601,6 +679,15 @@ void Mona_Load_Configuration(bool DebugPrintNow = false) {
 					continue;
 				}
 
+				if (NewIsConfigLineEqualTo(line, "FixForBugAfterSleepModeUseOldMethod", "1") || NewIsConfigLineEqualTo(line, "FixForBugAfterSleepModeUseOldMethod", "true")) {
+					FixForBugAfterSleepModeUseOldMethod = true;
+					continue;
+				}
+				else if (NewIsConfigLineEqualTo(line, "FixForBugAfterSleepModeUseOldMethod", "0") || NewIsConfigLineEqualTo(line, "FixForBugAfterSleepModeUseOldMethod", "false")) {
+					FixForBugAfterSleepModeUseOldMethod = false;
+					continue;
+				}
+
 				TmpValueFromNewConfigGetIntFunction = NewConfigGetIntValueAfter(line, "HowLongLeftMouseButtonPressedBeforeContinueMilliseconds");
 				if (TmpValueFromNewConfigGetIntFunction != -696969) {
 					if (TmpValueFromNewConfigGetIntFunction > 0) {//For performance purposes disallow 0s for now.
@@ -752,6 +839,44 @@ void Mona_Load_Configuration(bool DebugPrintNow = false) {
 						continue;
 					}
 				}
+
+				TmpValueFromNewConfigGetIntFunction = NewConfigGetIntValueAfter(line, "FixForBugAfterSleepModeWindowDisplayTimeMilliseconds");
+				if (TmpValueFromNewConfigGetIntFunction != -696969) {
+					if (TmpValueFromNewConfigGetIntFunction > 0) {//For performance purposes disallow 0s for now.
+						FixForBugAfterSleepModeWindowDisplayTimeMilliseconds = static_cast<int>(TmpValueFromNewConfigGetIntFunction);
+						continue;
+					}
+				}
+
+				//Custom Log file?
+				string StringAfterCustomLogFile = "";
+				std::size_t findno1 = line.find("CustomLogFile=");
+				if (findno1 != std::string::npos) {
+					StringAfterCustomLogFile = line.substr(14);
+				}
+				else {
+					std::size_t findno2 = line.find("CustomLogFile = ");
+					if (findno2 != std::string::npos) {
+						StringAfterCustomLogFile = line.substr(16);
+					}
+					else {
+						std::size_t findno3 = line.find("CustomLogFile =");
+						if (findno3 != std::string::npos) {
+							StringAfterCustomLogFile = line.substr(15);
+						}
+					}
+				}
+				if (StringAfterCustomLogFile.length() > 1) {
+					find_and_replace(StringAfterCustomLogFile, "\r\n", "");
+					find_and_replace(StringAfterCustomLogFile, "\r", "");
+					find_and_replace(StringAfterCustomLogFile, "\n", "");
+					if (StringAfterCustomLogFile.length() > 1) {
+						HaveCustomLogFile = true;
+						CustomLogFile = StringAfterCustomLogFile;
+						
+					}
+				}
+
 			}
 		}
 	}
@@ -1045,6 +1170,7 @@ void ResetTmpVariablesFull2() {
 void ResetTmpVariablesFull() {
 	DetectedCorrectPixelsInThisClick = false;
 	DetectedHWNDsForThisMouseClick = false;
+	FixForBugAfterSleepModeTestedThisLoop = false;
 	if (Last_Step_Reached >= 4) {
 		ResetTmpVariablesFull2();
 	}
@@ -1177,7 +1303,7 @@ void Check_And_Issue_Auto_Enter_Best_Method_Ever(int ButtonID) {
 			rectPreviousTaskListThumbnailWnd = rectAtTheMoment;
 			PreviousTaskListThumbnailWndVisible = IsWindowVisible(TaskListThumbnailWnd);
 			if (PrintDebugInfo) {
-				std::cout << "TaskListThumbnailWnd Rect: " << rectAtTheMoment.left << ":" << rectAtTheMoment.right << ":" << rectAtTheMoment.bottom << ":" << rectAtTheMoment.top << ". Window visible bool: " << PreviousTaskListThumbnailWndVisible << "\n";
+				std::wcout << L"TaskListThumbnailWnd Rect: " << rectAtTheMoment.left << L":" << rectAtTheMoment.right << L":" << rectAtTheMoment.bottom << L":" << rectAtTheMoment.top << L". Window visible bool: " << PreviousTaskListThumbnailWndVisible << "\n";
 			}
 
 			//if (IsWindowVisible(TaskListThumbnailWnd)) {
@@ -1195,7 +1321,7 @@ void Check_And_Issue_Auto_Enter_Best_Method_Ever(int ButtonID) {
 				if (AutoOpenFirstWindowInBestMethodEverLimited) {
 					if (ThumbnailWindowSize > DefaultSingleWindowPreviewThumbnailWidth) {
 						if (PrintDebugInfo) {
-							std::cout << "More than 1 windows detected in the Preview Window of Thumbnail. Width: " << ThumbnailWindowSize << ". The ENTER key won't be simulated.\n";
+							std::wcout << "More than 1 windows detected in the Preview Window of Thumbnail. Width: " << ThumbnailWindowSize << ". The ENTER key won't be simulated.\n";
 						}
 						//Hotfix to prevent hotkeys spam
 						JustClickedEnterForBestMethodEver = 2;
@@ -1203,7 +1329,7 @@ void Check_And_Issue_Auto_Enter_Best_Method_Ever(int ButtonID) {
 					}
 					else if (ThumbnailWindowSizeHeight > DefaultSingleWindowPreviewThumbnailHeight) {
 						if (PrintDebugInfo) {
-							std::cout << "List of windows detected on the Preview Window of Thumbnail. Height: " << ThumbnailWindowSizeHeight << ". The ENTER key won't be simulated.\n";
+							std::wcout << "List of windows detected on the Preview Window of Thumbnail. Height: " << ThumbnailWindowSizeHeight << ". The ENTER key won't be simulated.\n";
 						}
 						//Hotfix to prevent hotkeys spam
 						JustClickedEnterForBestMethodEver = 2;
@@ -1700,7 +1826,7 @@ bool Fix_Taskbar_Size_Bug(HWND Moomintrollen) {
 		TaskbarSizeBugDetectedTimes++;
 		if (TimeNow.count() > LastTimeFixedTaskbarSizeBug.count() + 5000) {//We can have 5 secs here because it counts real time, not GetTickCount() which would not differ much after the sleep mode.
 			
-			if (Hwnd) {
+			if (Hwnd && !FixForBugAfterSleepModeUseOldMethod) {
 				if (PrintDebugInfo) {
 					std::wcout << L"MSTaskSwWClass size bug detected. The current height is: " << SleepModeFixTaskbarHeight << L" (and should be 48). Opening an empty Windows11DragAndDropToTaskbarFix window to fix it...\n";
 				}
@@ -1710,8 +1836,7 @@ bool Fix_Taskbar_Size_Bug(HWND Moomintrollen) {
 				ShowWindow(Hwnd, SW_HIDE);
 				Sleep(5);
 				ShowWindow(Hwnd, SW_SHOW);
-				//Sleep(100);
-				Sleep(500);//Attempt to fix issue https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/45
+				Sleep(FixForBugAfterSleepModeWindowDisplayTimeMilliseconds);//Attempt to fix issue https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/45
 				ShowWindow(Hwnd, SW_HIDE);
 				if (ShowConsoleWindowOnStartup) {
 					ShowWindow(GetConsoleWindow(), SW_SHOW);
@@ -1739,6 +1864,7 @@ void Update_Primary_Screen_Windows_HWNDSs() {
 		PrimaryScreen.hWndTrayNotify = FindWindowEx(PrimaryScreen.hWndTray, 0, L"TrayNotifyWnd", nullptr);
 		//std::cout << "PrimaryScreen.hWndTrayNotify: " << PrimaryScreen.hWndTrayNotify << "\n";
 		PrimaryScreen.hWndRebar = FindWindowEx(PrimaryScreen.hWndTray, 0, L"ReBarWindow32", nullptr);
+		PrimaryScreen.DesktopWindowXamlSourceHwnd = FindWindowEx(PrimaryScreen.hWndTray, 0, L"Windows.UI.Composition.DesktopWindowContentBridge", nullptr);
 	}
 	if (PrimaryScreen.hWndRebar) {
 		PrimaryScreen.hWndMSTaskSwWClass = FindWindowEx(PrimaryScreen.hWndRebar, 0, L"MSTaskSwWClass", nullptr);
@@ -1955,6 +2081,9 @@ void Update_Pseudo_DPI_Scale() {
 	GetMonitorInfo(hMonitor, &miex);
 	int cxLogical = (miex.rcMonitor.right - miex.rcMonitor.left);
 	int cyLogical = (miex.rcMonitor.bottom - miex.rcMonitor.top);
+	if (PrintDebugInfo) {
+		std::wcout << L"Update_Pseudo_DPI_Scale = cxLogical: " << cxLogical << ". cyLogical: " << cyLogical << "." << endl;
+	}
 
 	// Get the physical width and height of the monitor.
 	DEVMODE dm;
@@ -1963,12 +2092,15 @@ void Update_Pseudo_DPI_Scale() {
 	EnumDisplaySettings(miex.szDevice, ENUM_CURRENT_SETTINGS, &dm);
 	int cxPhysical = dm.dmPelsWidth;
 	int cyPhysical = dm.dmPelsHeight;
+	if (PrintDebugInfo) {
+		std::wcout << L"Update_Pseudo_DPI_Scale = cxPhysical: " << cxPhysical << ". cyPhysical: " << cyPhysical << "." << endl;
+	}
 
 	// Calculate the scaling factor.
 	double horzScale = ((double)cxPhysical / (double)cxLogical);
 	double vertScale = ((double)cyPhysical / (double)cyLogical);
 	if (PrintDebugInfo) {
-		std::wcout << L"horzScale: " << horzScale << ". vertScale: " << vertScale << "." << endl;
+		std::wcout << L"Update_Pseudo_DPI_Scale = horzScale: " << horzScale << ". vertScale: " << vertScale << "." << endl;
 	}
 	//it differs sometimes:
 	/*if (horzScale == vertScale) {
@@ -1977,15 +2109,26 @@ void Update_Pseudo_DPI_Scale() {
 	if (horzScale >= 1.0f && horzScale < 10.1f) {
 		UpdatedDPIScaleX = horzScale;
 	}
+	else {
+		if (PrintDebugInfo) {
+			std::wcout << L"Update_Pseudo_DPI_Scale !!! Incorrect horzScale detected !!!." << endl;
+		}
+	}
+
 	if (vertScale >= 1.0f && vertScale < 10.1f) {
 		UpdatedDPIScaleY = vertScale;
+	}
+	else {
+		if (PrintDebugInfo) {
+			std::wcout << L"Update_Pseudo_DPI_Scale !!! Incorrect vertScale detected !!!." << endl;
+		}
 	}
 
 	Current_DPI_Scale_X = UpdatedDPIScaleX;
 	Current_DPI_Scale_Y = UpdatedDPIScaleY;
 }
 
-bool CheckControlPixelsAboveTheMouseOnTaskbar() {
+int CheckControlPixelsAboveTheMouseOnTaskbar() {
 	//Update DPI only if different session ID, or if mouse enters a different monitor.
 	if ((Current_UniqueID_of_the_click != Previous_DPI_UniqueID_of_the_click) || (WindowsScreenSet != PreviousDPI_WindowsScreenSet)) {
 		Update_Pseudo_DPI_Scale();
@@ -2001,7 +2144,7 @@ bool CheckControlPixelsAboveTheMouseOnTaskbar() {
 	//15 = 242 242 242 #F2F2F2
 	//21 = 255 0 0 #FF0000
 
-	bool ToReturn = false;
+	int ToReturn = 0;
 	COLORREF PrevColor1 = RGB(0, 0, 0);
 	COLORREF PrevColor2 = RGB(0, 0, 0);
 	COLORREF PrevColor3 = RGB(0, 0, 0);
@@ -2012,12 +2155,14 @@ bool CheckControlPixelsAboveTheMouseOnTaskbar() {
 	HDC dc = GetDC(NULL);
 	int PointYScaled = static_cast<int>((P.y * Current_DPI_Scale_Y));
 	int PointXScaled = static_cast<int>((P.x * Current_DPI_Scale_X));
+	//std::wcout << L"TEST. Current DPI X: " << Current_DPI_Scale_X << ". Y: " << Current_DPI_Scale_Y << "." << endl;
 	for (int iii = 14; iii < 31; iii++) {
 		int PointYWithOffsetNow = PointYScaled - iii;
 		COLORREF color_now = GetPixel(dc, PointXScaled, PointYWithOffsetNow);
+		//std::wcout << L"Color ID " << iii << L"=" << color_now << endl;
 		if (color_now == our_red) {
 			if (PrevColor1 == our_white && PrevColor2 == our_white && PrevColor3 == our_white) {
-				ToReturn = true;
+				ToReturn = 1;
 				break;
 			}
 		}
@@ -2026,6 +2171,21 @@ bool CheckControlPixelsAboveTheMouseOnTaskbar() {
 		PrevColor3 = color_now;
 	}
 	ReleaseDC(NULL, dc);
+
+	//Hotfix. To make life easier, we will always return true when the drag and drop was clicked on a different monitor than the current one. It should fix repoted problems,
+	//and shouldn't cause any extra problems like with documents scrolling, because they're usually done on the same screen.
+	if (ToReturn == 0) {
+		//Get current monitor:
+		HMONITOR hMonitorClickStart = MonitorFromPoint(MouseClickStartPoint, MONITOR_DEFAULTTONEAREST);
+		HMONITOR hMonitorNow = MonitorFromPoint(P, MONITOR_DEFAULTTONEAREST);
+		if (hMonitorClickStart != hMonitorNow) {
+			ToReturn = 2;
+			if (PrintDebugInfo) {
+				std::wcout << L"CheckControlPixelsAboveTheMouseOnTaskbar() was about to return 0, but the program detected that the mouse was clicked on a different monitor than the destination monitor, so we will return 2 to minimize the risk of reported issues." << endl;
+			}
+		}
+	}
+
 	return ToReturn;
 
 	/*int PointYWithOffset1 = static_cast<int>((P.y * Current_DPI_Scale_Y)) - 15;
@@ -2139,6 +2299,26 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 	LastSettingsChangeTime = NowSettingsChangeTime;
 	Mona_Load_Configuration();
 
+	//Custom log file?
+	std::wofstream LOG;
+	if (HaveCustomLogFile) {
+		if (!LOG.is_open())
+		{
+			if (PrintDebugInfo) {
+				wcout << L"Opening the Custom Log File: " << s2ws(CustomLogFile).c_str() << endl;
+			}
+			LOG.open(CustomLogFile.c_str(), std::ios::trunc);
+		}
+		if (!LOG.is_open()) {
+			if (PrintDebugInfo) {
+				wcout << L"Failed to open the log file: " << s2ws(CustomLogFile).c_str() << endl;
+			}
+		}
+		else {
+			wcout.rdbuf(LOG.rdbuf());
+		}
+	}
+
 	//ver 2.2 check if run as administrator:
 	if (StartThisProgramAsAdministrator) {
 		if (!IsElevated()) {
@@ -2194,7 +2374,7 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 		handleMutex = CreateMutex(NULL, TRUE, L"MonaWindows11DragToTaskbar-AlreadyRunning");
 		if (GetLastError() == ERROR_ALREADY_EXISTS)
 		{
-			printf("Windows11DragAndDropToTaskbarFix is already running. Exiting this instance...\n");
+			wcout << L"Windows11DragAndDropToTaskbarFix is already running. Exiting this instance..." << std::endl;
 			return 1;
 		}
 	}
@@ -2202,11 +2382,11 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 	//Welcome!
 	bool HideConsoleWindowSoon = false;
 	std::chrono::milliseconds ProgrmStartTime = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
-	wcout << "Windows11DragAndDropToTaskbarFix, ver. " << ProgramVersion << L", created by Dr.MonaLisa." << endl;
-	printf("https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix\n\n");
-	printf("You can disable the console window. Please read the GitHub page to learn how to configure this program.\n");
+	wcout << L"Windows11DragAndDropToTaskbarFix, ver. " << ProgramVersion.c_str() << L", created by Dr.MonaLisa." << endl;
+	wcout << L"https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix" << endl << endl;
+	wcout << L"You can disable the console window. Please read the GitHub page to learn how to configure this program." << endl;
 	if (!PrintDebugInfo) {
-		printf("Debug output is disabled, so the console window will be hidden in 10 seconds.\nIn order to terminate this program, please kill \"Windows11DragAndDropToTaskbarFix.exe\" in the Task Manager.\n");
+		wcout << L"Debug output is disabled, so the console window will be hidden in 10 seconds." << endl << L"In order to terminate this program, please kill \"Windows11DragAndDropToTaskbarFix.exe\" in the Task Manager." << endl;
 		if (ShowConsoleWindowOnStartup) {
 			HideConsoleWindowSoon = true;
 		}
@@ -2350,8 +2530,15 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 					if (PrintDebugInfo) {
 						Current_Button_Name = Button_Name_Right;
 					}
-					if (!GetAsyncKeyState(VK_RBUTTON)) {
-						BugMouseButtonNotReallyClicked = true;
+					if (!LeftAndRightMouseButtonsAreCurrentlySwapped) {
+						if (!GetAsyncKeyState(VK_RBUTTON)) {
+							BugMouseButtonNotReallyClicked = true;
+						}
+					}
+					else {
+						if (!GetAsyncKeyState(VK_LBUTTON)) {
+							BugMouseButtonNotReallyClicked = true;
+						}
 					}
 				}
 				else {
@@ -2360,8 +2547,15 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 					if (PrintDebugInfo) {
 						Current_Button_Name = Button_Name_Left;
 					}
-					if (!GetAsyncKeyState(VK_LBUTTON)) {
-						BugMouseButtonNotReallyClicked = true;
+					if (!LeftAndRightMouseButtonsAreCurrentlySwapped) {
+						if (!GetAsyncKeyState(VK_LBUTTON)) {
+							BugMouseButtonNotReallyClicked = true;
+						}
+					}
+					else {
+						if (!GetAsyncKeyState(VK_RBUTTON)) {
+							BugMouseButtonNotReallyClicked = true;
+						}
 					}
 				}
 				LeftButtonPressedATM = true;
@@ -2373,12 +2567,44 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 				if (PrintDebugInfo) {
 					Current_Button_Name = Button_Name_Left;
 				}
-				if (!GetAsyncKeyState(VK_LBUTTON)) {
-					BugMouseButtonNotReallyClicked = true;
+				if (!LeftAndRightMouseButtonsAreCurrentlySwapped) {
+					if (!GetAsyncKeyState(VK_LBUTTON)) {
+						BugMouseButtonNotReallyClicked = true;
+					}
+				}
+				else {
+					if (!GetAsyncKeyState(VK_RBUTTON)) {
+						BugMouseButtonNotReallyClicked = true;
+					}
 				}
 			}
 
 			if (BugMouseButtonNotReallyClicked) {
+
+				//Hotfix for GetAsyncKeyState
+				int Current_SM_SWAPBUTTON = GetSystemMetrics(SM_SWAPBUTTON);
+				if (Current_SM_SWAPBUTTON == 0) {
+					LeftAndRightMouseButtonsAreCurrentlySwapped = false;
+				}
+				else {
+					LeftAndRightMouseButtonsAreCurrentlySwapped = true;
+				}
+				if (LeftAndRightMouseButtonsAreCurrentlySwapped != LeftAndRightMouseButtonsSwappedPreviousStatus) {
+					LeftAndRightMouseButtonsSwappedPreviousStatus = LeftAndRightMouseButtonsAreCurrentlySwapped;
+					if (LeftAndRightMouseButtonsAreCurrentlySwapped) {
+						if (PrintDebugInfo) {
+							std::wcout << L"Detected that the Left and the Right mouse buttons are swapped GetSystemMetrics(SM_SWAPBUTTON). Setting LeftAndRightMouseButtonsAreCurrentlySwapped = true.\n";
+						}
+					}
+					else {
+						if (PrintDebugInfo) {
+							std::wcout << L"Detected that the Left and the Right mouse buttons are NO LONGER swapped GetSystemMetrics(SM_SWAPBUTTON). Setting LeftAndRightMouseButtonsAreCurrentlySwapped = false.\n";
+						}
+					}
+					AdvancedSleep();
+					continue;
+				}
+
 				LeftButtonPressedATM = false;
 				if (PrintDebugInfo) {
 					std::wcout << L"A strange problem has been detected. The Low Level Mouse Hook thread claims that the mouse button is pressed, but GetAsyncKeyState returned false. Interrupting not to cause issues.\n";
@@ -2455,9 +2681,9 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 					if (!DetectedHWNDsForThisMouseClick) {
 						//Primary screen variables:
 						Update_Primary_Screen_Windows_HWNDSs();
-
-						//ver 1.6.1:
-						if (UseFixForBugAfterSleepMode) {
+						
+						//ver 1.6.1: MOVED BELOW
+						/*if (UseFixForBugAfterSleepMode) {
 							if (PrimaryScreen.hWndMSTaskSwWClass) {
 								if (Fix_Taskbar_Size_Bug(PrimaryScreen.hWndMSTaskSwWClass)) {
 									//Fixed. Ignore this loop to get potentially new HWND and RECTs.
@@ -2466,7 +2692,7 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 									continue;
 								}
 							}
-						}
+						}*/
 
 						Array_Windows_by_Screen.clear();
 						//Before version 1.9.1 this array could be empty after the sleep mode bug fix, causing program crashes.
@@ -2575,6 +2801,13 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 						TaskListThumbnailWnd = NULL;
 					}
 
+					if (Array_Windows_by_Screen[0].DesktopWindowXamlSourceHwnd) {
+						DesktopWindowXamlSourceHwnd = Array_Windows_by_Screen[0].DesktopWindowXamlSourceHwnd;
+					}
+					else {
+						DesktopWindowXamlSourceHwnd = NULL;
+					}
+
 					if (PrintDebugInfo) {
 						std::wcout << L"Found Taskbar Window: " << hWndMSTaskSwWClass << "\n";
 					}
@@ -2607,6 +2840,22 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 						//if (IsWindowVisible(hWndTray)) {
 						//For some reasons IsWindowVisible doesn't work as intended, so let's workaround it:
 
+						//ver 2.3.0 window fix moved there:
+						if (UseFixForBugAfterSleepMode && !FixForBugAfterSleepModeTestedThisLoop) {
+							if (WindowUnderMouse == hWndMSTaskSwWClass || WindowUnderMouse == hWndTrayNotify || WindowUnderMouse == hWndRebar) {
+								FixForBugAfterSleepModeTestedThisLoop = true;
+								Last_Step_Reached = 3;
+								if (PrimaryScreen.hWndMSTaskSwWClass) {
+									if (Fix_Taskbar_Size_Bug(PrimaryScreen.hWndMSTaskSwWClass)) {
+										//Fixed. Ignore this loop to get potentially new HWND and RECTs.
+										DetectedHWNDsForThisMouseClick = false;//IMPORTANT ver. 1.9.1 to fix program crash after the sleep mode. Also in 2.3 it will reload taskbar sizes.
+										AdvancedSleep();
+										continue;
+									}
+								}
+							}
+						}
+
 						if (WindowUnderMouse == hWndMSTaskSwWClass || WindowUnderMouse == hWndTrayNotify) {
 							if (Last_Step_Reached < 3) {
 								Last_Step_Reached = 3;
@@ -2620,21 +2869,22 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 								}
 
 								if (!DetectedCorrectPixelsInThisClick) {
-									if (CheckControlPixelsAboveTheMouseOnTaskbar()) {
+									CorrectPixelStatus = CheckControlPixelsAboveTheMouseOnTaskbar();
+									if (CorrectPixelStatus > 0) {
 										DetectedCorrectPixelsInThisClick = true;
 										EVERDetectedCorrectPixels = true;
 										if (PrintDebugInfo) {
-											std::wcout << L"DetectKnownPixelColorsToPreventAccidentalEvents: Detected CORRECT pixel colors. Continuing..." << endl;
+											std::wcout << L"DetectKnownPixelColorsToPreventAccidentalEvents: Detected CORRECT pixel status: " << CorrectPixelStatus << L". Continuing..." << endl;
 										}
 									}
 									else {
 										if (PrintDebugInfo) {
-											std::wcout << L"DetectKnownPixelColorsToPreventAccidentalEvents: Detected INCORRECT pixel colors. Ignoring the loop..." << endl;
+											std::wcout << L"DetectKnownPixelColorsToPreventAccidentalEvents: Detected INCORRECT pixel status: " << CorrectPixelStatus << L". Ignoring the loop..." << endl;
 										}
 									}
 									//ver. 2.2
 									if (!CorrectPixelsEverDetectedUsingCookieFile) {
-										if (DetectedCorrectPixelsInThisClick) {
+										if (DetectedCorrectPixelsInThisClick && (CorrectPixelStatus == 1)) { // So it wont create a file if different monitor was used and function ignored.
 											CorrectPixelsEverDetectedUsingCookieFile = true;
 											if (KnownPixelColors_CookieFileCreate()) {
 												if (PrintDebugInfo) {

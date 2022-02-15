@@ -55,6 +55,11 @@ int DefaultTaskbarIconHeight = 48;
 int DefaultShowDesktopButtonWidth = 20;
 int DefaultSingleWindowPreviewThumbnailWidth = 250;
 int DefaultSingleWindowPreviewThumbnailHeight = 250;
+int FixForBugAfterSleepModeWindowDisplayTimeMilliseconds = 100;
+bool FixForBugAfterSleepModeUseOldMethod = false;
+string CustomLogFile = "";
+bool HaveCustomLogFile = false;
+
 bool UseAlternativeTrayIcon = false;
 bool StartThisProgramAsAdministrator = false;//ver 2.2
 bool TheProgramIsRunningAsAdministratorRightNow = false;
@@ -74,7 +79,7 @@ int SleepTimeButtonsElevenPlusMilliseconds = 5;//Unused by default
 int AnimationLagButtonsElevenPlusMilliseconds = 100;//Unused by default
 
 //Dynamic variables:
-wstring ProgramVersion = L"2.2.0.0";
+wstring ProgramVersion = L"2.3.0.0";
 wstring GitHubConfiguration = L"https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/blob/main/CONFIGURATION.md";
 wstring GitHubReleases = L"https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases";
 wstring GitHubAbout = L"https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix";
@@ -92,6 +97,9 @@ bool InterruptMainThread = false;
 bool InterruptMouseWatchdogThread = false;
 bool InterruptRestartProgram = false;
 bool InterruptRestartProgramRunAs = false;
+bool FixForBugAfterSleepModeTestedThisLoop = false;
+bool LeftAndRightMouseButtonsAreCurrentlySwapped = false;
+bool LeftAndRightMouseButtonsSwappedPreviousStatus = false;
 
 //Virtual Keys Remap:
 UINT REMAP_VK_LWIN = VK_LWIN;
@@ -171,6 +179,7 @@ HWND hWndRebar = NULL;
 HWND hWndMSTaskSwWClass = NULL;
 HWND hWndWindowForShowDesktopArea = NULL;
 HWND TaskListThumbnailWnd = NULL;
+HWND DesktopWindowXamlSourceHwnd = NULL;
 RECT desktop;
 HWND hDesktop = NULL;
 int ShowDesktopStartPosition = 0;
@@ -204,6 +213,7 @@ public:
 	HWND hWndRebar = NULL;
 	HWND hWndMSTaskSwWClass = NULL;
 	HWND TaskListThumbnailWnd = NULL;
+	HWND DesktopWindowXamlSourceHwnd = NULL;
 
 };
 windowsHWNDs PrimaryScreen;
@@ -229,6 +239,7 @@ MENUITEMINFO	ItemInfo;
 bool AllowedCursorIconInThisClick = true;
 bool DetectedIconInThisClick = false;
 bool DetectedCorrectPixelsInThisClick = false;
+int CorrectPixelStatus = 0;
 int WindowsScreenSet = 0;//Primary
 int PreviousDPI_WindowsScreenSet = -1;
 long long int Previous_DPI_UniqueID_of_the_click = -1;
@@ -295,7 +306,7 @@ bool IsCursorIconAllowed();
 bool IsCurrentCursorIconStopOrDrag();
 void AdvancedSleep();
 void Update_Pseudo_DPI_Scale();
-bool CheckControlPixelsAboveTheMouseOnTaskbar();
+int CheckControlPixelsAboveTheMouseOnTaskbar();
 bool KnownPixelColors_CookieFileExists();
 bool KnownPixelColors_CookieFileCreate();
 BOOL IsElevated();
