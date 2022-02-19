@@ -38,11 +38,21 @@ ShowConsoleWindowOnStartup=0
 PrintDebugInfo=0
 ```
 
+#### Custom log file name. If non-empty, it will redirect the program output to a file with the name defined after `=`.
+```
+CustomLogFile=
+```
+
 #### Should the program use a fix for an issue where sometimes incorrect icons are hovered on the taskbar? This bug usually occurs after the computer wakes up from Sleep Mode, connecting or disconnecting secondary screens, or plugging out the laptop charger. The fix opens the self-created window for around 100 milliseconds, forcing the taskbar window to update and return the correct `RECT`.
 - 1 = YES (recommended).
 - 0 = NO. It's a high chance that you will experience the issue mentioned above.
 ```
 UseFixForBugAfterSleepMode=1
+```
+
+#### For how long (in milliseconds) should the self-created window (described above) be displayed. 
+```
+FixForBugAfterSleepModeWindowDisplayTimeMilliseconds=100
 ```
 
 #### Should the program show the Tray Icon in the system tray?
@@ -163,6 +173,7 @@ DefaultTaskbarIconHeight=48
 DefaultShowDesktopButtonWidth=20
 DefaultSingleWindowPreviewThumbnailWidth=250
 DefaultSingleWindowPreviewThumbnailHeight=250
+FixForBugAfterSleepModeUseOldMethod=0
 ```
 
 #### Should the program monitor file `Windows11DragAndDropToTaskbarFixConfig.txt` for changes?
