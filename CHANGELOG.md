@@ -5,7 +5,7 @@ Don't read if you're sensitive to misspellings and grammatical errors.
 - Added the static build: `Windows11DragAndDropToTaskbarFix_Static.exe`, as requested in issue [#57](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/57)
 - Compiled the program using the `Visual Studio 2022 (v143)` platform toolset.
 - Added the new custom configuration variables. Please read [CONFIGURATION](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/blob/main/CONFIGURATION.md) for details:
-  - `FixForBugAfterSleepModeUseOldMethod=0`. `1` = true, `2` = false.
+  - `FixForBugAfterSleepModeUseOldMethod=0`. `1` = true, `0` = false.
   - `FixForBugAfterSleepModeWindowDisplayTimeMilliseconds=100`. Time in milliseconds. It reduces the time changed in ver. 2.2.0.0 which could make people notice the hotfix window more frequently.
   - `CustomLogFile=`. Custom log file name. If non-empty, it will redirect the program output to a file with the name defined after `=`.
 - Improved the `FixForBugAfterSleepMode` function behaviour: it will no longer open the hotfix window when the drag-and-drop gesture is not currently being done. It will also make sure that the mouse pointer is hovered over the taskbar window before opening the hotfix window, in order to minimize the risk of full-screen programs being minimized when the taskbar size bug occurs. It solves issue [#52](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/52)
