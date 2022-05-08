@@ -491,28 +491,28 @@ void Mona_Load_Configuration(bool DebugPrintNow = false) {
 				//1.8.0 keys remapping:
 				std::size_t AngelaMerkel = line_uppercase.find("REMAP_");
 				if (AngelaMerkel != std::string::npos) {
-					string Putin = line_uppercase.substr(AngelaMerkel+6);
-					std::size_t Macron = Putin.find(" =");
+					string Kamala = line_uppercase.substr(AngelaMerkel+6);
+					std::size_t Macron = Kamala.find(" =");
 					string Obama = "";
 					if (Macron != std::string::npos) {
-						Obama = Putin.substr(Macron + 2);
+						Obama = Kamala.substr(Macron + 2);
 					}
 					else {
-						Macron = Putin.find("=");
+						Macron = Kamala.find("=");
 					}
 					if (Macron != std::string::npos) {
-						Obama = Putin.substr(Macron + 1);
-						Putin = Putin.substr(0, Macron);
-						if (Putin.length() > 1) {
+						Obama = Kamala.substr(Macron + 1);
+						Kamala = Kamala.substr(0, Macron);
+						if (Kamala.length() > 1) {
 							if (Obama.length() > 0) {
-								if (Mona_Remap_Key(Putin, Obama, DebugPrintNow)) {
+								if (Mona_Remap_Key(Kamala, Obama, DebugPrintNow)) {
 									if (DebugPrintNow) {
-										std::wcout << L"Successfully remaped key: \"" << s2ws(Putin) << L"\" to: \"" << s2ws(Obama) << L"\". " << std::endl;
+										std::wcout << L"Successfully remaped key: \"" << s2ws(Kamala) << L"\" to: \"" << s2ws(Obama) << L"\". " << std::endl;
 									}
 								}
 								else {
 									if (DebugPrintNow) {
-										std::wcout << L"Failed to remap key: \"" << s2ws(Putin) << L"\" to: \"" << s2ws(Obama) << L"\". " << std::endl;
+										std::wcout << L"Failed to remap key: \"" << s2ws(Kamala) << L"\" to: \"" << s2ws(Obama) << L"\". " << std::endl;
 									}
 								}
 							}
