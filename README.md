@@ -1,6 +1,8 @@
 # Windows 11 Drag & Drop to the Taskbar (Fix)
 
-This program fixes the missing "Drag & Drop to the Taskbar" support in Windows 11. In the best case, such a simple and basic functionality will return to Windows 11 in October 2022 (or never). For now, we have to use workarounds in the OS that was supposed to "empower our productivity".
+This program fixes the missing "Drag & Drop to the Taskbar" support in Windows 11. In the best case, such a simple and basic functionality will return to Windows 11 in October 2022. For now, we have to use workarounds in the OS that was supposed to "empower our productivity".
+
+**UPDATE:** Windows 11 22H2 (build 22621 and 22622, released in September 2022) restores the drag & drop functionality natively, so this program is not longer needed. To learn how to update your Windows 11, please [visit this page](https://www.microsoft.com/software-download/windows11). You can still use this program if you're running an older version of Windows 11. In case you have troubles removing it, please read [#issue 81](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/81).
 
 Windows11DragAndDropToTaskbarFix works with the new Windows 11 taskbar and does not require nasty changes like `UndockingDisabled` or restoration of the `classic taskbar`. It doesn't change any system registry keys (except autostart for itself when manually configured) and does not inject any DLLs to other processes, so it's a very portable solution. This program will not interrupt further windows updates as it doesn't change any system files. It's an independent C++ process that does all the job.
 
