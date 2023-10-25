@@ -1,6 +1,17 @@
 # Change Log for Windows 11 Drag & Drop to the Taskbar (Fix)
 Don't read if you're sensitive to misspellings and grammatical errors.
 
+## [[ver. 2.4.0.0](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases/tag/v.2.4.0.0-release)]  - 2023-10-25, 08:30 CET
+**Please remember that this program is most likely not needed if you're using Windows 11 version 22H2 or newer, because they restored the native drag & drop support (possibly thanks to me, because I made them feel ashamed. Just kidding.)**
+
+The program is still usefulf for people who turned UAC off with the `HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\EnableLUA` registry key, so I released the new version for them:
+- Addressed an issue, where the program stopped working correctly after windows updates that broke `MSTaskSwWClass` window position and coordinates. It solves issues [#98](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/98), [#99](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/99). Thanks for the solution idea to user [@Mast3r0mid](https://github.com/Mast3r0mid).
+- Improved option: `DetectKnownPixelColorsToPreventAccidentalEvents`:
+  - Disabled by default, because it's unpredictable, depending on user's configuration and themes.
+  - Added support for Windows 11 23H2 Light and Dark themes.
+- Added configuration: `UseLowLevelMousePressProcThread=1`. Please read [CONFIGURATION](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/blob/main/CONFIGURATION.md) for details.
+- Possibly included some other tweaks that I experimented with in 2022/2023 before I got bored of this (useless for me now) program.
+
 ## [[ver. 2.3.0.0](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases/tag/v.2.3.0.0-release)]  - 2022-02-15, 17:30 CET
 - Added the static build: `Windows11DragAndDropToTaskbarFix_Static.exe`, as requested in issue [#57](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/57)
 - Compiled the program using the `Visual Studio 2022 (v143)` platform toolset.
