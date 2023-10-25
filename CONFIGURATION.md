@@ -91,7 +91,7 @@ AutoOpenPinnedAppsEvenWhenNoWindowActive=0
 - 0 = NO. The program will not check for pixels colours.
 
 ```
-DetectKnownPixelColorsToPreventAccidentalEvents=1
+DetectKnownPixelColorsToPreventAccidentalEvents=0
 ```
 
 #### Should the program ignore potentially unwanted drags, for example when the mouse curosr icon is the I-beam? It solves issue [#28](https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/issues/28). It is not longer needed in ver. 2.0, because we use a better method.
@@ -100,6 +100,14 @@ DetectKnownPixelColorsToPreventAccidentalEvents=1
 
 ```
 IgnorePotentiallyUnwantedDragsFromCertainCursorIcons=0
+```
+
+#### Should the program use the WH_MOUSE_LL hook thread? I don't remember why this option was added, most likely somebody faced problems with it, but generally the program has always worked fine with that thread.
+- 1 = YES. The program will start the `MouseClickWatchdogThread`.
+- 0 = NO. The program will use `GetAsyncKeyState` and `GetCursorPos` functions to determine if the mouse button is pressed.
+
+```
+UseLowLevelMousePressProcThread=1
 ```
 
 #### For how long (in milliseconds) should the left or the right mouse button be clicked before the program starts checking if the mouse cursor is currently in the task bar area.
