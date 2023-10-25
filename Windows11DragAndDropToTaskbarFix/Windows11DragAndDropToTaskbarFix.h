@@ -17,9 +17,12 @@
 #include <regex>
 #include <thread>
 #include <ole2.h>
+#include <uiautomation.h>
+#include <atlbase.h>
 #include "resource.h"
 
 #pragma comment(lib, "Shlwapi.lib")
+#pragma comment(lib, "uiautomationcore.lib")
 #pragma comment( linker, "/subsystem:windows" )
 using namespace std;
 using namespace std::chrono;
@@ -36,7 +39,7 @@ bool UseTheNewBestMethodEver = true;
 bool AutoOpenFirstWindowInBestMethodEver = true;
 bool AutoOpenFirstWindowInBestMethodEverLimited = true;
 bool AutoOpenPinnedAppsEvenWhenNoWindowActive = false;
-bool DetectKnownPixelColorsToPreventAccidentalEvents = true;
+bool DetectKnownPixelColorsToPreventAccidentalEvents = false;
 bool IgnorePotentiallyUnwantedDragsFromCertainCursorIcons = false;//False since ver 1.10.0.0, because we don't need it with pixels test.
 int HowLongSleepBetweenDifferentKeysPressMilliseconds = 20;
 int HowLongSleepBetweenTheSameKeysPressMilliseconds = 0;
@@ -44,13 +47,22 @@ int HowLongSleepAfterAutoOpenFirstWindowMilliseconds = 100;
 int HowLongSleepAfterOpeningPinnedAppMilliseconds = 500;
 int HowLongKeepMouseOverAppIconBeforeAutoOpeningMilliseconds = 550;//So it will open after 200+550 (750 ms as in ver. 1.0)
 int PreviewWindowChangeDetectionMaxMilliseconds = 1000;//Keep it higher. It's non-blocking time.
+bool UseLowLevelMousePressProcThread = true;
 
+bool UseTheNewIconsCountingMethod = true;
+bool AutoDetectAndFixIncorrectMSTaskSwWClassWindowSize = false;
+int AutoDetectedSingleIconWidthChangeOffsetOnMSTaskSwWClassWindow = 0;
+bool AutoDetectedSingleIconWidthChangeOffsetSucceed = false;
+int HowLongSleepWhenAutoDetectingMSTaskSwWClassWindowMilliseconds = 1000;
+
+int FixNumberOfIconsOnTaskbarAddOffset = 0;
 int HowLongLeftMouseButtonPressedBeforeContinueMilliseconds = 750;
 int HowLongKeepMouseOverAppIconBeforeRestoringWindowMilliseconds = 200;//750 before.
 int DefaultSleepPeriodInTheLoopMilliseconds = 100;
 int SleepPeriodWhenLeftMouseButtonIsPressedInTheLoopMilliseconds = 25;
 int SleepPeriodWhenMouseIsOnAppIconInTheLoopMilliseconds = 10;
 int DefaultTaskbarIconWidth = 44;
+int DefaultTaskbarIconWidth_Now = 44;
 int DefaultTaskbarIconHeight = 48;
 int DefaultShowDesktopButtonWidth = 20;
 int DefaultSingleWindowPreviewThumbnailWidth = 250;
@@ -79,7 +91,7 @@ int SleepTimeButtonsElevenPlusMilliseconds = 5;//Unused by default
 int AnimationLagButtonsElevenPlusMilliseconds = 100;//Unused by default
 
 //Dynamic variables:
-wstring ProgramVersion = L"2.3.0.0";
+wstring ProgramVersion = L"2.4.0.0";
 wstring GitHubConfiguration = L"https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/blob/main/CONFIGURATION.md";
 wstring GitHubReleases = L"https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix/releases";
 wstring GitHubAbout = L"https://github.com/HerMajestyDrMona/Windows11DragAndDropToTaskbarFix";
@@ -180,6 +192,7 @@ HWND hWndMSTaskSwWClass = NULL;
 HWND hWndWindowForShowDesktopArea = NULL;
 HWND TaskListThumbnailWnd = NULL;
 HWND DesktopWindowXamlSourceHwnd = NULL;
+HWND hWndStartBTNClass = NULL;
 RECT desktop;
 HWND hDesktop = NULL;
 int ShowDesktopStartPosition = 0;
@@ -214,6 +227,7 @@ public:
 	HWND hWndMSTaskSwWClass = NULL;
 	HWND TaskListThumbnailWnd = NULL;
 	HWND DesktopWindowXamlSourceHwnd = NULL;
+	HWND hWndStartBTNClass = NULL;
 
 };
 windowsHWNDs PrimaryScreen;
@@ -310,6 +324,7 @@ int CheckControlPixelsAboveTheMouseOnTaskbar();
 bool KnownPixelColors_CookieFileExists();
 bool KnownPixelColors_CookieFileCreate();
 BOOL IsElevated();
+int Return_Current_Taskbar_Window_Width();
 
 
 #ifndef DONT_INCLUDE_UNUSED_FUNCTIONS_TO_PREVENT_PSEUDO_ANTIVIRUSES_FROM_THROWING_FALSE_POSITIVES

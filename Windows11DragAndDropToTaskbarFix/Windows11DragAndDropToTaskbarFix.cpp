@@ -489,30 +489,30 @@ void Mona_Load_Configuration(bool DebugPrintNow = false) {
 				}
 
 				//1.8.0 keys remapping:
-				std::size_t AngelaMerkel = line_uppercase.find("REMAP_");
-				if (AngelaMerkel != std::string::npos) {
-					string Kamala = line_uppercase.substr(AngelaMerkel+6);
-					std::size_t Macron = Kamala.find(" =");
-					string Obama = "";
-					if (Macron != std::string::npos) {
-						Obama = Kamala.substr(Macron + 2);
+				std::size_t Angela = line_uppercase.find("REMAP_");
+				if (Angela != std::string::npos) {
+					string Kamala = line_uppercase.substr(Angela+6);
+					std::size_t Joe = Kamala.find(" =");
+					string Barack = "";
+					if (Joe != std::string::npos) {
+						Barack = Kamala.substr(Joe + 2);
 					}
 					else {
-						Macron = Kamala.find("=");
+						Joe = Kamala.find("=");
 					}
-					if (Macron != std::string::npos) {
-						Obama = Kamala.substr(Macron + 1);
-						Kamala = Kamala.substr(0, Macron);
+					if (Joe != std::string::npos) {
+						Barack = Kamala.substr(Joe + 1);
+						Kamala = Kamala.substr(0, Joe);
 						if (Kamala.length() > 1) {
-							if (Obama.length() > 0) {
-								if (Mona_Remap_Key(Kamala, Obama, DebugPrintNow)) {
+							if (Barack.length() > 0) {
+								if (Mona_Remap_Key(Kamala, Barack, DebugPrintNow)) {
 									if (DebugPrintNow) {
-										std::wcout << L"Successfully remaped key: \"" << s2ws(Kamala) << L"\" to: \"" << s2ws(Obama) << L"\". " << std::endl;
+										std::wcout << L"Successfully remaped key: \"" << s2ws(Kamala) << L"\" to: \"" << s2ws(Barack) << L"\". " << std::endl;
 									}
 								}
 								else {
 									if (DebugPrintNow) {
-										std::wcout << L"Failed to remap key: \"" << s2ws(Kamala) << L"\" to: \"" << s2ws(Obama) << L"\". " << std::endl;
+										std::wcout << L"Failed to remap key: \"" << s2ws(Kamala) << L"\" to: \"" << s2ws(Barack) << L"\". " << std::endl;
 									}
 								}
 							}
@@ -554,6 +554,15 @@ void Mona_Load_Configuration(bool DebugPrintNow = false) {
 				}
 				else if (NewIsConfigLineEqualTo(line, "IgnorePotentiallyUnwantedDragsFromCertainCursorIcons", "0") || NewIsConfigLineEqualTo(line, "IgnorePotentiallyUnwantedDragsFromCertainCursorIcons", "false")) {
 					IgnorePotentiallyUnwantedDragsFromCertainCursorIcons = false;
+					continue;
+				}
+
+				if (NewIsConfigLineEqualTo(line, "UseLowLevelMousePressProcThread", "1") || NewIsConfigLineEqualTo(line, "UseLowLevelMousePressProcThread", "true")) {
+					UseLowLevelMousePressProcThread = true;
+					continue;
+				}
+				else if (NewIsConfigLineEqualTo(line, "UseLowLevelMousePressProcThread", "0") || NewIsConfigLineEqualTo(line, "UseLowLevelMousePressProcThread", "false")) {
+					UseLowLevelMousePressProcThread = false;
 					continue;
 				}
 
@@ -687,6 +696,30 @@ void Mona_Load_Configuration(bool DebugPrintNow = false) {
 					FixForBugAfterSleepModeUseOldMethod = false;
 					continue;
 				}
+
+				if (NewIsConfigLineEqualTo(line, "UseTheNewIconsCountingMethod", "1") || NewIsConfigLineEqualTo(line, "UseTheNewIconsCountingMethod", "true")) {
+					UseTheNewIconsCountingMethod = true;
+					continue;
+				}
+				else if (NewIsConfigLineEqualTo(line, "UseTheNewIconsCountingMethod", "0") || NewIsConfigLineEqualTo(line, "UseTheNewIconsCountingMethod", "false")) {
+					UseTheNewIconsCountingMethod = false;
+					continue;
+				}
+
+				/*if (NewIsConfigLineEqualTo(line, "AutoDetectAndFixIncorrectMSTaskSwWClassWindowSize", "1") || NewIsConfigLineEqualTo(line, "AutoDetectAndFixIncorrectMSTaskSwWClassWindowSize", "true")) {
+					AutoDetectAndFixIncorrectMSTaskSwWClassWindowSize = true;
+					continue;
+				}
+				else if (NewIsConfigLineEqualTo(line, "AutoDetectAndFixIncorrectMSTaskSwWClassWindowSize", "0") || NewIsConfigLineEqualTo(line, "AutoDetectAndFixIncorrectMSTaskSwWClassWindowSize", "false")) {
+					AutoDetectAndFixIncorrectMSTaskSwWClassWindowSize = false;
+					continue;
+				}*/
+
+				/*TmpValueFromNewConfigGetIntFunction = NewConfigGetIntValueAfter(line, "FixNumberOfIconsOnTaskbarAddOffset");
+				if (TmpValueFromNewConfigGetIntFunction != -696969) {
+					FixNumberOfIconsOnTaskbarAddOffset = static_cast<int>(TmpValueFromNewConfigGetIntFunction);
+						continue;
+				}*/
 
 				TmpValueFromNewConfigGetIntFunction = NewConfigGetIntValueAfter(line, "HowLongLeftMouseButtonPressedBeforeContinueMilliseconds");
 				if (TmpValueFromNewConfigGetIntFunction != -696969) {
@@ -1861,6 +1894,8 @@ void Update_Primary_Screen_Windows_HWNDSs() {
 	PrimaryScreen = windowsHWNDs();
 	PrimaryScreen.hWndTray = FindWindow(L"Shell_TrayWnd", nullptr);
 	if (PrimaryScreen.hWndTray) {
+		PrimaryScreen.hWndStartBTNClass = FindWindowEx(PrimaryScreen.hWndTray, 0, L"Start", nullptr); // Start Btn hWnd
+
 		PrimaryScreen.hWndTrayNotify = FindWindowEx(PrimaryScreen.hWndTray, 0, L"TrayNotifyWnd", nullptr);
 		//std::cout << "PrimaryScreen.hWndTrayNotify: " << PrimaryScreen.hWndTrayNotify << "\n";
 		PrimaryScreen.hWndRebar = FindWindowEx(PrimaryScreen.hWndTray, 0, L"ReBarWindow32", nullptr);
@@ -2155,20 +2190,50 @@ int CheckControlPixelsAboveTheMouseOnTaskbar() {
 	HDC dc = GetDC(NULL);
 	int PointYScaled = static_cast<int>((P.y * Current_DPI_Scale_Y));
 	int PointXScaled = static_cast<int>((P.x * Current_DPI_Scale_X));
+
+	int PointYScaledTmp = PointYScaled;
 	//std::wcout << L"TEST. Current DPI X: " << Current_DPI_Scale_X << ". Y: " << Current_DPI_Scale_Y << "." << endl;
-	for (int iii = 14; iii < 31; iii++) {
-		int PointYWithOffsetNow = PointYScaled - iii;
-		COLORREF color_now = GetPixel(dc, PointXScaled, PointYWithOffsetNow);
-		//std::wcout << L"Color ID " << iii << L"=" << color_now << endl;
-		if (color_now == our_red) {
-			if (PrevColor1 == our_white && PrevColor2 == our_white && PrevColor3 == our_white) {
-				ToReturn = 1;
-				break;
-			}
+	
+	//OMG, we need to loop 3 times because of Windows Updates changing this incorrect sign instead of fixing it. Disgusting:
+	bool FoundColor = false;
+	for (int mona = 0; mona < 3; mona++){
+		if (FoundColor) {
+			break;
 		}
-		PrevColor1 = PrevColor2;
-		PrevColor2 = PrevColor3;
-		PrevColor3 = color_now;
+		PrevColor1 = RGB(0, 0, 0);
+		PrevColor2 = RGB(0, 0, 0);
+		PrevColor3 = RGB(0, 0, 0);
+		if (mona == 0) {
+			//Some old Win11 version
+			our_white = RGB(242, 242, 242);
+			our_red = RGB(255, 0, 0);
+		}
+		else if (mona == 1) {
+			//White 23H2 theme:
+			our_white = RGB(252, 252, 252);
+			our_red = RGB(51, 51, 51);
+		}
+		else if (mona == 2) {
+			//Dark 23H2 theme:
+			our_white = RGB(44, 44, 44);
+			our_red = RGB(232, 232, 232);
+		}
+
+		for (int iii = 14; iii < 31; iii++) {
+			int PointYWithOffsetNow = PointYScaledTmp - iii;
+			COLORREF color_now = GetPixel(dc, PointXScaled, PointYWithOffsetNow);
+			//std::wcout << L"Color ID " << iii << L"= R: " << GetRValue(color_now) << L" G: " << GetGValue(color_now) << L" B: " << GetBValue(color_now) << endl;
+			if (color_now == our_red) {
+				if (PrevColor1 == our_white && PrevColor2 == our_white && PrevColor3 == our_white) {
+					ToReturn = 1;
+					FoundColor = true;
+					break;
+				}
+			}
+			PrevColor1 = PrevColor2;
+			PrevColor2 = PrevColor3;
+			PrevColor3 = color_now;
+		}
 	}
 	ReleaseDC(NULL, dc);
 
@@ -2258,6 +2323,249 @@ BOOL IsElevated() {
 	}
 	return fRet;
 }
+
+int Return_Current_Taskbar_Window_Width() {
+	if (PrimaryScreen.hWndMSTaskSwWClass) {
+		RECT rect;
+		GetWindowRect(PrimaryScreen.hWndMSTaskSwWClass, &rect);
+		int Difference = rect.right - rect.left;
+		return Difference;
+	}
+	return 6969;
+}
+
+
+//Unused!
+void Auto_Detect_And_Fix_Incorrect_MSTaskSwWClass_WindowSize() {
+	if (AutoDetectAndFixIncorrectMSTaskSwWClassWindowSize) {
+		std::wcout << L"AutoDetectAndFixIncorrectMSTaskSwWClassWindowSize is ENABLED. Trying to auto-detect the offset..." << endl;
+		if (ShowConsoleWindowOnStartup) {
+			ShowWindow(GetConsoleWindow(), SW_HIDE);
+		}
+		Sleep(HowLongSleepWhenAutoDetectingMSTaskSwWClassWindowMilliseconds);
+		Update_Primary_Screen_Windows_HWNDSs();
+		bool DetectedCorrectly = false;
+		int InitialWidth = Return_Current_Taskbar_Window_Width();
+		if (InitialWidth != 6969) {
+			ShowWindow(GetConsoleWindow(), SW_SHOW);
+			Sleep(HowLongSleepWhenAutoDetectingMSTaskSwWClassWindowMilliseconds);
+			Update_Primary_Screen_Windows_HWNDSs();
+			int SecondWidth = Return_Current_Taskbar_Window_Width();
+			if (SecondWidth != 6969) {
+				int InitialSecondDifference = SecondWidth - InitialWidth;
+				std::wcout << L"AutoDetectAndFixIncorrectMSTaskSwWClassWindowSize: InitialWidth: " << InitialWidth << L". SecondWidth: " << SecondWidth << L". Difference: " << InitialSecondDifference << L"." << endl;
+
+				if (InitialSecondDifference >= 0) {
+					ShowWindow(GetConsoleWindow(), SW_HIDE);
+					Sleep(HowLongSleepWhenAutoDetectingMSTaskSwWClassWindowMilliseconds);
+					Update_Primary_Screen_Windows_HWNDSs();
+					int ThirdWidth = Return_Current_Taskbar_Window_Width();
+					if (ThirdWidth != 6969) {
+						int ThirdWidthDiff = ThirdWidth - SecondWidth;
+						int ThirdAbsoluteDiff = abs(ThirdWidthDiff);
+						std::wcout << L"AutoDetectAndFixIncorrectMSTaskSwWClassWindowSize: ThirdWidth: " << ThirdWidth << L". ThirdWidth and SecondWidth ABS difference: " << ThirdAbsoluteDiff << L"." << endl;
+						if (ThirdAbsoluteDiff == InitialSecondDifference) {
+							//FOUND New Offset!
+							DetectedCorrectly = true;
+							AutoDetectedSingleIconWidthChangeOffsetSucceed = true;
+							AutoDetectedSingleIconWidthChangeOffsetOnMSTaskSwWClassWindow = ThirdAbsoluteDiff;
+							std::wcout << L"AutoDetectAndFixIncorrectMSTaskSwWClassWindowSize: Sussessfully detected the single icon offset: " << ThirdAbsoluteDiff << L"." << endl;
+						}
+					}
+				}
+			}
+		}
+
+		if (!DetectedCorrectly) {
+			std::wcout << L"AutoDetectAndFixIncorrectMSTaskSwWClassWindowSize: Auto-detecting offset failed!" << endl;
+		}
+
+		if (ShowConsoleWindowOnStartup) {
+			ShowWindow(GetConsoleWindow(), SW_SHOW);
+		}
+	}
+}
+
+CComPtr<IUIAutomation> pAutomation;
+CComPtr<IUIAutomationElement> pTaskbarElement;
+CComPtr<IUIAutomationCondition> pTaskListCondition;
+
+struct IconPosition {
+	int x;
+	int y;
+	int width;
+	int height;
+	int singleIconWidth;
+	int singleIconHeight;
+	bool singleIconSizeSet;
+
+	void Reset() {
+		x = INT_MAX;
+		y = 0;
+		width = 0;
+		height = 0;
+		singleIconWidth = 0;
+		singleIconHeight = 0;
+		singleIconSizeSet = false;
+	}
+};
+
+struct TaskbarIconInfo {
+	int numberOfIcons;
+	int totalWidth;
+	IconPosition leftMostIcon;
+	IconPosition rightMostIcon;
+	int singleIconWidth;
+	int singleIconHeight;
+	int firstIconX;
+	int lastIconXPlusWidth;
+
+	TaskbarIconInfo()
+		: numberOfIcons(-1), totalWidth(0), singleIconWidth(0), singleIconHeight(0),
+		firstIconX(INT_MAX), lastIconXPlusWidth(-1) {
+		leftMostIcon.x = INT_MAX;
+		rightMostIcon.x = -1;
+	}
+};
+
+
+bool InitializeTaskbarSearch(bool forceReinitialize = false)
+{
+	if (forceReinitialize)
+	{
+		pAutomation = nullptr;
+		pTaskbarElement = nullptr;
+		pTaskListCondition = nullptr;
+	}
+	if (pTaskbarElement && pTaskListCondition)
+		return true;
+
+	if (!pAutomation)
+	{
+		HRESULT hr = CoCreateInstance(__uuidof(CUIAutomation), NULL, CLSCTX_INPROC_SERVER, __uuidof(IUIAutomation), (void**)&pAutomation);
+		if (FAILED(hr)) return false;
+	}
+
+	CComPtr<IUIAutomationElement> pRootElement;
+	HRESULT hr = pAutomation->GetRootElement(&pRootElement);
+	if (FAILED(hr)) return false;
+
+	CComPtr<IUIAutomationCondition> pTaskbarCondition;
+	hr = pAutomation->CreatePropertyCondition(UIA_ClassNamePropertyId, CComVariant(L"Shell_TrayWnd"), &pTaskbarCondition);
+	if (FAILED(hr)) return false;
+
+	hr = pRootElement->FindFirst(TreeScope_Children, pTaskbarCondition, &pTaskbarElement);
+	if (FAILED(hr) || !pTaskbarElement) return false;
+
+	hr = pAutomation->CreatePropertyCondition(UIA_ClassNamePropertyId, CComVariant(L"Taskbar.TaskListButtonAutomationPeer"), &pTaskListCondition);
+	if (FAILED(hr)) return false;
+	return true;
+}
+
+IconPosition GetIconPosition(CComPtr<IUIAutomationElement>& pIcon) {
+	IconPosition position = IconPosition();
+
+	CComPtr<IUIAutomationElement> pCurrent = pIcon;
+	while (pCurrent) {
+		RECT rect;
+		if (SUCCEEDED(pCurrent->get_CurrentBoundingRectangle(&rect))) {
+			position.x = rect.left;
+			position.y = rect.top;
+			position.width = rect.right - rect.left;
+			position.height = rect.bottom - rect.top;
+			break;
+		}
+		CComPtr<IUIAutomationTreeWalker> pControlViewWalker;
+		if (SUCCEEDED(pAutomation->get_ControlViewWalker(&pControlViewWalker))) {
+			CComPtr<IUIAutomationElement> pParent;
+			if (SUCCEEDED(pControlViewWalker->GetParentElement(pCurrent, &pParent)) && pParent) {
+				pCurrent = pParent;
+			}
+			else {
+				break;
+			}
+		}
+		else {
+			break;
+		}
+	}
+
+	return position;
+}
+
+void UpdateGlobalIconPositions(IconPosition& iconPos, TaskbarIconInfo& result) {
+
+	if (iconPos.x <= result.firstIconX) {
+		result.firstIconX = iconPos.x;
+	}
+	if ((iconPos.x + iconPos.width) >= result.lastIconXPlusWidth) {
+		result.lastIconXPlusWidth = iconPos.x + iconPos.width;
+	}
+
+	if (iconPos.x <= result.leftMostIcon.x) {
+		result.leftMostIcon = iconPos;
+		result.singleIconWidth = iconPos.width;
+		result.singleIconHeight = iconPos.height;
+		result.totalWidth = result.lastIconXPlusWidth - result.firstIconX;
+	}
+	if (iconPos.x >= result.rightMostIcon.x) {
+		result.rightMostIcon = iconPos;
+		result.singleIconWidth = iconPos.width;
+		result.singleIconHeight = iconPos.height;
+		result.totalWidth = result.lastIconXPlusWidth - result.firstIconX;
+	}
+}
+
+TaskbarIconInfo GetNumberOfIconsAndCalculateWidth() {
+	TaskbarIconInfo result = TaskbarIconInfo();
+	if (!InitializeTaskbarSearch()) {
+		if (PrintDebugInfo) {
+			std::cerr << "Failed to initialize taskbar search" << std::endl;
+		}
+		return result;
+	}
+
+	/*RECT taskbarRect = {};
+	HRESULT hr = pTaskbarElement->get_CurrentBoundingRectangle(&taskbarRect);
+	if (FAILED(hr)) {
+		std::cerr << "Failed to get taskbar's bounding rectangle" << std::endl;
+		return result;
+	}*/
+
+	CComPtr<IUIAutomationElementArray> pTaskbarButtonElements;
+	HRESULT hr = pTaskbarElement->FindAll(TreeScope_Descendants, pTaskListCondition, &pTaskbarButtonElements);
+	if (FAILED(hr)) {
+		if (PrintDebugInfo) {
+			std::cerr << "Failed to find taskbar button elements" << std::endl;
+		}
+		return result;
+	}
+
+	int count = 0;
+	hr = pTaskbarButtonElements->get_Length(&count);
+	if (FAILED(hr)) {
+		if (PrintDebugInfo) {
+			std::cerr << "Failed to get count of taskbar button elements" << std::endl;
+		}
+		return result;
+	}
+
+	result.numberOfIcons = count;
+
+	for (int i = 0; i < count; ++i) {
+		CComPtr<IUIAutomationElement> pIcon;
+		hr = pTaskbarButtonElements->GetElement(i, &pIcon);
+		if (SUCCEEDED(hr) && pIcon) {
+			IconPosition iconPos = GetIconPosition(pIcon);
+			UpdateGlobalIconPositions(iconPos, result);
+		}
+	}
+	if (PrintDebugInfo) {
+		std::cout << "Taskbar icons width: " << result.totalWidth << std::endl;
+	}
+	return result;
+}
+
 
 int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nShowCmd)
 {
@@ -2397,6 +2705,9 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 		Mona_Load_Configuration(true);
 	}
 
+	//Ver. 2.4.0 fixes: UNUSED
+	//Auto_Detect_And_Fix_Incorrect_MSTaskSwWClass_WindowSize();
+
 	//Check auto start:
 	Check_And_Set_Auto_Program_Startup();
 
@@ -2404,7 +2715,10 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 	HANDLE ThreadProgramWindowThread = CreateThread(NULL, 0, ProgramWindowThread, NULL, 0, NULL);
 
 	//Start Mouse Click Watchdog Thread 
-	HANDLE ThreadHandleMouseClickWatchdogThread = CreateThread(NULL, 0, MouseClickWatchdogThread, NULL, 0, NULL);
+	HANDLE ThreadHandleMouseClickWatchdogThread = nullptr;
+	if (UseLowLevelMousePressProcThread) {
+		ThreadHandleMouseClickWatchdogThread = CreateThread(NULL, 0, MouseClickWatchdogThread, NULL, 0, NULL);
+	}
 
 	//Test:
 	//TestTryToRestoreWindowsUsingWMCommand();
@@ -2516,6 +2830,77 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 				}
 
 				CheckedConfigTimeAtLeastOneTime = true;
+			}
+
+			//ver 2.4:
+			if (!UseLowLevelMousePressProcThread) {
+				//LeftButtonPressedATM_Real
+				if (!LeftAndRightMouseButtonsAreCurrentlySwapped) {
+					if (GetAsyncKeyState(VK_RBUTTON)) {
+						if (!RightButtonPressedATM_Real) {
+							LastTimeClickedRightMouseButton_Real = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
+							GetCursorPos(&MouseClickStartPoint);
+							if (!LLMP_Temporarily_Dont_Update_UniqueID) {
+								Current_UniqueID_of_the_click++;
+							}
+						}
+
+						RightButtonPressedATM_Real = true;
+						
+					}
+					else {
+						RightButtonPressedATM_Real = false;
+					}
+				}
+				else {
+					if (GetAsyncKeyState(VK_LBUTTON)) {
+						if (!RightButtonPressedATM_Real) {
+							LastTimeClickedRightMouseButton_Real = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
+							GetCursorPos(&MouseClickStartPoint);
+							if (!LLMP_Temporarily_Dont_Update_UniqueID) {
+								Current_UniqueID_of_the_click++;
+							}
+						}
+
+						RightButtonPressedATM_Real = true;
+					}
+					else {
+						RightButtonPressedATM_Real = false;
+					}
+				}
+
+				if (!LeftAndRightMouseButtonsAreCurrentlySwapped) {
+					if (GetAsyncKeyState(VK_LBUTTON)) {
+						if (!LeftButtonPressedATM_Real) {
+							LastTimeClickedLeftMouseButton_Real = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
+							GetCursorPos(&MouseClickStartPoint);
+							if (!LLMP_Temporarily_Dont_Update_UniqueID) {
+								Current_UniqueID_of_the_click++;
+							}
+						}
+						LeftButtonPressedATM_Real = true;
+						
+					}
+					else {
+						LeftButtonPressedATM_Real = false;
+					}
+				}
+				else {
+					if (GetAsyncKeyState(VK_RBUTTON)) {
+						if (!LeftButtonPressedATM_Real) {
+							LastTimeClickedLeftMouseButton_Real = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
+							GetCursorPos(&MouseClickStartPoint);
+							if (!LLMP_Temporarily_Dont_Update_UniqueID) {
+								Current_UniqueID_of_the_click++;
+							}
+						}
+						LeftButtonPressedATM_Real = true;
+						
+					}
+					else {
+						LeftButtonPressedATM_Real = false;
+					}
+				}
 			}
 
 			//ver 1.6, right mouse button support:
@@ -2681,7 +3066,7 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 					if (!DetectedHWNDsForThisMouseClick) {
 						//Primary screen variables:
 						Update_Primary_Screen_Windows_HWNDSs();
-						
+
 						//ver 1.6.1: MOVED BELOW
 						/*if (UseFixForBugAfterSleepMode) {
 							if (PrimaryScreen.hWndMSTaskSwWClass) {
@@ -2764,6 +3149,12 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 						else {
 							hWndTrayNotify = NULL;
 						}
+						if (Array_Windows_by_Screen[0].hWndStartBTNClass) {
+							hWndStartBTNClass = Array_Windows_by_Screen[0].hWndStartBTNClass;
+						}
+						else {
+							hWndStartBTNClass = NULL;
+						}
 					}
 					else {
 						hWndTrayNotify = NULL;
@@ -2822,16 +3213,87 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 						rect.top = 0;
 					}
 
-					//std::cout << "Taskbar Window Rect: " << rect.left << ":" << rect.right << ":" << rect.bottom << ":" << rect.top << "\n";
 					TaskbarWindowWidth = rect.right - rect.left;
 					if (PrintDebugInfo) {
 						std::wcout << L"Taskbar Window Width: " << TaskbarWindowWidth << L". Taskbar Window Rect: " << rect.left << ":" << rect.right << L":" << rect.bottom << L":" << rect.top << "\n";
 					}
 
-					NumberOfItemsOnTaskbar = TaskbarWindowWidth / DefaultTaskbarIconWidth;
-					if (PrintDebugInfo) {
-						std::wcout << L"Number of icons on taskbar: " << NumberOfItemsOnTaskbar << "\n";
+					///TEEEEEEEEEEEEEEEEST
+					/*RECT startbtn;
+					if (hWndStartBTNClass) {
+						GetWindowRect(hWndStartBTNClass, &startbtn);
 					}
+					else {
+						if (PrintDebugInfo) {
+							std::wcout << L"ERROR hWndStartBTNClass IS NULL\n";
+						}
+					}
+
+					RECT hWndTryNtfy;
+					GetWindowRect(PrimaryScreen.hWndTrayNotify, &hWndTryNtfy);
+
+					// Get taskbar width From left corner of TrayNotif to right side of StartBtn maybe we need some gap between TrayNotif and running apps icon so items on the taskbar will detect correctly
+					TaskbarWindowWidth = hWndTryNtfy.left - startbtn.right;
+					if (PrintDebugInfo) {
+						std::wcout << L"AFTER-WINDOWS-UPDATES-HOTFIX - Taskbar Window Width: " << TaskbarWindowWidth << L". Taskbar Window Rect: " << rect.left << ":" << rect.right << L":" << rect.bottom << L":" << rect.top << "\n";
+					}*/
+					///END OF TEEEEEEEEEEEST
+
+
+					DefaultTaskbarIconWidth_Now = DefaultTaskbarIconWidth;
+					if (AutoDetectedSingleIconWidthChangeOffsetOnMSTaskSwWClassWindow) {
+						DefaultTaskbarIconWidth_Now = AutoDetectedSingleIconWidthChangeOffsetOnMSTaskSwWClassWindow;
+					}
+
+					NumberOfItemsOnTaskbar = TaskbarWindowWidth / DefaultTaskbarIconWidth_Now;
+
+					if (PrintDebugInfo) {
+						std::wcout << L"Number of icons on taskbar: " << NumberOfItemsOnTaskbar << L". DefaultTaskbarIconWidth_Now: " << DefaultTaskbarIconWidth_Now << L".\n";
+					}
+
+					bool DeterminedNumberOfIconsUsingNewMethod = false;
+					TaskbarIconInfo newTaskbarIconInfo;
+					if (UseTheNewIconsCountingMethod) {
+						newTaskbarIconInfo = GetNumberOfIconsAndCalculateWidth();
+						if (PrintDebugInfo) {
+							std::wcout << L"New_Get_Number_of_Icons_on_Taskbar_After_Updates_Broke_It() returned: " << newTaskbarIconInfo.numberOfIcons << L".\n";
+							std::wcout << L"Taskbar icons width: " << newTaskbarIconInfo.totalWidth << L".\n";
+						}
+						if (newTaskbarIconInfo.numberOfIcons != -1) {
+							DeterminedNumberOfIconsUsingNewMethod = true;
+							NumberOfItemsOnTaskbar = newTaskbarIconInfo.numberOfIcons;
+
+							rect.left = newTaskbarIconInfo.firstIconX;
+							rect.right = newTaskbarIconInfo.lastIconXPlusWidth;
+							rect.top = newTaskbarIconInfo.leftMostIcon.y;/// ????
+							rect.bottom = newTaskbarIconInfo.leftMostIcon.y + newTaskbarIconInfo.leftMostIcon.height;///???
+							TaskbarWindowWidth = newTaskbarIconInfo.totalWidth;
+							DefaultTaskbarIconWidth_Now = newTaskbarIconInfo.singleIconWidth;
+							if (PrintDebugInfo) {
+								std::cout << "rect.left: " << rect.left << std::endl;
+								std::cout << "rect.right: " << rect.right << std::endl;
+								std::cout << "Left most icon X: " << newTaskbarIconInfo.leftMostIcon.x << std::endl;
+								std::cout << "Left most icon Width: " << newTaskbarIconInfo.leftMostIcon.width << std::endl;
+								std::wcout << L"Updated Taskbar Window Width (workaround): " << TaskbarWindowWidth << L"\n";
+								std::wcout << L"Updated Taskbar Window Rect: " << rect.left << L":" << rect.right << L":" << rect.bottom << L":" << rect.top << L"\n";
+							}
+						}
+					}
+
+					/*if (FixNumberOfIconsOnTaskbarAddOffset != 0) {
+						NumberOfItemsOnTaskbar = NumberOfItemsOnTaskbar + FixNumberOfIconsOnTaskbarAddOffset;
+						TaskbarWindowWidth = TaskbarWindowWidth + (FixNumberOfIconsOnTaskbarAddOffset * DefaultTaskbarIconWidth_Now);
+						if (PrintDebugInfo) {
+							std::wcout << L"Config variable \"FixNumberOfIconsOnTaskbarAddOffset\" was set to: " << FixNumberOfIconsOnTaskbarAddOffset << ". Adjusting...\n";
+							std::wcout << L"NEW Number of icons on taskbar: " << NumberOfItemsOnTaskbar << L". Adjusted TaskbarWindowWidth: " << TaskbarWindowWidth << "\n";
+
+							wchar_t ActiveWindowBeforeText[MAX_PATH];
+							wchar_t ActiveWindowBeforeClassName[MAX_PATH];
+							SendMessageW(WindowUnderMouse, WM_GETTEXT, MAX_PATH, (LPARAM)ActiveWindowBeforeText);
+							GetClassNameW(WindowUnderMouse, ActiveWindowBeforeClassName, MAX_PATH);
+							std::wcout << L"Window under mouse is: " << WindowUnderMouse << L" TITLE: " << ActiveWindowBeforeText << ". CLASS: " << ActiveWindowBeforeClassName << L"\n";
+						}
+					}*/
 
 					//if (hWndMSTaskSwWClass) {
 					if (hWndMSTaskSwWClass) {
@@ -2842,7 +3304,7 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 
 						//ver 2.3.0 window fix moved there:
 						if (UseFixForBugAfterSleepMode && !FixForBugAfterSleepModeTestedThisLoop) {
-							if (WindowUnderMouse == hWndMSTaskSwWClass || WindowUnderMouse == hWndTrayNotify || WindowUnderMouse == hWndRebar) {
+							if (((WindowUnderMouse == hWndMSTaskSwWClass) || ((DeterminedNumberOfIconsUsingNewMethod) && (WindowUnderMouse == hWndTray))) || WindowUnderMouse == hWndTrayNotify || WindowUnderMouse == hWndRebar) {
 								FixForBugAfterSleepModeTestedThisLoop = true;
 								Last_Step_Reached = 3;
 								if (PrimaryScreen.hWndMSTaskSwWClass) {
@@ -2856,7 +3318,7 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 							}
 						}
 
-						if (WindowUnderMouse == hWndMSTaskSwWClass || WindowUnderMouse == hWndTrayNotify) {
+						if (((WindowUnderMouse == hWndMSTaskSwWClass) || ((DeterminedNumberOfIconsUsingNewMethod) && (WindowUnderMouse == hWndTray))) || WindowUnderMouse == hWndTrayNotify) {
 							if (Last_Step_Reached < 3) {
 								Last_Step_Reached = 3;
 							}
@@ -2910,6 +3372,9 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 										continue;
 									}
 								}
+								else {
+									std::wcout << L"DetectKnownPixelColorsToPreventAccidentalEvents: CorrectPixelsEverDetectedUsingCookieFile is FALSE, so continuing anyway..." << endl;
+								}
 								//}
 							}
 
@@ -2919,10 +3384,7 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 							MouseClickStartPoint_Client = MouseClickStartPoint;
 							ScreenToClient(hWndMSTaskSwWClass, &MouseClickStartPoint_Client);
 
-							//Check if user clicked the left mouse button in the taskbar area, so should not continue:
-							//std::cout << "Left Mouse Click Started in:" << MouseClickStartPoint.x << " Y: " << MouseClickStartPoint.y << "\n";
-
-							if (MouseClickStartPoint_Client.x >= 0 && MouseClickStartPoint_Client.y >= 0) {
+							if (MouseClickStartPoint_Client.y >= 0) {
 								if (PrintDebugInfo) {
 									std::wcout << Current_Button_Name << L" Mouse Click Started in the taskbar area: X: " << MouseClickStartPoint_Client.x << " Y: " << MouseClickStartPoint_Client.y << ", so skipping.\n";
 								}
@@ -2930,6 +3392,15 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 								AdvancedSleep();
 								continue;
 							}
+
+							/*if (MouseClickStartPoint_Client.x >= 0 && MouseClickStartPoint_Client.y >= 0) {
+								if (PrintDebugInfo) {
+									std::wcout << Current_Button_Name << L" Mouse Click Started in the taskbar area: X: " << MouseClickStartPoint_Client.x << " Y: " << MouseClickStartPoint_Client.y << ", so skipping.\n";
+								}
+								//The sleep was missing there causing heavy CPU usage. Fixed in ver 1.1.1
+								AdvancedSleep();
+								continue;
+							}*/
 
 							/*if (DetectIfFileIsCurrentlyDraggedUsingClipboard && !Detect_if_Clipboard_Has_Dragged_File_Data()) {
 								//Check if currently file is being dragged using clipboard
@@ -2952,15 +3423,38 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR lpCmdLine, int nS
 								}
 							}
 
-							if ((P_Client.x >= 0 && P_Client.y >= 0 && P_Client.x <= TaskbarWindowWidth) || ShowDesktopPositionNow) {
+							int CurrentAppIcon = -1;
+							if (DefaultTaskbarIconWidth_Now > 0) {
+								CurrentAppIcon = P_Client.x / DefaultTaskbarIconWidth_Now;
+							}
+							else {
+								std::wcout << L"!!! ERROR? DefaultTaskbarIconWidth_Now is 0: " << DefaultTaskbarIconWidth_Now << L" and can't be used for dividing\n";
+							}
+							int CurrentAppIconPlusOne = CurrentAppIcon + 1;
+
+							if (DeterminedNumberOfIconsUsingNewMethod) {
+								int Calc1 = P.x - newTaskbarIconInfo.firstIconX;
+								if (P.x >= newTaskbarIconInfo.firstIconX && DefaultTaskbarIconWidth_Now > 0) {
+									CurrentAppIcon = Calc1 / DefaultTaskbarIconWidth_Now;
+									CurrentAppIconPlusOne = CurrentAppIcon + 1;
+								}
+								else {
+									CurrentAppIcon = -1;
+									CurrentAppIconPlusOne + 0;
+								}
+							}
+
+							if (PrintDebugInfo) {
+								std::wcout << L"!!!!! Checking if CurrentAppIcon: " << CurrentAppIcon << L" <  NumberOfItemsOnTaskbar: " << NumberOfItemsOnTaskbar << L". Don't get confused by these numbers.\n";
+							}
+							//if ((P_Client.x >= 0 && P_Client.y >= 0 && P_Client.x <= TaskbarWindowWidth) || ShowDesktopPositionNow) {
+							if ((P_Client.x >= 0 && P_Client.y >= 0 && CurrentAppIcon < NumberOfItemsOnTaskbar && CurrentAppIcon > -1) || ShowDesktopPositionNow) {
 								if (Last_Step_Reached < 4) {
 									Last_Step_Reached = 4;
 								}
-
 								SleepPeriodNow = SleepPeriodWhenMouseIsOnAppIconInTheLoopMilliseconds;
+								//std::wcout << L"TEEEEEEEEEEEEEEST 222222222222222" << L".\n";
 
-								int CurrentAppIcon = P_Client.x / DefaultTaskbarIconWidth;
-								int CurrentAppIconPlusOne = CurrentAppIcon + 1;
 
 								if (ShowDesktopPositionNow) {
 									CurrentAppIcon = 999;

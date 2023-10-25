@@ -155,6 +155,10 @@
   <ItemGroup>
     <ResourceCompile Include="Windows11DragAndDropToTaskbarFix.rc" />
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="Windows11DragAndDropToTaskbarFix.ico" />
+    <Image Include="Windows11DragAndDropToTaskbarFixAlternative.ico" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

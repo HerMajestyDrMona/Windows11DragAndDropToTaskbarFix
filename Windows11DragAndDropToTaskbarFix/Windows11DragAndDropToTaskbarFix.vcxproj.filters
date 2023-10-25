@@ -32,4 +32,12 @@
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="Windows11DragAndDropToTaskbarFix.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Windows11DragAndDropToTaskbarFixAlternative.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
 </Project>
