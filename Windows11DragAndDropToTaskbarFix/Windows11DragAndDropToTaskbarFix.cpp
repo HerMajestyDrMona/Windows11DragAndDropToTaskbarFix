@@ -367,10 +367,12 @@ string trololo(string troll) {
 bool Mona_Remap_Key(string WhichKey, string ChangeTo, bool DebugPrintNow = false) {
 	std::size_t CatFelix = ChangeTo.find("0X");//its uppercase
 	if (CatFelix != std::string::npos) {
+		string MonaKardashian = ChangeTo.substr(CatFelix);
 		string KhloeKardashian = ChangeTo.substr(CatFelix + 2);
 		if (KhloeKardashian.length() > 0) {
-			string ChaneToHex = trololo(KhloeKardashian);
-			char ChangeToHexChar = ChaneToHex[0];
+			//string ChaneToHex = trololo(KhloeKardashian);
+			//char ChangeToHexChar = ChaneToHex[0];
+			UINT ChangeToHexChar = std::stoul(MonaKardashian, nullptr, 16);
 
 			if (WhichKey == "VK_LWIN")
 			{
